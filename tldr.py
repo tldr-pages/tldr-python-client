@@ -32,19 +32,19 @@ def get_platform():
 
     raise NotImplementedError(sys.platform, "not supported yet")
 
-def get_page(command):
-    try:
-        return get_page_for_platform(command, "common")
-    except HTTPError as e:
-        if e.code != 404:
-            raise
+def get_page(command, platform=None):
+    if platform is None:
+        platform = ["common", get_platform()]
+
+    for _platform in platform:
         try:
-            return get_page_for_platform(command, get_platform())
+            return get_page_for_platform(command, _platform)
         except HTTPError as e:
             if e.code != 404:
                 raise
-            print(command + " documentation is not available\n"
-                  "Consider contributing Pull Request to https://github.com/rprieto/tldr")
+
+    print(command + " documentation is not available\n"
+          "Consider contributing Pull Request to https://github.com/rprieto/tldr")
 
 def output(page):
     # Need a fancy method
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
     for command in options.command:
         if options.os is not None:
-            output(get_page_for_platform(command, options.os))
+            output(get_page(command, options.os))
 
         else:
             output(get_page(command))
