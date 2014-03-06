@@ -2,16 +2,11 @@
 from __future__ import unicode_literals, print_function
 import sys
 from argparse import ArgumentParser
+from six.moves.urllib.parse import quote
+from six.moves.urllib.request import urlopen
+from six.moves.urllib.error import HTTPError
+from six.moves import map
 
-try:
-    #Py3
-    from urllib.parse import quote
-    from urllib.request import urlopen
-    from urllib.error import HTTPError
-except ImportError:
-    #Py 2.7
-    from urllib import quote
-    from urllib2 import urlopen, HTTPError
 
 remote = "http://raw.github.com/rprieto/tldr/master/pages"
 
