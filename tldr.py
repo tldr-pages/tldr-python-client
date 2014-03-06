@@ -46,11 +46,27 @@ def get_page(command, platform=None):
           "Consider contributing Pull Request to https://github.com/rprieto/tldr")
 
 def output(page):
-    # Need a fancy method
+    # Need a better fancy method?
     if page is not None:
-        print(page)
+        for line in page:
+            line = line.rstrip().decode('utf-8')
+            if len(line) < 1:
+                cprint(line.ljust(columns), 'white', 'on_blue')   
+            elif line[0] == '#':
+                cprint(line.ljust(columns), 'cyan', 'on_blue', attrs=['bold'])
+            elif line[0] == '>':
+                line = ' ' + line[1:]
+                cprint(line.ljust(columns), 'white', 'on_blue')
+            elif line[0] == '-':
+                cprint(line.ljust(columns), 'green', 'on_blue')
+            elif line[0] == '`':
+                line = ' ' * 2 + line[1:-1] ## need to actually parse ``
+                cprint(line.ljust(columns), 'white', 'on_grey')
+            else:
+                cprint(line.ljust(columns), 'white', 'on_blue')
+        ## Need a cleaner way to pad three colored lines
+        [cprint(''.ljust(columns), 'white', 'on_blue') for i in range(3)]               
 
-if __name__ == "__main__":
     parser = ArgumentParser(description="Python command line client for tldr")
 
     parser.add_argument('-o', '--os',
