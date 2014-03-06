@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 from __future__ import unicode_literals, print_function
 import sys
+import os
 from argparse import ArgumentParser
+from termcolor import colored, cprint
+from six.moves.urllib.parse import quote
+from six.moves.urllib.request import urlopen
+from six.moves.urllib.error import HTTPError
+from six.moves import map
 
-try:
-    #Py3
-    from urllib.parse import quote
-    from urllib.request import urlopen
-    from urllib.error import HTTPError
-except ImportError:
-    #Py 2.7
-    from urllib import quote
-    from urllib2 import urlopen, HTTPError
+## get terminal size
+rows, columns = map(int, os.popen('stty size', 'r').read().split())
 
 remote = "http://raw.github.com/rprieto/tldr/master/pages"
 
@@ -22,7 +21,7 @@ os_directories = {
 }
 
 def get_page_for_platform(command, platform):
-    data = urlopen(remote + "/" + platform + "/" + quote(command) + ".md").read().decode('utf8')
+    data = urlopen(remote + "/" + platform + "/" + quote(command) + ".md")
     return data
 
 def get_platform():
@@ -47,19 +46,38 @@ def get_page(command, platform=None):
           "Consider contributing Pull Request to https://github.com/rprieto/tldr")
 
 def output(page):
-    # Need a fancy method
+    # Need a better fancy method?
     if page is not None:
-        print(page)
+        for line in page:
+            line = line.rstrip().decode('utf-8')
+            if len(line) < 1:
+                cprint(line.ljust(columns), 'white', 'on_blue')   
+            elif line[0] == '#':
+                cprint(line.ljust(columns), 'cyan', 'on_blue', attrs=['bold'])
+            elif line[0] == '>':
+                line = ' ' + line[1:]
+                cprint(line.ljust(columns), 'white', 'on_blue')
+            elif line[0] == '-':
+                cprint(line.ljust(columns), 'green', 'on_blue')
+            elif line[0] == '`':
+                line = ' ' * 2 + line[1:-1] ## need to actually parse ``
+                cprint(line.ljust(columns), 'white', 'on_grey')
+            else:
+                cprint(line.ljust(columns), 'white', 'on_blue')
+        ## Need a cleaner way to pad three colored lines
+        [cprint(''.ljust(columns), 'white', 'on_blue') for i in range(3)]               
 
-if __name__ == "__main__":
+def main():
     parser = ArgumentParser(description="Python command line client for tldr")
 
     parser.add_argument('-o', '--os',
                         nargs=1,
                         default=None,
+                        type=str,
+                        choices=['linux', 'osx', 'sunos'],
                         help="Override the operating system [linux, osx, sunos]")
 
-    parser.add_argument('command', nargs='+', help=
+    parser.add_argument('command', type=str, nargs='+', help=
                         "command to lookup")
 
     options = parser.parse_args()
@@ -70,3 +88,6 @@ if __name__ == "__main__":
 
         else:
             output(get_page(command))
+            
+if __name__ == "__main__":
+    main()
