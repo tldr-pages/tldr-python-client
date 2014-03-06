@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 from __future__ import unicode_literals, print_function
 import sys
+import os
 from argparse import ArgumentParser
+from termcolor import colored, cprint
 from six.moves.urllib.parse import quote
 from six.moves.urllib.request import urlopen
 from six.moves.urllib.error import HTTPError
 from six.moves import map
 
+## get terminal size
+rows, columns = map(int, os.popen('stty size', 'r').read().split())
 
 remote = "http://raw.github.com/rprieto/tldr/master/pages"
 
