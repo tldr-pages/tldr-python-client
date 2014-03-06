@@ -21,7 +21,7 @@ os_directories = {
 }
 
 def get_page_for_platform(command, platform):
-    data = urlopen(remote + "/" + platform + "/" + quote(command) + ".md").read().decode('utf8')
+    data = urlopen(remote + "/" + platform + "/" + quote(command) + ".md")
     return data
 
 def get_platform():
