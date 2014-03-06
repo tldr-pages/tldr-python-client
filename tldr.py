@@ -67,14 +67,17 @@ def output(page):
         ## Need a cleaner way to pad three colored lines
         [cprint(''.ljust(columns), 'white', 'on_blue') for i in range(3)]               
 
+def main():
     parser = ArgumentParser(description="Python command line client for tldr")
 
     parser.add_argument('-o', '--os',
                         nargs=1,
                         default=None,
+                        type=str,
+                        choices=['linux', 'osx', 'sunos'],
                         help="Override the operating system [linux, osx, sunos]")
 
-    parser.add_argument('command', nargs='+', help=
+    parser.add_argument('command', type=str, nargs='+', help=
                         "command to lookup")
 
     options = parser.parse_args()
@@ -85,3 +88,6 @@ def output(page):
 
         else:
             output(get_page(command))
+            
+if __name__ == "__main__":
+    main()
