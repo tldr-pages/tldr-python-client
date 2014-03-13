@@ -5,13 +5,14 @@ import os
 
 setup(
         name = 'tldr',
-        version = "0.1.0",
+        version = "0.1.1",
         author = 'Felix Yan',
         author_email = 'felixonmars@gmail.com',
         url = 'https://github.com/felixonmars/tldr-python-client',
         description = 'command line client for tldr',
         license = 'MIT',
-        modules = ['tldr'],
+        py_modules = ['tldr'],
+        scripts=['tldr.py'],
         install_requires = ['six', 'termcolor'],
         entry_points = { 'console_scripts': [ 'tldr = tldr:main' ] },
         classifiers = [
