@@ -43,7 +43,7 @@ def get_page(command, platform=None):
                 raise
 
     print(command + " documentation is not available\n"
-          "Consider contributing Pull Request to https://github.com/rprieto/tldr")
+          "Consider contributing Pull Request to https://github.com/tldr-pages/tldr")
 
 def output(page):
     # Need a better fancy method?
