@@ -12,7 +12,7 @@ from six.moves import map
 ## get terminal size
 rows, columns = map(int, os.popen('stty size', 'r').read().split())
 
-remote = "http://raw.github.com/rprieto/tldr/master/pages"
+remote = "http://raw.github.com/tldr-pages/tldr/master/pages"
 
 os_directories = {
     "linux": "linux",
