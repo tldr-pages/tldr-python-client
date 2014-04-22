@@ -1,4 +1,11 @@
-tldr-python-client
-==================
+#tldr-python-client
 
-Python command line client for tldr
+A `Python` command line client for tldr
+
+## Installation
+
+    $ pip install tldr
+    
+## Usage
+
+* `tldr <command>`
