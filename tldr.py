@@ -46,12 +46,11 @@ def get_page(command, platform=None):
           "Consider contributing Pull Request to https://github.com/tldr-pages/tldr")
 
 DEFAULT_COLORS = {
-    'blank_line': 'white on_blue',
-    'command_name': 'cyan on_blue bold',
-    'short_desc': 'white on_blue',
+    'blank': 'white on_blue',
+    'name': 'cyan on_blue bold',
+    'description': 'white on_blue',
     'example': 'green on_blue',
-    'command_args': 'white on_grey',
-    'other': 'white on_blue',
+    'command': 'white on_grey',
 }
 
 def colors_of(key):
@@ -70,21 +69,21 @@ def output(page):
         for line in page:
             line = line.rstrip().decode('utf-8')
             if len(line) < 1:
-                cprint(line.ljust(columns), *colors_of('blank_line'))
+                cprint(line.ljust(columns), *colors_of('blank'))
             elif line[0] == '#':
-                cprint(line.ljust(columns), *colors_of('command_name'))
+                cprint(line.ljust(columns), *colors_of('name'))
             elif line[0] == '>':
                 line = ' ' + line[1:]
-                cprint(line.ljust(columns), *colors_of('short_desc'))
+                cprint(line.ljust(columns), *colors_of('description'))
             elif line[0] == '-':
                 cprint(line.ljust(columns), *colors_of('example'))
             elif line[0] == '`':
                 line = ' ' * 2 + line[1:-1] ## need to actually parse ``
-                cprint(line.ljust(columns), *colors_of('command_args'))
+                cprint(line.ljust(columns), *colors_of('command'))
             else:
-                cprint(line.ljust(columns), *colors_of('other'))
+                cprint(line.ljust(columns), *colors_of('description'))
         ## Need a cleaner way to pad three colored lines
-        [cprint(''.ljust(columns), *colors_of('blank_line')) for i in range(3)]
+        [cprint(''.ljust(columns), *colors_of('blank')) for i in range(3)]
 
 def main():
     parser = ArgumentParser(description="Python command line client for tldr")
