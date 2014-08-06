@@ -45,27 +45,45 @@ def get_page(command, platform=None):
     print(command + " documentation is not available\n"
           "Consider contributing Pull Request to https://github.com/tldr-pages/tldr")
 
+DEFAULT_COLORS = {
+    'blank': 'white on_blue',
+    'name': 'cyan on_blue bold',
+    'description': 'white on_blue',
+    'example': 'green on_blue',
+    'command': 'white on_grey',
+}
+
+def colors_of(key):
+    env_key = 'TLDR_COLOR_%s' % key.upper()
+    values = os.environ.get(env_key, '').strip() or DEFAULT_COLORS[key]
+    values = values.split()
+    return (
+        values[0] if len(values)>0 else None,
+        values[1] if len(values)>1 else None,
+        values[2:],
+    )
+
 def output(page):
     # Need a better fancy method?
     if page is not None:
         for line in page:
             line = line.rstrip().decode('utf-8')
             if len(line) < 1:
-                cprint(line.ljust(columns), 'white', 'on_blue')   
+                cprint(line.ljust(columns), *colors_of('blank'))
             elif line[0] == '#':
-                cprint(line.ljust(columns), 'cyan', 'on_blue', attrs=['bold'])
+                cprint(line.ljust(columns), *colors_of('name'))
             elif line[0] == '>':
                 line = ' ' + line[1:]
-                cprint(line.ljust(columns), 'white', 'on_blue')
+                cprint(line.ljust(columns), *colors_of('description'))
             elif line[0] == '-':
-                cprint(line.ljust(columns), 'green', 'on_blue')
+                cprint(line.ljust(columns), *colors_of('example'))
             elif line[0] == '`':
                 line = ' ' * 2 + line[1:-1] ## need to actually parse ``
-                cprint(line.ljust(columns), 'white', 'on_grey')
+                cprint(line.ljust(columns), *colors_of('command'))
             else:
-                cprint(line.ljust(columns), 'white', 'on_blue')
+                cprint(line.ljust(columns), *colors_of('description'))
         ## Need a cleaner way to pad three colored lines
-        [cprint(''.ljust(columns), 'white', 'on_blue') for i in range(3)]               
+        [cprint(''.ljust(columns), *colors_of('blank')) for i in range(3)]
 
 def main():
     parser = ArgumentParser(description="Python command line client for tldr")
