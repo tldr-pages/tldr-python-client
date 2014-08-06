@@ -54,7 +54,7 @@ DEFAULT_COLORS = {
 }
 
 def colors_of(key):
-    env_key = 'tldr_%s' % key
+    env_key = 'TLDR_%s' % key.upper()
     values = os.environ.get(env_key, '').strip() or DEFAULT_COLORS[key]
     values = values.split()
     return (
