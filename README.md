@@ -1,6 +1,6 @@
 #tldr-python-client
 
-A `Python` command line client for tldr
+A `Python` command line client for [tldr](https://github.com/tldr-pages/tldr).
 
 ## Installation
 
