@@ -4,7 +4,7 @@ import sys
 import os
 import subprocess
 from argparse import ArgumentParser
-from termcolor import colored, cprint
+from termcolor import cprint
 from six.moves.urllib.parse import quote
 from six.moves.urllib.request import urlopen
 from six.moves.urllib.error import HTTPError
