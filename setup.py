@@ -13,7 +13,7 @@ setup(
         license = 'MIT',
         py_modules = ['tldr'],
         scripts=['tldr.py'],
-        install_requires = ['six', 'termcolor'],
+        install_requires = ['six', 'termcolor', 'colorama'],
         entry_points = { 'console_scripts': [ 'tldr = tldr:main' ] },
         classifiers = [
                 "Development Status :: 4 - Beta",
