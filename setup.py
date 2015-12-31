@@ -5,7 +5,7 @@ import os
 
 setup(
         name = 'tldr',
-        version = "0.1.1",
+        version = "0.1.2",
         author = 'Felix Yan',
         author_email = 'felixonmars@gmail.com',
         url = 'https://github.com/felixonmars/tldr-python-client',
