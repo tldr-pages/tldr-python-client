@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, print_function
 import sys
 import os
+import subprocess
 from argparse import ArgumentParser
 from termcolor import colored, cprint
 from six.moves.urllib.parse import quote
@@ -10,7 +11,7 @@ from six.moves.urllib.error import HTTPError
 from six.moves import map
 
 ## get terminal size
-rows, columns = map(int, os.popen('stty size', 'r').read().split())
+rows, columns = map(int, subprocess.check_output(['stty', 'size']).split())
 
 remote = "http://raw.github.com/tldr-pages/tldr/master/pages"
 
@@ -106,6 +107,6 @@ def main():
 
         else:
             output(get_page(command))
-            
+
 if __name__ == "__main__":
     main()
