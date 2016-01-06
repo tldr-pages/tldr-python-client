@@ -3,8 +3,9 @@ from __future__ import unicode_literals, print_function
 import sys
 import os
 import subprocess
+import re
 from argparse import ArgumentParser
-from termcolor import cprint
+from termcolor import colored, cprint
 from six.moves.urllib.parse import quote
 from six.moves.urllib.request import urlopen
 from six.moves.urllib.error import HTTPError
@@ -94,8 +95,14 @@ DEFAULT_COLORS = {
     'name': 'cyan on_blue bold',
     'description': 'white on_blue',
     'example': 'green on_blue',
-    'command': 'white on_grey',
+    'command': 'red on_grey',
+    'parameter': 'white on_grey',
 }
+
+LEADING_SPACES_NUM = 2
+
+command_splitter = re.compile(r'(?P<param>{{.+?}})')
+param_regex = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
 
 def colors_of(key):
@@ -124,8 +131,24 @@ def output(page):
             elif line[0] == '-':
                 cprint(line.ljust(columns), *colors_of('example'))
             elif line[0] == '`':
-                line = ' ' * 2 + line[1:-1]  # need to actually parse ``
-                cprint(line.ljust(columns), *colors_of('command'))
+                line = line[1:-1]  # need to actually parse ``
+                elements = [colored(' ' * LEADING_SPACES_NUM, *colors_of('blank')), ]
+                replaced_spaces = 0
+                for item in command_splitter.split(line):
+                    item, replaced = param_regex.subn(
+                                        lambda x: colored(x.group('param'), *colors_of('parameter')),
+                                        item)
+                    if not replaced:
+                        item = colored(item, *colors_of('command'))
+                    else:
+                        replaced_spaces += 4  # In replacement of {{}} from template pattern
+                    elements.append(item)
+                # Manually adding painted in blank spaces
+                elements.append(colored(' ' * (columns
+                                                - len(line)
+                                                - LEADING_SPACES_NUM
+                                                + replaced_spaces), *colors_of('blank')))
+                print(''.join(elements))
             else:
                 cprint(line.ljust(columns), *colors_of('description'))
         # Need a cleaner way to pad three colored lines
