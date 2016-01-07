@@ -1,0 +1,26 @@
+[1m[44m[36m# gem                                                                           [0m
+[44m[37m                                                                                [0m
+[44m[37m  Interact with the package manager for the Ruby programming language.          [0m
+[44m[37m                                                                                [0m
+[44m[32m- Install latest version of a gem                                               [0m
+[44m[37m                                                                                [0m
+[44m[37m  [0m[40m[31mgem install [0m[40m[37mgemname[0m[40m[31m[0m[44m[37m                                                           [0m
+[44m[37m                                                                                [0m
+[44m[32m- Install specific version of a gem                                             [0m
+[44m[37m                                                                                [0m
+[44m[37m  [0m[40m[31mgem install [0m[40m[37mgemname[0m[40m[31m -v [0m[40m[37m1.0.0[0m[40m[31m[0m[44m[37m                                                  [0m
+[44m[37m                                                                                [0m
+[44m[32m- Update a gem                                                                  [0m
+[44m[37m                                                                                [0m
+[44m[37m  [0m[40m[31mgem update [0m[40m[37mgemname[0m[40m[31m[0m[44m[37m                                                            [0m
+[44m[37m                                                                                [0m
+[44m[32m- List all gems                                                                 [0m
+[44m[37m                                                                                [0m
+[44m[37m  [0m[40m[31mgem list[0m[44m[37m                                                                      [0m
+[44m[37m                                                                                [0m
+[44m[32m- Uninstall a gem                                                               [0m
+[44m[37m                                                                                [0m
+[44m[37m  [0m[40m[31mgem uninstall [0m[40m[37mgemname[0m[40m[31m[0m[44m[37m                                                         [0m
+[44m[37m                                                                                [0m
+[44m[37m                                                                                [0m
+[44m[37m                                                                                [0m
