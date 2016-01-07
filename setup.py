@@ -1,12 +1,19 @@
+import sys
 from setuptools import setup
+
+if sys.argv[-1] in ('sdist', 'bdist_wheel'):
+    setup_requires = ['setuptools-markdown']
+else:
+    setup_requires = []
 
 setup(
     name='tldr',
-    version="0.1.3",
+    version="0.1.3.1",
     author='Felix Yan',
     author_email='felixonmars@gmail.com',
     url='https://github.com/felixonmars/tldr-python-client',
     description='command line client for tldr',
+    long_description_markdown_filename='README.md',
     license='MIT',
     py_modules=['tldr'],
     scripts=['tldr.py'],
@@ -14,6 +21,7 @@ setup(
     tests_require=[
         'pytest-runner',
     ],
+    setup_requires=setup_requires,
     entry_points={
         'console_scripts': ['tldr = tldr:main']
     },
