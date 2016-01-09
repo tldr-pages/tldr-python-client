@@ -15,43 +15,41 @@ import colorama
 colorama.init()
 
 
-def get_terminal_size_windows():
-    try:
-        from ctypes import windll, create_string_buffer
-        import struct
-        # stdin handle is -10
-        # stdout handle is -11
-        # stderr handle is -12
-        h = windll.kernel32.GetStdHandle(-12)
-        csbi = create_string_buffer(22)
-        res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
-        if res:
-            (bufx, bufy, curx, cury, wattr,
-             left, top, right, bottom,
-             maxx, maxy) = struct.unpack("hhhhHhhhhhh", csbi.raw)
-            sizex = right - left + 1
-            sizey = bottom - top + 1
-            return sizex, sizey
-    except:
-        pass
-
-
-def get_terminal_size_stty():
-    try:
-        return map(int, subprocess.check_output(['stty', 'size']).split())
-    except:
-        pass
-
-
-def get_terminal_size_tput():
-    try:
-        return map(int, [subprocess.check_output(['tput', 'lines']), subprocess.check_output(['tput', 'rows'])])
-    except:
-        pass
-
-
 def get_terminal_size():
+    def get_terminal_size_windows():
+        try:
+            from ctypes import windll, create_string_buffer
+            import struct
+            # stdin handle is -10
+            # stdout handle is -11
+            # stderr handle is -12
+            h = windll.kernel32.GetStdHandle(-12)
+            csbi = create_string_buffer(22)
+            res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
+            if res:
+                (bufx, bufy, curx, cury, wattr,
+                 left, top, right, bottom,
+                 maxx, maxy) = struct.unpack("hhhhHhhhhhh", csbi.raw)
+                sizex = right - left + 1
+                sizey = bottom - top + 1
+                return sizex, sizey
+        except:
+            pass
+
+    def get_terminal_size_stty():
+        try:
+            return map(int, subprocess.check_output(['stty', 'size']).split())
+        except:
+            pass
+
+    def get_terminal_size_tput():
+        try:
+            return map(int, [subprocess.check_output(['tput', 'lines']), subprocess.check_output(['tput', 'rows'])])
+        except:
+            pass
+
     return get_terminal_size_windows() or get_terminal_size_stty() or get_terminal_size_tput() or (25, 80)
+
 
 # get terminal size
 rows, columns = get_terminal_size()
@@ -132,22 +130,25 @@ def output(page):
                 cprint(line.ljust(columns), *colors_of('example'))
             elif line[0] == '`':
                 line = line[1:-1]  # need to actually parse ``
-                elements = [colored(' ' * LEADING_SPACES_NUM, *colors_of('blank')), ]
+                elements = [
+                    colored(' ' * LEADING_SPACES_NUM, *colors_of('blank')), ]
                 replaced_spaces = 0
                 for item in command_splitter.split(line):
                     item, replaced = param_regex.subn(
-                                        lambda x: colored(x.group('param'), *colors_of('parameter')),
-                                        item)
+                        lambda x: colored(
+                            x.group('param'), *colors_of('parameter')),
+                        item)
                     if not replaced:
                         item = colored(item, *colors_of('command'))
                     else:
-                        replaced_spaces += 4  # In replacement of {{}} from template pattern
+                        # In replacement of {{}} from template pattern
+                        replaced_spaces += 4
                     elements.append(item)
                 # Manually adding painted in blank spaces
                 elements.append(colored(' ' * (columns
-                                                - len(line)
-                                                - LEADING_SPACES_NUM
-                                                + replaced_spaces), *colors_of('blank')))
+                                               - len(line)
+                                               - LEADING_SPACES_NUM
+                                               + replaced_spaces), *colors_of('blank')))
                 print(''.join(elements))
             else:
                 cprint(line.ljust(columns), *colors_of('description'))
