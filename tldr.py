@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, print_function
 import sys
 import os
+import errno
 import subprocess
 import re
 from argparse import ArgumentParser
@@ -63,8 +64,54 @@ os_directories = {
 }
 
 
+def get_cache_file_path(command, platform):
+    cache_file_name = command + "_" + platform + ".md"
+    cache_file_path = os.path.join(
+        os.path.expanduser("~"), "tldr_cache", cache_file_name)
+    return cache_file_path
+
+
+def load_page_from_cache(command, platform):
+    try:
+        with open(get_cache_file_path(command, platform)) as cache_file:
+            cache_file_contents = cache_file.read()
+        return cache_file_contents
+    except Exception:
+        pass
+
+
+def store_page_to_cache(page, command, platform):
+    def mkdir_p(path):
+        """
+        Create all the intermediate directories in a path.
+        Similar to the `mkdir -p` command.
+        """
+        try:
+            os.makedirs(path)
+        except OSError as exc:  # Python >2.5
+            if exc.errno == errno.EEXIST and os.path.isdir(path):
+                pass
+            else:
+                raise
+
+    try:
+        cache_file_path = get_cache_file_path(command, platform)
+        mkdir_p(os.path.dirname(cache_file_path))
+        with open(cache_file_path, "w") as cache_file:
+            cache_file.write(page)
+    except Exception:
+        pass
+
+
 def get_page_for_platform(command, platform):
-    data = urlopen(remote + "/" + platform + "/" + quote(command) + ".md")
+    page_url = remote + "/" + platform + "/" + quote(command) + ".md"
+    try:
+        data = urlopen(page_url).read()
+    except Exception:
+        data = load_page_from_cache(command, platform)
+        if data is None:
+            raise
+    store_page_to_cache(data, command, platform)
     return data
 
 
@@ -87,6 +134,7 @@ def get_page(command, platform=None):
 
     print(command + " documentation is not available\n"
           "Consider contributing Pull Request to https://github.com/tldr-pages/tldr")
+
 
 DEFAULT_COLORS = {
     'blank': 'white on_blue',
@@ -117,7 +165,7 @@ def colors_of(key):
 def output(page):
     # Need a better fancy method?
     if page is not None:
-        for line in page:
+        for line in page.splitlines():
             line = line.rstrip().decode('utf-8')
             if len(line) < 1:
                 cprint(line.ljust(columns), *colors_of('blank'))
