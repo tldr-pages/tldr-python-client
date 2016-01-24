@@ -112,7 +112,7 @@ def get_page_for_platform(command, platform):
         if data is None:
             raise
     store_page_to_cache(data, command, platform)
-    return data
+    return data.splitlines()
 
 
 def get_platform():
@@ -165,7 +165,7 @@ def colors_of(key):
 def output(page):
     # Need a better fancy method?
     if page is not None:
-        for line in page.splitlines():
+        for line in page:
             line = line.rstrip().decode('utf-8')
             if len(line) < 1:
                 cprint(line.ljust(columns), *colors_of('blank'))
