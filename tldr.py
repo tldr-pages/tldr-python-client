@@ -67,7 +67,7 @@ os_directories = {
 def get_cache_file_path(command, platform):
     cache_file_name = command + "_" + platform + ".md"
     cache_file_path = os.path.join(
-        os.path.expanduser("~"), "tldr_cache", cache_file_name)
+        os.path.expanduser("~"), ".tldr_cache", cache_file_name)
     return cache_file_path
 
 
