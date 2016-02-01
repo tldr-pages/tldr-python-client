@@ -157,8 +157,8 @@ def colors_of(key):
     values = values.split()
     return (
         values[0] if len(values) > 0 else None,
-        values[1] if len(values) > 1 else None,
-        values[2:],
+        values[1] if len(values) > 1 and values[1].startswith('on_') else None,
+        values[2:] if len(values) > 1 and values[1].startswith('on_') else values[1:],
     )
 
 
