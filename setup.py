@@ -1,14 +1,12 @@
 import sys
 from setuptools import setup
 
+setup_requires = ['setuptools_scm']
 if sys.argv[-1] in ('sdist', 'bdist_wheel'):
-    setup_requires = ['setuptools-markdown']
-else:
-    setup_requires = []
+    setup_requires.append('setuptools-markdown')
 
 setup(
     name='tldr',
-    version="0.1.3.1",
     author='Felix Yan',
     author_email='felixonmars@gmail.com',
     url='https://github.com/tldr-pages/tldr-python-client',
@@ -22,6 +20,7 @@ setup(
         'pytest-runner',
     ],
     setup_requires=setup_requires,
+    use_scm_version=True,
     entry_points={
         'console_scripts': ['tldr = tldr:main']
     },
