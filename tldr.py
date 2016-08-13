@@ -17,9 +17,10 @@ from six.moves import map
 import colorama
 colorama.init()
 
+USE_CACHE = int(os.environ.get('TLDR_USE_CACHE', '1')) > 0
+MAX_CACHE_AGE = int(os.environ.get('TLDR_MAX_CACHE_AGE', 24))
 
-USE_CACHE = int(os.environ.get('TLDR_USE_CACHE', '0')) > 0
-MAX_CACHE_AGE = int(os.environ.get('TLDR_MAX_CACHE_AGE', 60))
+COMMAND_FILE_REGEX = re.compile(r'(?P<command>^.+?)_(?P<platform>.+?)\.md$')
 
 
 def get_terminal_size():
@@ -113,15 +114,15 @@ def have_recent_cache(command, platform):
     try:
         cache_file_path = get_cache_file_path(command, platform)
         last_modified = datetime.fromtimestamp(os.path.getmtime(cache_file_path))
-        minutes_passed = (datetime.now() - last_modified).total_seconds() / 60
-        return minutes_passed <= MAX_CACHE_AGE
+        hours_passed = (datetime.now() - last_modified).total_seconds() / 3600
+        return hours_passed <= MAX_CACHE_AGE
     except Exception:
         return False
 
 
-def get_page_for_platform(command, platform):
+def get_page_for_platform(command, platform, force_download=False):
     data_downloaded = False
-    if have_recent_cache(command, platform):
+    if not force_download and have_recent_cache(command, platform):
         data = load_page_from_cache(command, platform)
     else:
         page_url = remote + "/" + platform + "/" + quote(command) + ".md"
@@ -226,8 +227,27 @@ def output(page):
         [cprint(''.ljust(columns), *colors_of('blank')) for i in range(3)]
 
 
+def update_cache():
+    cache_path = os.path.join(os.path.expanduser("~"), ".tldr_cache")
+    if not os.path.exists(cache_path):
+        return
+    files = [file_name for file_name in os.listdir(cache_path)
+             if os.path.isfile(os.path.join(cache_path, file_name)) and
+             COMMAND_FILE_REGEX.match(file_name)]
+    for file_name in files:
+        match = COMMAND_FILE_REGEX.match(file_name)
+        command = match.group('command')
+        platform = match.group('platform')
+        get_page_for_platform(command, platform, force_download=True)
+        print('Updated cache for %s (%s)' % (command, platform))
+
+
 def main():
     parser = ArgumentParser(description="Python command line client for tldr")
+
+    parser.add_argument('-u', '--update_cache',
+                        action='store_true',
+                        help="Update the cached commands")
 
     parser.add_argument('-o', '--os',
                         nargs=1,
@@ -236,10 +256,16 @@ def main():
                         choices=['linux', 'osx', 'sunos'],
                         help="Override the operating system [linux, osx, sunos]")
 
+    options, other_options = parser.parse_known_args()
+
+    if options.update_cache:
+        update_cache()
+        return
+
     parser.add_argument(
         'command', type=str, nargs='+', help="command to lookup")
 
-    options = parser.parse_args()
+    options = parser.parse_args(other_options)
 
     for command in options.command:
         if options.os is not None:
