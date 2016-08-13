@@ -17,8 +17,8 @@ from six.moves import map
 import colorama
 colorama.init()
 
-USE_CACHE = int(os.environ.get('TLDR_USE_CACHE', '1')) > 0
-MAX_CACHE_AGE = int(os.environ.get('TLDR_MAX_CACHE_AGE', 24))
+USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
+MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
 
 COMMAND_FILE_REGEX = re.compile(r'(?P<command>^.+?)_(?P<platform>.+?)\.md$')
 
