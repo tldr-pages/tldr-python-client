@@ -126,9 +126,9 @@ def get_page_for_platform(command, platform, force_download=False):
         data = load_page_from_cache(command, platform)
     else:
         page_url = remote + "/" + platform + "/" + quote(command) + ".md"
-        data_downloaded = True
         try:
             data = urlopen(page_url).read()
+            data_downloaded = True
         except Exception:
             data = load_page_from_cache(command, platform)
             if data is None:
