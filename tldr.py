@@ -120,9 +120,9 @@ def have_recent_cache(command, platform):
         return False
 
 
-def get_page_for_platform(command, platform, force_download=False):
+def get_page_for_platform(command, platform):
     data_downloaded = False
-    if not force_download and have_recent_cache(command, platform):
+    if have_recent_cache(command, platform):
         data = load_page_from_cache(command, platform)
     else:
         page_url = remote + "/" + platform + "/" + quote(command) + ".md"
@@ -136,6 +136,12 @@ def get_page_for_platform(command, platform, force_download=False):
     if data_downloaded:
         store_page_to_cache(data, command, platform)
     return data.splitlines()
+
+
+def download_and_store_page_for_platform(command, platform):
+    page_url = remote + "/" + platform + "/" + quote(command) + ".md"
+    data = urlopen(page_url).read()
+    store_page_to_cache(data, command, platform)
 
 
 def get_platform():
@@ -238,8 +244,12 @@ def update_cache():
         match = COMMAND_FILE_REGEX.match(file_name)
         command = match.group('command')
         platform = match.group('platform')
-        get_page_for_platform(command, platform, force_download=True)
-        print('Updated cache for %s (%s)' % (command, platform))
+        try:
+            download_and_store_page_for_platform(command, platform)
+            print('Updated cache for %s (%s)' % (command, platform))
+        except Exception:
+            print('Error: Unable to get %s (%s)' % (command, platform))
+
 
 
 def main():
