@@ -114,7 +114,6 @@ def have_recent_cache(command, platform):
         cache_file_path = get_cache_file_path(command, platform)
         last_modified = datetime.fromtimestamp(os.path.getmtime(cache_file_path))
         minutes_passed = (datetime.now() - last_modified).total_seconds() / 60
-        print(minutes_passed, MAX_CACHE_AGE, minutes_passed <= MAX_CACHE_AGE)
         return minutes_passed <= MAX_CACHE_AGE
     except Exception:
         return False
