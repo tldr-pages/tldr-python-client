@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-from __future__ import unicode_literals, print_function
+from __future__ import unicode_literals, print_function, division
 import sys
 import os
 import errno
 import subprocess
 import re
 from argparse import ArgumentParser
+
+from datetime import datetime
 from termcolor import colored, cprint
 from six.moves.urllib.parse import quote
 from six.moves.urllib.request import urlopen
@@ -14,6 +16,10 @@ from six.moves import map
 # Required for Windows
 import colorama
 colorama.init()
+
+
+USE_CACHE = int(os.environ.get('TLDR_USE_CACHE', '0')) > 0
+MAX_CACHE_AGE = int(os.environ.get('TLDR_MAX_CACHE_AGE', 60))
 
 
 def get_terminal_size():
@@ -103,15 +109,32 @@ def store_page_to_cache(page, command, platform):
         pass
 
 
-def get_page_for_platform(command, platform):
-    page_url = remote + "/" + platform + "/" + quote(command) + ".md"
+def have_recent_cache(command, platform):
     try:
-        data = urlopen(page_url).read()
+        cache_file_path = get_cache_file_path(command, platform)
+        last_modified = datetime.fromtimestamp(os.path.getmtime(cache_file_path))
+        minutes_passed = (datetime.now() - last_modified).total_seconds() / 60
+        print(minutes_passed, MAX_CACHE_AGE, minutes_passed <= MAX_CACHE_AGE)
+        return minutes_passed <= MAX_CACHE_AGE
     except Exception:
+        return False
+
+
+def get_page_for_platform(command, platform):
+    data_downloaded = False
+    if have_recent_cache(command, platform):
         data = load_page_from_cache(command, platform)
-        if data is None:
-            raise
-    store_page_to_cache(data, command, platform)
+    else:
+        page_url = remote + "/" + platform + "/" + quote(command) + ".md"
+        data_downloaded = True
+        try:
+            data = urlopen(page_url).read()
+        except Exception:
+            data = load_page_from_cache(command, platform)
+            if data is None:
+                raise
+    if data_downloaded:
+        store_page_to_cache(data, command, platform)
     return data.splitlines()
 
 
