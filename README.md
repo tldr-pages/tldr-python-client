@@ -29,7 +29,7 @@ You can configure the behaviour and output of the `tldr` client by setting envir
 
 ### Cache
 * `TLDR_CACHE_ENABLED` (default is `1`):
-    * If set to `1`, the client will first try to load from cache, and fall back to fetching from the internet if the cache doesn't exist or is to old.
+    * If set to `1`, the client will first try to load from cache, and fall back to fetching from the internet if the cache doesn't exist or is too old.
     * If set to `0`, the client will fetch from the internet, and fall back to the cache if the page cannot be fetched from the internet.
 * `TLDR_CACHE_MAX_AGE` (default is `24`): maximum age of the cache in hours to be considered as valid when `TLDR_CACHE_ENABLED` is set to `1`.
 
