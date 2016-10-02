@@ -170,8 +170,8 @@ DEFAULT_COLORS = {
     'name': 'white bold',
     'description': 'white',
     'example': 'green',
-    'command': 'red on_black',
-    'parameter': 'white on_black',
+    'command': 'red',
+    'parameter': 'white',
 }
 
 LEADING_SPACES_NUM = 2
