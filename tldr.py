@@ -166,12 +166,12 @@ def get_page(command, platform=None):
 
 
 DEFAULT_COLORS = {
-    'blank': 'white on_blue',
-    'name': 'cyan on_blue bold',
-    'description': 'white on_blue',
-    'example': 'green on_blue',
-    'command': 'red on_grey',
-    'parameter': 'white on_grey',
+    'blank': 'white',
+    'name': 'white bold',
+    'description': 'white',
+    'example': 'green',
+    'command': 'red',
+    'parameter': 'white',
 }
 
 LEADING_SPACES_NUM = 2
