@@ -5,11 +5,12 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
-  - "pypy"
-  - "pypy3"
+  - "3.6"
+  - "pypy"               # Python 2.7.8
+  - "pypy3.3-5.2-alpha1" # Python 3.3.5
 matrix:
   allow_failures:
     - python: "pypy"
-    - python: "pypy3"
+    - python: "pypy3.3-5.2-alpha1"
 install: pip install -U pytest pytest-runner
 script: python setup.py ptr
