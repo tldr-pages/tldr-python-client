@@ -278,11 +278,13 @@ def main():
     options = parser.parse_args(other_options)
 
     for command in options.command:
-        if options.os is not None:
-            output(get_page(command, options.os))
-
-        else:
-            output(get_page(command))
+        try:
+            if options.os is not None:
+                output(get_page(command, options.os))
+            else:
+                output(get_page(command))
+        except Exception:
+            print("No internet connection detected. Please reconnect and try again.")
 
 
 if __name__ == "__main__":
