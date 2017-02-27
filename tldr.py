@@ -283,6 +283,8 @@ def main():
 
     options, other_options = parser.parse_known_args()
 
+    other_options = [str('-'.join(other_options))]
+
     if options.update_cache:
         update_cache()
         return
