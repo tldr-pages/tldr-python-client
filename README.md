@@ -33,6 +33,9 @@ You can configure the behaviour and output of the `tldr` client by setting envir
     * If set to `0`, the client will fetch from the internet, and fall back to the cache if the page cannot be fetched from the internet.
 * `TLDR_CACHE_MAX_AGE` (default is `24`): maximum age of the cache in hours to be considered as valid when `TLDR_CACHE_ENABLED` is set to `1`.
 
+### SSL Inspection
+* `TLDR_IGNORE_SSL=1` will disable SSL certificate inspection
+
 ### Colors
     
 Values of the `TLDR_COLOR_x` variables may consist of three parts: 

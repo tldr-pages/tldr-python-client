@@ -13,12 +13,21 @@ from six.moves.urllib.parse import quote
 from six.moves.urllib.request import urlopen
 from six.moves.urllib.error import HTTPError
 from six.moves import map
+import ssl
 # Required for Windows
 import colorama
 colorama.init()
 
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
+IGNORE_SSL    = int(os.environ.get('TLDR_IGNORE_SSL','0'))
+
+ignore_ctx = ssl.create_default_context()
+ignore_ctx .check_hostname = False
+ignore_ctx .verify_mode = ssl.CERT_NONE
+
+
+
 
 COMMAND_FILE_REGEX = re.compile(r'(?P<command>^.+?)_(?P<platform>.+?)\.md$')
 
@@ -127,7 +136,10 @@ def get_page_for_platform(command, platform):
     else:
         page_url = remote + "/" + platform + "/" + quote(command) + ".md"
         try:
-            data = urlopen(page_url).read()
+            if IGNORE_SSL:
+                data = urlopen(page_url, context=ignore_ctx).read()
+            else:
+                data = urlopen(page_url).read()
             data_downloaded = True
         except Exception:
             data = load_page_from_cache(command, platform)
@@ -140,7 +152,10 @@ def get_page_for_platform(command, platform):
 
 def download_and_store_page_for_platform(command, platform):
     page_url = remote + "/" + platform + "/" + quote(command) + ".md"
-    data = urlopen(page_url).read()
+    if IGNORE_SSL:
+        data = urlopen(page_url, context=ignore_ctx).read()
+    else:
+        data = urlopen(page_url).read()
     store_page_to_cache(data, command, platform)
 
 
