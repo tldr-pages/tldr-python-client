@@ -210,7 +210,10 @@ def output(page):
     # Need a better fancy method?
     if page is not None:
         for line in page:
-            line = line.rstrip().decode('utf-8')
+            if sys.version_info[0] == 3:
+                line = line.rstrip()
+            else:
+                line = line.rstrip().decode('utf-8')
             if len(line) < 1:
                 cprint(line.ljust(columns), *colors_of('blank'))
             elif line[0] == '#':
