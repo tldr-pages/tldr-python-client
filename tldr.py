@@ -80,7 +80,7 @@ def get_cache_file_path(command, platform):
 
 def load_page_from_cache(command, platform):
     try:
-        with open(get_cache_file_path(command, platform)) as cache_file:
+        with open(get_cache_file_path(command, platform), 'rb') as cache_file:
             cache_file_contents = cache_file.read()
         return cache_file_contents
     except Exception:
@@ -104,7 +104,7 @@ def store_page_to_cache(page, command, platform):
     try:
         cache_file_path = get_cache_file_path(command, platform)
         mkdir_p(os.path.dirname(cache_file_path))
-        with open(cache_file_path, "w") as cache_file:
+        with open(cache_file_path, "wb") as cache_file:
             cache_file.write(page)
     except Exception:
         pass
