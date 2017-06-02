@@ -161,8 +161,7 @@ def get_page(command, platform=None):
             if e.code != 404:
                 raise
 
-    print(command + " documentation is not available\n"
-          "Consider contributing Pull Request to https://github.com/tldr-pages/tldr")
+    return False
 
 
 DEFAULT_COLORS = {
@@ -277,14 +276,22 @@ def main():
 
     options = parser.parse_args(other_options)
 
-    for command in options.command:
-        try:
-            if options.os is not None:
-                output(get_page(command, options.os))
-            else:
-                output(get_page(command))
-        except Exception:
-            print("No internet connection detected. Please reconnect and try again.")
+    try:
+        result = get_page('-'.join(options.command), options.os)
+        if not result:
+            for command in options.command:
+                result = get_page(command, options.os)
+                if not result:
+                    print((
+                        "`{cmd}` documentation is not available"
+                        "Consider contributing Pull Request to https://github.com/tldr-pages/tldr"
+                    ).format(cmd=command))
+                else:
+                    output(result)
+        else:
+            output(result)
+    except Exception:
+        print("No internet connection detected. Please reconnect and try again.")
 
 
 if __name__ == "__main__":
