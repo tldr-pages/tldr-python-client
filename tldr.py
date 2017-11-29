@@ -129,7 +129,7 @@ def have_recent_cache(command, platform):
 
 def get_page_for_platform(command, platform):
     data_downloaded = False
-    if have_recent_cache(command, platform):
+    if USE_CACHE and have_recent_cache(command, platform):
         data = load_page_from_cache(command, platform)
     else:
         page_url = remote + "/" + platform + "/" + quote(command) + ".md"
