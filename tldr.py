@@ -62,7 +62,7 @@ def get_terminal_size():
 # get terminal size
 rows, columns = get_terminal_size()
 
-remote = "http://raw.github.com/tldr-pages/tldr/master/pages"
+remote = "https://raw.github.com/tldr-pages/tldr/master/pages"
 
 os_directories = {
     "linux": "linux",
