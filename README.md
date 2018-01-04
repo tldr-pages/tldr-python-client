@@ -40,7 +40,7 @@ You can configure the behaviour and output of the `tldr` client by setting envir
 * `~/.cache/tldr`
 * Previously, the cache resided in `$HOME/.tldr_cache`
 
-If you are experiencing any issues with *tldr*, deleting the cache files might resolve them.
+If you are experiencing issues with *tldr*, consider deleting the cache files before trying other measures.
 
 ### Colors
     
