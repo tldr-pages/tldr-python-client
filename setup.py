@@ -14,16 +14,13 @@ setup(
     long_description_markdown_filename='README.md',
     license='MIT',
     py_modules=['tldr'],
-    scripts=['tldr.py'],
+    scripts=['tldr', 'tldr.py'],
     install_requires=['six', 'termcolor', 'colorama'],
     tests_require=[
         'pytest-runner',
     ],
     setup_requires=setup_requires,
     use_scm_version=True,
-    entry_points={
-        'console_scripts': ['tldr = tldr:main']
-    },
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
