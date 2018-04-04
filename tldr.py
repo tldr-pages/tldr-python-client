@@ -70,10 +70,17 @@ os_directories = {
 }
 
 
+def get_cache_dir():
+    if not os.environ.get('XDG_CACHE_HOME', False):
+        if not os.environ.get('HOME', False):
+            return os.path.join(os.path.expanduser("~"), ".cache", "tldr")
+        return os.path.join(os.environ.get('HOME'), '.cache', 'tldr')
+    return os.path.join(os.environ.get('XDG_CACHE_HOME'), 'tldr')
+
+
 def get_cache_file_path(command, platform):
     cache_file_name = command + "_" + platform + ".md"
-    cache_file_path = os.path.join(
-        os.path.expanduser("~"), ".tldr_cache", cache_file_name)
+    cache_file_path = os.path.join(get_cache_dir(), cache_file_name)
     return cache_file_path
 
 
@@ -127,7 +134,7 @@ def get_page_url(platform, command, remote=None):
 
 def get_page_for_platform(command, platform, remote=None):
     data_downloaded = False
-    if have_recent_cache(command, platform):
+    if USE_CACHE and have_recent_cache(command, platform):
         data = load_page_from_cache(command, platform)
     else:
         page_url = get_page_url(platform, command, remote)
@@ -240,7 +247,7 @@ def output(page):
 
 
 def update_cache(remote=None):
-    cache_path = os.path.join(os.path.expanduser("~"), ".tldr_cache")
+    cache_path = get_cache_dir()
     if not os.path.exists(cache_path):
         return
     files = [file_name for file_name in os.listdir(cache_path)

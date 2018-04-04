@@ -33,6 +33,15 @@ You can configure the behaviour and output of the `tldr` client by setting envir
     * If set to `0`, the client will fetch from the internet, and fall back to the cache if the page cannot be fetched from the internet.
 * `TLDR_CACHE_MAX_AGE` (default is `24`): maximum age of the cache in hours to be considered as valid when `TLDR_CACHE_ENABLED` is set to `1`.
 
+#### Cache location in order of precedence
+
+* `$XDG_CACHE_HOME/tldr`
+* `$HOME/.cache/tldr`
+* `~/.cache/tldr`
+* Previously, the cache resided in `$HOME/.tldr_cache`
+
+If you are experiencing issues with *tldr*, consider deleting the cache files before trying other measures.
+
 ### Colors
     
 Values of the `TLDR_COLOR_x` variables may consist of three parts: 
