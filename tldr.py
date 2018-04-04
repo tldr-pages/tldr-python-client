@@ -17,6 +17,7 @@ from six.moves import map
 import colorama
 colorama.init()
 
+DEFAULT_REMOTE = "http://raw.github.com/tldr-pages/tldr/master/pages"
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
 
@@ -118,12 +119,18 @@ def have_recent_cache(command, platform):
         return False
 
 
-def get_page_for_platform(command, platform, remote):
+def get_page_url(platform, command, remote=None):
+    if remote is None:
+        remote = DEFAULT_REMOTE
+    return remote + "/" + platform + "/" + quote(command) + ".md"
+
+
+def get_page_for_platform(command, platform, remote=None):
     data_downloaded = False
     if have_recent_cache(command, platform):
         data = load_page_from_cache(command, platform)
     else:
-        page_url = remote + "/" + platform + "/" + quote(command) + ".md"
+        page_url = get_page_url(platform, command, remote)
         try:
             data = urlopen(page_url).read()
             data_downloaded = True
@@ -136,8 +143,8 @@ def get_page_for_platform(command, platform, remote):
     return data.splitlines()
 
 
-def download_and_store_page_for_platform(command, platform, remote):
-    page_url = remote + "/" + platform + "/" + quote(command) + ".md"
+def download_and_store_page_for_platform(command, platorm, remote=None):
+    page_url = get_page_url(platform, command, remote)
     data = urlopen(page_url).read()
     store_page_to_cache(data, command, platform)
 
@@ -148,13 +155,14 @@ def get_platform():
             return os_directories[key]
 
 
-def get_page(command, remote, platform=None):
+def get_page(command, remote=None, platform=None):
     if platform is None:
         platform = ["common", get_platform()]
-
     for _platform in platform:
+        if _platform is None:
+            continue
         try:
-            return get_page_for_platform(command, _platform)
+            return get_page_for_platform(command, _platform, remote=remote)
         except HTTPError as e:
             if e.code != 404:
                 raise
@@ -231,7 +239,7 @@ def output(page):
         [cprint(''.ljust(columns), *colors_of('blank')) for i in range(3)]
 
 
-def update_cache(remote):
+def update_cache(remote=None):
     cache_path = os.path.join(os.path.expanduser("~"), ".tldr_cache")
     if not os.path.exists(cache_path):
         return
@@ -243,10 +251,10 @@ def update_cache(remote):
         command = match.group('command')
         platform = match.group('platform')
         try:
-            download_and_store_page_for_platform(command, platform)
-            print('Updated cache for %s (%s)' % (command, platform))
+            download_and_store_page_for_platform(command, platform, remote=remote)
+            print('Updated cache for %s (%s) from %s' % (command, platform, remote))
         except Exception:
-            print('Error: Unable to get %s (%s)' % (command, platform))
+            print('Error: Unable to get %s (%s) from %s' % (command, platform, remote))
 
 
 
@@ -272,7 +280,7 @@ def main():
     options, other_options = parser.parse_known_args()
 
     if options.update_cache:
-        update_cache(options.source)
+        update_cache(remote=options.source)
         return
 
     parser.add_argument(
@@ -283,10 +291,11 @@ def main():
     for command in options.command:
         try:
             if options.os is not None:
-                output(get_page(command, options.source, options.os))
+                output(get_page(command, remote=options.source, platform=options.os))
             else:
                 output(get_page(command))
         except Exception:
+            raise
             print("No internet connection detected. Please reconnect and try again.")
 
 
