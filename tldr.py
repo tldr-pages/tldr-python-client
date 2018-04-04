@@ -295,7 +295,6 @@ def main():
             else:
                 output(get_page(command))
         except Exception:
-            raise
             print("No internet connection detected. Please reconnect and try again.")
 
 
