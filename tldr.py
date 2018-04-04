@@ -273,7 +273,7 @@ def main():
                         help="Override the operating system [linux, osx, sunos]")
 
     parser.add_argument('-s', '--source',
-                        default="http://raw.github.com/tldr-pages/tldr/master/pages",
+                        default=DEFAULT_REMOTE,
                         type=str,
                         help="Override the default page source")
 
