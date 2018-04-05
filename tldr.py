@@ -17,6 +17,7 @@ from six.moves import map
 import colorama
 colorama.init()
 
+DEFAULT_REMOTE = "http://raw.github.com/tldr-pages/tldr/master/pages"
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
 
@@ -62,8 +63,6 @@ def get_terminal_size():
 # get terminal size
 rows, columns = get_terminal_size()
 
-remote = "http://raw.github.com/tldr-pages/tldr/master/pages"
-
 os_directories = {
     "linux": "linux",
     "darwin": "osx",
@@ -71,10 +70,17 @@ os_directories = {
 }
 
 
+def get_cache_dir():
+    if not os.environ.get('XDG_CACHE_HOME', False):
+        if not os.environ.get('HOME', False):
+            return os.path.join(os.path.expanduser("~"), ".cache", "tldr")
+        return os.path.join(os.environ.get('HOME'), '.cache', 'tldr')
+    return os.path.join(os.environ.get('XDG_CACHE_HOME'), 'tldr')
+
+
 def get_cache_file_path(command, platform):
     cache_file_name = command + "_" + platform + ".md"
-    cache_file_path = os.path.join(
-        os.path.expanduser("~"), ".tldr_cache", cache_file_name)
+    cache_file_path = os.path.join(get_cache_dir(), cache_file_name)
     return cache_file_path
 
 
@@ -120,12 +126,18 @@ def have_recent_cache(command, platform):
         return False
 
 
-def get_page_for_platform(command, platform):
+def get_page_url(platform, command, remote=None):
+    if remote is None:
+        remote = DEFAULT_REMOTE
+    return remote + "/" + platform + "/" + quote(command) + ".md"
+
+
+def get_page_for_platform(command, platform, remote=None):
     data_downloaded = False
-    if have_recent_cache(command, platform):
+    if USE_CACHE and have_recent_cache(command, platform):
         data = load_page_from_cache(command, platform)
     else:
-        page_url = remote + "/" + platform + "/" + quote(command) + ".md"
+        page_url = get_page_url(platform, command, remote)
         try:
             data = urlopen(page_url).read()
             data_downloaded = True
@@ -138,8 +150,8 @@ def get_page_for_platform(command, platform):
     return data.splitlines()
 
 
-def download_and_store_page_for_platform(command, platform):
-    page_url = remote + "/" + platform + "/" + quote(command) + ".md"
+def download_and_store_page_for_platform(command, platorm, remote=None):
+    page_url = get_page_url(platform, command, remote)
     data = urlopen(page_url).read()
     store_page_to_cache(data, command, platform)
 
@@ -150,13 +162,14 @@ def get_platform():
             return os_directories[key]
 
 
-def get_page(command, platform=None):
+def get_page(command, remote=None, platform=None):
     if platform is None:
         platform = ["common", get_platform()]
-
     for _platform in platform:
+        if _platform is None:
+            continue
         try:
-            return get_page_for_platform(command, _platform)
+            return get_page_for_platform(command, _platform, remote=remote)
         except HTTPError as e:
             if e.code != 404:
                 raise
@@ -232,8 +245,8 @@ def output(page):
         [cprint(''.ljust(columns), *colors_of('blank')) for i in range(3)]
 
 
-def update_cache():
-    cache_path = os.path.join(os.path.expanduser("~"), ".tldr_cache")
+def update_cache(remote=None):
+    cache_path = get_cache_dir()
     if not os.path.exists(cache_path):
         return
     files = [file_name for file_name in os.listdir(cache_path)
@@ -244,10 +257,10 @@ def update_cache():
         command = match.group('command')
         platform = match.group('platform')
         try:
-            download_and_store_page_for_platform(command, platform)
-            print('Updated cache for %s (%s)' % (command, platform))
+            download_and_store_page_for_platform(command, platform, remote=remote)
+            print('Updated cache for %s (%s) from %s' % (command, platform, remote))
         except Exception:
-            print('Error: Unable to get %s (%s)' % (command, platform))
+            print('Error: Unable to get %s (%s) from %s' % (command, platform, remote))
 
 
 
@@ -265,10 +278,15 @@ def main():
                         choices=['linux', 'osx', 'sunos'],
                         help="Override the operating system [linux, osx, sunos]")
 
+    parser.add_argument('-s', '--source',
+                        default=DEFAULT_REMOTE,
+                        type=str,
+                        help="Override the default page source")
+
     options, other_options = parser.parse_known_args()
 
     if options.update_cache:
-        update_cache()
+        update_cache(remote=options.source)
         return
 
     parser.add_argument(
@@ -277,10 +295,10 @@ def main():
     options = parser.parse_args(other_options)
 
     try:
-        result = get_page('-'.join(options.command), options.os)
+        result = get_page('-'.join(options.command), platform=options.os, remote=options.source)
         if not result:
             for command in options.command:
-                result = get_page(command, options.os)
+                result = get_page(command, platform=options.os, remote=options.source)
                 if not result:
                     print((
                         "`{cmd}` documentation is not available"
