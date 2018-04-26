@@ -9,7 +9,13 @@ A `Python` command line client for [tldr](https://github.com/tldr-pages/tldr).
 
 ## Installation
 
+### from PyPI
+
     $ pip install tldr
+
+### from Fedora packages repository
+
+    $ sudo dnf install tldr
 
 ## Usage
 
