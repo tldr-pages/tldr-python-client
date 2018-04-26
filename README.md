@@ -12,6 +12,10 @@ A `Python` command line client for [tldr](https://github.com/tldr-pages/tldr).
 ### from PyPI
 
     $ pip install tldr
+    
+### from Arch Linux repository
+
+    $ sudo pacman -S tldr
 
 ### from Fedora packages repository
 
