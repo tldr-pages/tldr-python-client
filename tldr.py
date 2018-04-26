@@ -15,7 +15,6 @@ from six.moves.urllib.error import HTTPError
 from six.moves import map
 # Required for Windows
 import colorama
-colorama.init(strip=False)
 
 DEFAULT_REMOTE = "http://raw.github.com/tldr-pages/tldr/master/pages"
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
@@ -283,7 +282,15 @@ def main():
                         type=str,
                         help="Override the default page source")
 
+    parser.add_argument('-c', '--color',
+                        default=None,
+                        action='store_const',
+                        const=False,
+                        help="Override color stripping")
+
     options, other_options = parser.parse_known_args()
+
+    colorama.init(strip=options.color)
 
     if options.update_cache:
         update_cache(remote=options.source)
