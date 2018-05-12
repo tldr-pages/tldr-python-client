@@ -150,7 +150,7 @@ def get_page_for_platform(command, platform, remote=None):
     return data.splitlines()
 
 
-def download_and_store_page_for_platform(command, platorm, remote=None):
+def download_and_store_page_for_platform(command, platform, remote=None):
     page_url = get_page_url(platform, command, remote)
     data = urlopen(page_url).read()
     store_page_to_cache(data, command, platform)
