@@ -17,7 +17,7 @@ from six.moves import map
 import colorama
 colorama.init()
 
-DEFAULT_REMOTE = "http://raw.github.com/tldr-pages/tldr/master/pages"
+DEFAULT_REMOTE = "https://raw.github.com/tldr-pages/tldr/master/pages"
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
 
@@ -275,15 +275,15 @@ def main():
                         nargs=1,
                         default=None,
                         type=str,
-                        choices=['linux', 'osx', 'sunos'],
-                        help="Override the operating system [linux, osx, sunos]")
+                        choices=['linux', 'osx', 'sunos', 'windows'],
+                        help="Override the operating system [linux, osx, sunos, windows]")
 
     parser.add_argument('-s', '--source',
                         default=DEFAULT_REMOTE,
                         type=str,
                         help="Override the default page source")
 
-    options, other_options = parser.parse_known_args()
+    options, rest  = parser.parse_known_args()
 
     if options.update_cache:
         update_cache(remote=options.source)
@@ -292,16 +292,16 @@ def main():
     parser.add_argument(
         'command', type=str, nargs='+', help="command to lookup")
 
-    options = parser.parse_args(other_options)
+    rest = parser.parse_args(rest)
 
     try:
-        result = get_page('-'.join(options.command), platform=options.os, remote=options.source)
+        result = get_page('-'.join(rest.command), platform=options.os, remote=options.source)
         if not result:
-            for command in options.command:
+            for command in rest.command:
                 result = get_page(command, platform=options.os, remote=options.source)
                 if not result:
                     print((
-                        "`{cmd}` documentation is not available"
+                        "`{cmd}` documentation is not available. "
                         "Consider contributing Pull Request to https://github.com/tldr-pages/tldr"
                     ).format(cmd=command))
                 else:
