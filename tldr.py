@@ -274,8 +274,8 @@ def main():
                         nargs=1,
                         default=None,
                         type=str,
-                        choices=['linux', 'osx', 'sunos', 'windows'],
-                        help="Override the operating system [linux, osx, sunos, windows]")
+                        choices=['linux', 'osx', 'sunos'],
+                        help="Override the operating system [linux, osx, sunos]")
 
     parser.add_argument('-s', '--source',
                         default=DEFAULT_REMOTE,
