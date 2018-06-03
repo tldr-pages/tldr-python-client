@@ -288,6 +288,12 @@ def main():
                         const=False,
                         help="Override color stripping")
 
+    parser.add_argument('-r', '--render',
+                        default=False,
+                        action='store_true',
+                        help='Render local markdown files'
+                        )
+
     options, rest = parser.parse_known_args()
 
     colorama.init(strip=options.color)
@@ -301,22 +307,28 @@ def main():
 
     rest = parser.parse_args(rest)
 
-    try:
-        result = get_page('-'.join(rest.command), platform=options.os, remote=options.source)
-        if not result:
-            for command in rest.command:
-                result = get_page(command, platform=options.os, remote=options.source)
-                if not result:
-                    print((
-                        "`{cmd}` documentation is not available. "
-                        "Consider contributing Pull Request to https://github.com/tldr-pages/tldr"
-                    ).format(cmd=command))
-                else:
-                    output(result)
-        else:
-            output(result)
-    except Exception:
-        print("No internet connection detected. Please reconnect and try again.")
+    if options.render:
+        for command in rest.command:
+            if os.path.exists(command):
+                with open(command, encoding='utf-8') as open_file:
+                    output(open_file.read().encode('utf-8').splitlines())
+    else:
+        try:
+            result = get_page('-'.join(rest.command), platform=options.os, remote=options.source)
+            if not result:
+                for command in rest.command:
+                    result = get_page(command, platform=options.os, remote=options.source)
+                    if not result:
+                        print((
+                            "`{cmd}` documentation is not available. "
+                            "Consider contributing Pull Request to https://github.com/tldr-pages/tldr"
+                        ).format(cmd=command))
+                    else:
+                        output(result)
+            else:
+                output(result)
+        except Exception:
+            print("No internet connection detected. Please reconnect and try again.")
 
 
 if __name__ == "__main__":
