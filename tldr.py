@@ -16,7 +16,7 @@ from six.moves import map
 # Required for Windows
 import colorama
 
-DEFAULT_REMOTE = "http://raw.github.com/tldr-pages/tldr/master/pages"
+DEFAULT_REMOTE = "https://raw.github.com/tldr-pages/tldr/master/pages"
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
 
