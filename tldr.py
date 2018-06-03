@@ -288,7 +288,7 @@ def main():
                         const=False,
                         help="Override color stripping")
 
-    options, other_options = parser.parse_known_args()
+    options, rest = parser.parse_known_args()
 
     colorama.init(strip=options.color)
 
@@ -299,16 +299,16 @@ def main():
     parser.add_argument(
         'command', type=str, nargs='+', help="command to lookup")
 
-    options = parser.parse_args(other_options)
+    rest = parser.parse_args(rest)
 
     try:
-        result = get_page('-'.join(options.command), platform=options.os, remote=options.source)
+        result = get_page('-'.join(rest.command), platform=options.os, remote=options.source)
         if not result:
-            for command in options.command:
+            for command in rest.command:
                 result = get_page(command, platform=options.os, remote=options.source)
                 if not result:
                     print((
-                        "`{cmd}` documentation is not available"
+                        "`{cmd}` documentation is not available. "
                         "Consider contributing Pull Request to https://github.com/tldr-pages/tldr"
                     ).format(cmd=command))
                 else:
