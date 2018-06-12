@@ -6,9 +6,11 @@ import errno
 import subprocess
 import re
 from argparse import ArgumentParser
+from zipfile import ZipFile
 
 from datetime import datetime
 from termcolor import colored, cprint
+from six import BytesIO
 from six.moves.urllib.parse import quote
 from six.moves.urllib.request import urlopen
 from six.moves.urllib.error import HTTPError
@@ -16,6 +18,7 @@ from six.moves import map
 # Required for Windows
 import colorama
 
+DOWNLOAD_CACHE = 'https://github.com/tldr-pages/tldr-pages.github.io/raw/master/assets/tldr.zip'
 DEFAULT_REMOTE = "https://raw.githubusercontent.com/tldr-pages/tldr/master/pages"
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
@@ -262,6 +265,24 @@ def update_cache(remote=None):
             print('Error: Unable to get %s (%s) from %s' % (command, platform, remote))
 
 
+def download_cache():
+    cache_path = get_cache_dir()
+    if not os.path.exists(cache_path):
+        return
+    try:
+        req = urlopen(DOWNLOAD_CACHE)
+        zipfile = ZipFile(BytesIO(req.read()))
+        pattern = re.compile(r'pages/(.+)/(.+)\.md')
+        cached = 0
+        for entry in zipfile.namelist():
+            match = pattern.match(entry)
+            if match:
+                store_page_to_cache(zipfile.read(entry), match.group(2), match.group(1))
+                cached += 1
+        print("Updated cache for {:d} entries".format(cached))
+    except Exception:
+        print("Error: Unable to update cache from tldr site")
+
 
 def main():
     parser = ArgumentParser(description="Python command line client for tldr")
@@ -269,6 +290,10 @@ def main():
     parser.add_argument('-u', '--update_cache',
                         action='store_true',
                         help="Update the cached commands")
+
+    parser.add_argument('--download_cache',
+                        action='store_true',
+                        help='Downloads and caches all tldr pages from tldr site')
 
     parser.add_argument('-o', '--os',
                         nargs=1,
@@ -297,6 +322,10 @@ def main():
     options, rest = parser.parse_known_args()
 
     colorama.init(strip=options.color)
+
+    if options.download_cache:
+        download_cache()
+        return
 
     if options.update_cache:
         update_cache(remote=options.source)
