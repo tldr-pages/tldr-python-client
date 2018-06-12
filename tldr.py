@@ -18,10 +18,10 @@ from six.moves import map
 # Required for Windows
 import colorama
 
-DOWNLOAD_CACHE = 'https://github.com/tldr-pages/tldr-pages.github.io/raw/master/assets/tldr.zip'
 DEFAULT_REMOTE = "https://raw.githubusercontent.com/tldr-pages/tldr/master/pages"
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
+DOWNLOAD_CACHE_LOCATION = 'https://tldr-pages.github.io/assets/tldr.zip'
 
 COMMAND_FILE_REGEX = re.compile(r'(?P<command>^.+?)_(?P<platform>.+?)\.md$')
 
@@ -270,7 +270,7 @@ def download_cache():
     if not os.path.exists(cache_path):
         return
     try:
-        req = urlopen(DOWNLOAD_CACHE)
+        req = urlopen(DOWNLOAD_CACHE_LOCATION)
         zipfile = ZipFile(BytesIO(req.read()))
         pattern = re.compile(r'pages/(.+)/(.+)\.md')
         cached = 0
