@@ -2,16 +2,17 @@ sudo: false
 language: python
 python:
   - "2.7"
-  - "3.3"
   - "3.4"
   - "3.5"
   - "3.6"
+  - "dev"                # Python 3.7
   - "pypy"               # Python 2.7.8
   - "pypy3.3-5.2-alpha1" # Python 3.3.5
 matrix:
   allow_failures:
+    - python: "dev"
     - python: "pypy"
     - python: "pypy3.3-5.2-alpha1"
 install: pip install -U pytest pytest-runner
-script: python setup.py ptr
+script: python setup.py pytest
 
