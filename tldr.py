@@ -68,7 +68,8 @@ rows, columns = get_terminal_size()
 os_directories = {
     "linux": "linux",
     "darwin": "osx",
-    "sunos": "sunos"
+    "sunos": "sunos",
+    "win32": "windows",
 }
 
 
