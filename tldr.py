@@ -189,6 +189,13 @@ DEFAULT_COLORS = {
     'parameter': 'white',
 }
 
+ACCEPTED_COLORS = [
+    'blue', 'green', 'yellow', 'cyan', 'magenta', 'white',
+    'grey', 'red', 'on_blue', 'on_cyan', 'on_magenta', 'on_white',
+    'on_grey', 'on_yellow', 'on_red', 'on_green', 'reverse',
+    'blink', 'dark', 'concealed', 'underline', 'bold'
+]
+
 LEADING_SPACES_NUM = 2
 
 command_splitter = re.compile(r'(?P<param>{{.+?}})')
@@ -197,7 +204,11 @@ param_regex = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
 def colors_of(key):
     env_key = 'TLDR_COLOR_%s' % key.upper()
-    values = os.environ.get(env_key, '').strip() or DEFAULT_COLORS[key]
+    user_value = os.environ.get(env_key, '').strip()
+    if user_value and user_value not in ACCEPTED_COLORS:
+        # you can put a warning statement here, but it will print a lot
+        user_value = None
+    values = user_value or DEFAULT_COLORS[key]
     values = values.split()
     return (
         values[0] if len(values) > 0 else None,
