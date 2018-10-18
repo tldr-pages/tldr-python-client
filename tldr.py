@@ -263,7 +263,7 @@ def update_cache(remote=None):
             download_and_store_page_for_platform(command, platform, remote=remote)
             print('Updated cache for %s (%s) from %s' % (command, platform, remote))
         except Exception:
-            print('Error: Unable to get %s (%s) from %s' % (command, platform, remote))
+            sys.exit('Error: Unable to get %s (%s) from %s' % (command, platform, remote))
 
 
 def download_cache():
@@ -282,7 +282,7 @@ def download_cache():
                 cached += 1
         print("Updated cache for {:d} entries".format(cached))
     except Exception:
-        print("Error: Unable to update cache from tldr site")
+        sys.exit("Error: Unable to update cache from tldr site")
 
 
 def main():
@@ -349,7 +349,7 @@ def main():
                 for command in rest.command:
                     result = get_page(command, platform=options.os, remote=options.source)
                     if not result:
-                        print((
+                        sys.exit((
                             "`{cmd}` documentation is not available. "
                             "Consider contributing Pull Request to https://github.com/tldr-pages/tldr"
                         ).format(cmd=command))
@@ -358,7 +358,7 @@ def main():
             else:
                 output(result)
         except Exception:
-            print("No internet connection detected. Please reconnect and try again.")
+            sys.exit("No internet connection detected. Please reconnect and try again.")
 
 
 if __name__ == "__main__":
