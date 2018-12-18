@@ -189,6 +189,8 @@ DEFAULT_COLORS = {
     'parameter': 'white',
 }
 
+# See more details in the README:
+# https://github.com/tldr-pages/tldr-python-client#colors
 ACCEPTED_COLORS = [
     'blue', 'green', 'yellow', 'cyan', 'magenta', 'white',
     'grey', 'red', 'on_blue', 'on_cyan', 'on_magenta', 'on_white',
