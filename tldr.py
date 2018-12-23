@@ -346,20 +346,23 @@ def main():
         try:
             result = get_page('-'.join(rest.command), platform=options.os, remote=options.source)
             if not result:
+                errors_found = False
                 for command in rest.command:
                     result = get_page(command, platform=options.os, remote=options.source)
                     if not result:
-                        sys.exit((
+                        errors_found = True
+                        print((
                             "`{cmd}` documentation is not available. "
                             "Consider contributing Pull Request to https://github.com/tldr-pages/tldr"
-                        ).format(cmd=command))
+                        ).format(cmd=command), file=sys.stderr)
                     else:
                         output(result)
             else:
                 output(result)
         except Exception:
             sys.exit("No internet connection detected. Please reconnect and try again.")
-
+        if errors_found:
+            sys.exit(1)
 
 if __name__ == "__main__":
     main()
