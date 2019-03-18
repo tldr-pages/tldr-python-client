@@ -167,7 +167,7 @@ def get_platform():
 
 def get_page(command, remote=None, platform=None):
     if platform is None:
-        platform = ["common", get_platform()]
+        platform = [get_platform(), "common"]
     for _platform in platform:
         if _platform is None:
             continue
@@ -286,7 +286,7 @@ def download_cache():
 
 
 def main():
-    parser = ArgumentParser(description="Python command line client for tldr")
+    parser = ArgumentParser(prog="tldr", description="Python command line client for tldr")
 
     parser.add_argument('-u', '--update_cache',
                         action='store_true',
@@ -296,12 +296,13 @@ def main():
                         action='store_true',
                         help='Downloads and caches all tldr pages from tldr site')
 
-    parser.add_argument('-o', '--os',
+    parser.add_argument('-p', '--platform',
                         nargs=1,
                         default=None,
                         type=str,
-                        choices=['linux', 'osx', 'sunos', 'windows'],
-                        help="Override the operating system [linux, osx, sunos, windows]")
+                        choices=['linux', 'osx', 'sunos', 'windows', 'common'],
+                        metavar='PLATFORM',
+                        help="Override the operating system [linux, osx, sunos, windows, common]")
 
     parser.add_argument('-s', '--source',
                         default=DEFAULT_REMOTE,
@@ -335,6 +336,10 @@ def main():
     parser.add_argument(
         'command', type=str, nargs='+', help="command to lookup")
 
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
     rest = parser.parse_args(rest)
 
     if options.render:
@@ -344,11 +349,11 @@ def main():
                     output(open_file.read().encode('utf-8').splitlines())
     else:
         try:
-            result = get_page('-'.join(rest.command), platform=options.os, remote=options.source)
+            result = get_page('-'.join(rest.command), platform=options.platform, remote=options.source)
             if not result:
                 errors_found = False
                 for command in rest.command:
-                    result = get_page(command, platform=options.os, remote=options.source)
+                    result = get_page(command, platform=options.platform, remote=options.source)
                     if not result:
                         errors_found = True
                         print((
@@ -361,8 +366,6 @@ def main():
                 output(result)
         except Exception:
             sys.exit("No internet connection detected. Please reconnect and try again.")
-        if errors_found:
-            sys.exit(1)
 
 if __name__ == "__main__":
     main()
