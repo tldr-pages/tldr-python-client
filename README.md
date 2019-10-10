@@ -1,4 +1,6 @@
 # tldr-python-client
+[![img](https://res.cloudinary.com/teepublic/image/private/s--OJtGAf93--/t_Preview/b_rgb:191919,c_limit,f_jpg,h_630,q_90,w_630/v1520372681/production/designs/2436027_0.jpg )
+
 
 [![PyPI Release](https://img.shields.io/pypi/v/tldr.svg)](https://pypi.python.org/pypi/tldr)
 [![Build Status](https://travis-ci.org/tldr-pages/tldr-python-client.svg)](https://travis-ci.org/tldr-pages/tldr-python-client)
