@@ -15,7 +15,7 @@ setup(
     license='MIT',
     py_modules=['tldr'],
     scripts=['tldr', 'tldr.py'],
-    install_requires=['six', 'termcolor', 'colorama'],
+    install_requires=['six', 'termcolor', 'colorama', 'requests'],
     tests_require=[
         'pytest-runner',
     ],

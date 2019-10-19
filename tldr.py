@@ -10,6 +10,9 @@ from zipfile import ZipFile
 
 from datetime import datetime
 from termcolor import colored, cprint
+
+import requests
+
 from six import BytesIO
 from six.moves.urllib.parse import quote
 from six.moves.urllib.request import urlopen
@@ -284,8 +287,8 @@ def download_cache():
     if not os.path.exists(cache_path):
         return
     try:
-        req = urlopen(DOWNLOAD_CACHE_LOCATION)
-        zipfile = ZipFile(BytesIO(req.read()))
+        req = requests.get(DOWNLOAD_CACHE_LOCATION)
+        zipfile = ZipFile(BytesIO(req.content))
         pattern = re.compile(r'pages/(.+)/(.+)\.md')
         cached = 0
         for entry in zipfile.namelist():
