@@ -11,19 +11,19 @@ A `Python` command line client for [tldr](https://github.com/tldr-pages/tldr).
 
 ### from PyPI
 
-    $ pip install tldr
+    pip install tldr
     
 ### from Arch Linux repository
 
-    $ sudo pacman -S tldr
+    sudo pacman -S tldr
 
 ### from Fedora packages repository
 
-    $ sudo dnf install tldr
+    sudo dnf install tldr
 
 ## Usage
 
-* `tldr <command>`
+    tldr <command>
 
 ## Configuration
 You can configure the behaviour and output of the `tldr` client by setting environment variables. For example, in the `.bashrc` file:
