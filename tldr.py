@@ -18,10 +18,16 @@ from six.moves import map
 # Required for Windows
 import colorama
 
-DEFAULT_REMOTE = "https://raw.githubusercontent.com/tldr-pages/tldr/master/pages"
+DEFAULT_REMOTE = os.environ.get(
+    'TLDR_REMOTE_SOURCE',
+    'https://raw.githubusercontent.com/tldr-pages/tldr/master/pages'
+)
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
-DOWNLOAD_CACHE_LOCATION = 'https://tldr-pages.github.io/assets/tldr.zip'
+DOWNLOAD_CACHE_LOCATION = os.environ.get(
+    'TLDR_REMOTE_CACHE',
+    'https://tldr-pages.github.io/assets/tldr.zip'
+)
 
 COMMAND_FILE_REGEX = re.compile(r'(?P<command>^.+?)_(?P<platform>.+?)\.md$')
 
