@@ -301,7 +301,7 @@ def download_cache():
 def main():
     parser = ArgumentParser(prog="tldr", description="Python command line client for tldr")
 
-    parser.add_argument('-u', '--update_cache',
+    parser.add_argument('-u', '--update',
                         action='store_true',
                         help="Update the cached commands")
 
@@ -342,7 +342,7 @@ def main():
         download_cache()
         return
 
-    if options.update_cache:
+    if options.update:
         update_cache(remote=options.source)
         return
 
