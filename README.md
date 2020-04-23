@@ -69,7 +69,7 @@ Values of background color and additional effect may be omitted:
 ## Remote source
 
 If you wish to use your own instance of the tldr pages instead of the default repository, you
-can either use the `--source` flag whne using TLDR or specify the `TLDR_REMOTE_*` environment variables:
+can either use the `--source` flag when using tldr or specify the `TLDR_REMOTE_*` environment variables:
 
 * `TLDR_REMOTE_SOURCE` to control where to get individual pages from (defaults to `https://raw.githubusercontent.com/tldr-pages/tldr/master/pages`)
 * `TLDR_REMOTE_CACHE` to control where to pull a zip of all pages from (defaults to `https://tldr-pages.github.io/assets/tldr.zip`)
