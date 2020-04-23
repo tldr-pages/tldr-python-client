@@ -66,7 +66,7 @@ Values of background color and additional effect may be omitted:
 * `TLDR_COLOR_NAME="cyan dark"` for dark cyan text on default system background color
 * `TLDR_COLOR_PARAMETER="red on_yellow underline"` for underlined red text on yellow background
 
-## Remote Source
+## Remote source
 
 If you wish to use your own instance of the tldr pages instead of the default repository, you
 can either use the `--source` flag whne using TLDR or specify the `TLDR_REMOTE_*` environment variables:
