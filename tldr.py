@@ -19,7 +19,7 @@ from six.moves import map
 import colorama
 
 DEFAULT_REMOTE = os.environ.get(
-    'TLDR_REMOTE_SOURCE',
+    'TLDR_SOURCE',
     'https://raw.githubusercontent.com/tldr-pages/tldr/master/pages'
 )
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
