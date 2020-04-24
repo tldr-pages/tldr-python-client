@@ -165,9 +165,17 @@ def get_platform():
             return os_directories[key]
 
 
+def get_platform_list():
+    platforms = ['common'] + list(os_directories.values())
+    current_platform = get_platform()
+    platforms.remove(current_platform)
+    platforms.insert(0, current_platform)
+    return platforms
+
+
 def get_page(command, remote=None, platform=None):
     if platform is None:
-        platform = [get_platform(), "common"]
+        platform = get_platform_list()
     for _platform in platform:
         if _platform is None:
             continue
@@ -362,23 +370,22 @@ def main():
                     output(open_file.read().encode('utf-8').splitlines())
     else:
         try:
-            result = get_page('-'.join(rest.command), platform=options.platform, remote=options.source)
+            command = '-'.join(rest.command)
+            result = get_page(
+                command,
+                platform=options.platform,
+                remote=options.source
+            )
             if not result:
-                errors_found = False
-                for command in rest.command:
-                    result = get_page(command, platform=options.platform, remote=options.source)
-                    if not result:
-                        errors_found = True
-                        print((
-                            "`{cmd}` documentation is not available. "
-                            "Consider contributing Pull Request to https://github.com/tldr-pages/tldr"
-                        ).format(cmd=command), file=sys.stderr)
-                    else:
-                        output(result)
+                print((
+                    "`{cmd}` documentation is not available. "
+                    "Consider contributing Pull Request to https://github.com/tldr-pages/tldr"
+                ).format(cmd=command), file=sys.stderr)
             else:
                 output(result)
         except Exception:
             sys.exit("No internet connection detected. Please reconnect and try again.")
+
 
 if __name__ == "__main__":
     main()
