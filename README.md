@@ -36,8 +36,8 @@ You can configure the behaviour and output of the `tldr` client by setting envir
     export TLDR_COLOR_PARAMETER="white"
     export TLDR_CACHE_ENABLED=1
     export TLDR_CACHE_MAX_AGE=720
-    export TLDR_SOURCE="https://raw.githubusercontent.com/tldr-pages/tldr/master/pages"
-    export TLDR_REMOTE_CACHE="https://tldr-pages.github.io/assets/tldr.zip"
+    export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/master/pages"
+    export TLDR_DOWNLOAD_CACHE_LOCATION="https://tldr-pages.github.io/assets/tldr.zip"
 
 ### Cache
 * `TLDR_CACHE_ENABLED` (default is `1`):
@@ -71,5 +71,5 @@ Values of background color and additional effect may be omitted:
 If you wish to use your own instance of the tldr pages instead of the default repository, you
 can either use the `--source` flag when using tldr or by specifying the following environment variables:
 
-* `TLDR_SOURCE` to control where to get individual pages from (defaults to `https://raw.githubusercontent.com/tldr-pages/tldr/master/pages`)
-* `TLDR_REMOTE_CACHE` to control where to pull a zip of all pages from (defaults to `https://tldr-pages.github.io/assets/tldr.zip`)
+* `TLDR_PAGES_SOURCE_LOCATION` to control where to get individual pages from (defaults to `https://raw.githubusercontent.com/tldr-pages/tldr/master/pages`)
+* `TLDR_DOWNLOAD_CACHE_LOCATION` to control where to pull a zip of all pages from (defaults to `https://tldr-pages.github.io/assets/tldr.zip`)

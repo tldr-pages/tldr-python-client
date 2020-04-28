@@ -18,16 +18,16 @@ from six.moves import map
 # Required for Windows
 import colorama
 
-DEFAULT_REMOTE = os.environ.get(
-    'TLDR_SOURCE',
+PAGES_SOURCE_LOCATION = os.environ.get(
+    'TLDR_PAGES_SOURCE_LOCATION',
     'https://raw.githubusercontent.com/tldr-pages/tldr/master/pages'
+)
+DOWNLOAD_CACHE_LOCATION = os.environ.get(
+    'TLDR_DOWNLOAD_CACHE_LOCATION',
+    'https://tldr-pages.github.io/assets/tldr.zip'
 )
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
-DOWNLOAD_CACHE_LOCATION = os.environ.get(
-    'TLDR_REMOTE_CACHE',
-    'https://tldr-pages.github.io/assets/tldr.zip'
-)
 
 COMMAND_FILE_REGEX = re.compile(r'(?P<command>^.+?)_(?P<platform>.+?)\.md$')
 
@@ -137,7 +137,7 @@ def have_recent_cache(command, platform):
 
 def get_page_url(platform, command, remote=None):
     if remote is None:
-        remote = DEFAULT_REMOTE
+        remote = PAGES_SOURCE_LOCATION
     return remote + "/" + platform + "/" + quote(command) + ".md"
 
 
@@ -324,7 +324,7 @@ def main():
                         help="Override the operating system [linux, osx, sunos, windows, common]")
 
     parser.add_argument('-s', '--source',
-                        default=DEFAULT_REMOTE,
+                        default=PAGES_SOURCE_LOCATION,
                         type=str,
                         help="Override the default page source")
 
