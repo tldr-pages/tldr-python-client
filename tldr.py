@@ -365,4 +365,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print('\nAbort!')
+        print('\nExited on keyboard interrupt.')
