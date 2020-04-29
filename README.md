@@ -71,5 +71,8 @@ Values of background color and additional effect may be omitted:
 If you wish to use your own instance of the tldr pages instead of the default repository, you
 can either use the `--source` flag when using tldr or by specifying the following environment variables:
 
-* `TLDR_PAGES_SOURCE_LOCATION` to control where to get individual pages from (defaults to `https://raw.githubusercontent.com/tldr-pages/tldr/master/pages`)
-* `TLDR_DOWNLOAD_CACHE_LOCATION` to control where to pull a zip of all pages from (defaults to `https://tldr-pages.github.io/assets/tldr.zip`)
+* `TLDR_PAGES_SOURCE_LOCATION` to control where to get individual pages from
+  * defaults to `https://raw.githubusercontent.com/tldr-pages/tldr/master/pages`
+  * it can also point to local directory using `file:///path/to/directory`
+* `TLDR_DOWNLOAD_CACHE_LOCATION` to control where to pull a zip of all pages from
+  * defaults to `https://tldr-pages.github.io/assets/tldr.zip`
