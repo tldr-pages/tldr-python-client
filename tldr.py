@@ -395,4 +395,7 @@ def main():
             sys.exit("No internet connection detected. Please reconnect and try again.")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('\nExited on keyboard interrupt.')
