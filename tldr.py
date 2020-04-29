@@ -13,7 +13,7 @@ from termcolor import colored, cprint
 from six import BytesIO
 from six.moves.urllib.parse import quote
 from six.moves.urllib.request import urlopen
-from six.moves.urllib.error import HTTPError
+from six.moves.urllib.error import HTTPError, URLError
 from six.moves import map
 # Required for Windows
 import colorama
@@ -21,7 +21,7 @@ import colorama
 PAGES_SOURCE_LOCATION = os.environ.get(
     'TLDR_PAGES_SOURCE_LOCATION',
     'https://raw.githubusercontent.com/tldr-pages/tldr/master/pages'
-)
+).rstrip('/')
 DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'TLDR_DOWNLOAD_CACHE_LOCATION',
     'https://tldr-pages.github.io/assets/tldr.zip'
@@ -181,6 +181,9 @@ def get_page(command, remote=None, platform=None):
             return get_page_for_platform(command, _platform, remote=remote)
         except HTTPError as e:
             if e.code != 404:
+                raise
+        except URLError:
+            if not PAGES_SOURCE_LOCATION.startswith('file://'):
                 raise
 
     return False
