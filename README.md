@@ -12,7 +12,7 @@ A `Python` command line client for [tldr](https://github.com/tldr-pages/tldr).
 ### from PyPI
 
     pip install tldr
-    
+
 ### from Arch Linux repository
 
     sudo pacman -S tldr
@@ -36,6 +36,8 @@ You can configure the behaviour and output of the `tldr` client by setting envir
     export TLDR_COLOR_PARAMETER="white"
     export TLDR_CACHE_ENABLED=1
     export TLDR_CACHE_MAX_AGE=720
+    export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/master/pages"
+    export TLDR_DOWNLOAD_CACHE_LOCATION="https://tldr-pages.github.io/assets/tldr.zip"
 
 ### Cache
 * `TLDR_CACHE_ENABLED` (default is `1`):
@@ -53,13 +55,24 @@ You can configure the behaviour and output of the `tldr` client by setting envir
 If you are experiencing issues with *tldr*, consider deleting the cache files before trying other measures.
 
 ### Colors
-    
-Values of the `TLDR_COLOR_x` variables may consist of three parts: 
+
+Values of the `TLDR_COLOR_x` variables may consist of three parts:
 * Font color, *required*: `blue, green, yellow, cyan, magenta, white, grey, red`
 * Background color: `on_blue, on_cyan, on_magenta, on_white, on_grey, on_yellow, on_red, on_green`
 * Additional effects, which depends on platform: `reverse, blink, dark, concealed, underline, bold`
 
 Values of background color and additional effect may be omitted:
 * `TLDR_COLOR_DESCRIPTION="white"` for white text on default system background color without any effects
-* `TLDR_COLOR_NAME="cyan dark"` for dark cyan text on default system background color 
+* `TLDR_COLOR_NAME="cyan dark"` for dark cyan text on default system background color
 * `TLDR_COLOR_PARAMETER="red on_yellow underline"` for underlined red text on yellow background
+
+## Remote source
+
+If you wish to use your own instance of the tldr pages instead of the default repository, you
+can either use the `--source` flag when using tldr or by specifying the following environment variables:
+
+* `TLDR_PAGES_SOURCE_LOCATION` to control where to get individual pages from
+  * defaults to `https://raw.githubusercontent.com/tldr-pages/tldr/master/pages`
+  * it can also point to local directory using `file:///path/to/directory`
+* `TLDR_DOWNLOAD_CACHE_LOCATION` to control where to pull a zip of all pages from
+  * defaults to `https://tldr-pages.github.io/assets/tldr.zip`

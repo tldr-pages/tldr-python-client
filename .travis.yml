@@ -5,7 +5,9 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-  - "nightly"            # Python 3.7
+  - "3.7"
+  - "3.8"
+  - "nightly"
   - "pypy"
   - "pypy3"
 matrix:
@@ -15,4 +17,3 @@ matrix:
     - python: "pypy3"
 install: pip install -U pytest pytest-runner
 script: python setup.py pytest
-
