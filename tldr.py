@@ -13,7 +13,7 @@ from termcolor import colored, cprint
 from six import BytesIO
 from six.moves.urllib.parse import quote
 from six.moves.urllib.request import urlopen, Request
-from six.moves.urllib.error import HTTPError
+from six.moves.urllib.error import HTTPError, URLError
 from six.moves import map
 # Required for Windows
 import colorama
