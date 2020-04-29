@@ -137,20 +137,35 @@ def have_recent_cache(command, platform):
         return False
 
 
-def get_page_url(platform, command, remote=None):
+def get_page_url(platform, command, remote=None, language=None):
     if remote is None:
         remote = PAGES_SOURCE_LOCATION
-    return remote + "/" + platform + "/" + quote(command) + ".md"
+
+    if language is None:
+        language = ''
+    else:
+        language = '.' + language
+
+    return remote + language + "/" + platform + "/" + quote(command) + ".md"
 
 
-def get_page_for_platform(command, platform, remote=None):
+def get_page_for_language(platform, command, remote=None, language=None):
+    try:
+        page_url = get_page_url(platform, command, remote, language)
+        data = urlopen(Request(page_url, headers=REQUEST_HEADERS)).read()
+    except:
+        page_url = get_page_url(platform, command, remote, None)
+        data = urlopen(Request(page_url, headers=REQUEST_HEADERS)).read()
+    return data
+
+
+def get_page_for_platform(command, platform, remote=None, language=None):
     data_downloaded = False
     if USE_CACHE and have_recent_cache(command, platform):
         data = load_page_from_cache(command, platform)
     else:
-        page_url = get_page_url(platform, command, remote)
         try:
-            data = urlopen(Request(page_url, headers=REQUEST_HEADERS)).read()
+            data = get_page_for_language(platform, command, remote, language)
             data_downloaded = True
         except Exception:
             data = load_page_from_cache(command, platform)
@@ -161,9 +176,8 @@ def get_page_for_platform(command, platform, remote=None):
     return data.splitlines()
 
 
-def download_and_store_page_for_platform(command, platform, remote=None):
-    page_url = get_page_url(platform, command, remote)
-    data = urlopen(Request(page_url, headers=REQUEST_HEADERS)).read()
+def download_and_store_page_for_platform(command, platform, remote=None, language=None):
+    data = get_page_for_language(platform, command, remote, language)
     store_page_to_cache(data, command, platform)
 
 
@@ -181,14 +195,14 @@ def get_platform_list():
     return platforms
 
 
-def get_page(command, remote=None, platform=None):
+def get_page(command, remote=None, platform=None, language=None):
     if platform is None:
         platform = get_platform_list()
     for _platform in platform:
         if _platform is None:
             continue
         try:
-            return get_page_for_platform(command, _platform, remote=remote)
+            return get_page_for_platform(command, _platform, remote=remote, language=language)
         except HTTPError as e:
             if e.code != 404:
                 raise
@@ -280,7 +294,7 @@ def output(page):
         [cprint(''.ljust(columns), *colors_of('blank')) for i in range(3)]
 
 
-def update_cache(remote=None):
+def update_cache(remote=None, language=None):
     cache_path = get_cache_dir()
     if not os.path.exists(cache_path):
         return
@@ -292,7 +306,7 @@ def update_cache(remote=None):
         command = match.group('command')
         platform = match.group('platform')
         try:
-            download_and_store_page_for_platform(command, platform, remote=remote)
+            download_and_store_page_for_platform(command, platform, remote=remote, language=language)
             print('Updated cache for %s (%s) from %s' % (command, platform, remote))
         except Exception:
             sys.exit('Error: Unable to get %s (%s) from %s' % (command, platform, remote))
@@ -356,6 +370,11 @@ def main():
                         help='Render local markdown files'
                         )
 
+    parser.add_argument('-l', '--language',
+                        default=None,
+                        type=str,
+                        help='Override the default language')
+
     options, rest = parser.parse_known_args()
 
     colorama.init(strip=options.color)
@@ -365,7 +384,7 @@ def main():
         return
 
     if options.update_cache:
-        update_cache(remote=options.source)
+        update_cache(remote=options.source, language=options.language)
         return
 
     parser.add_argument(
@@ -388,7 +407,8 @@ def main():
             result = get_page(
                 command,
                 platform=options.platform,
-                remote=options.source
+                remote=options.source,
+                language=options.language
             )
             if not result:
                 print((
