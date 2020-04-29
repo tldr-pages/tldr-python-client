@@ -5,6 +5,7 @@ import os
 import errno
 import subprocess
 import re
+import locale
 from argparse import ArgumentParser
 from zipfile import ZipFile
 
@@ -26,6 +27,7 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'TLDR_DOWNLOAD_CACHE_LOCATION',
     'https://tldr-pages.github.io/assets/tldr.zip'
 )
+DEFAULT_LANG = locale.getlocale()[0]
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
 
@@ -371,7 +373,7 @@ def main():
                         )
 
     parser.add_argument('-l', '--language',
-                        default=None,
+                        default=DEFAULT_LANG,
                         type=str,
                         help='Override the default language')
 
