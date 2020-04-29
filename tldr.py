@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-from __future__ import unicode_literals, print_function, division
+#!/usr/bin/env python3
 import sys
 import os
 import errno
@@ -10,11 +9,10 @@ from zipfile import ZipFile
 
 from datetime import datetime
 from termcolor import colored, cprint
-from six import BytesIO
-from six.moves.urllib.parse import quote
-from six.moves.urllib.request import urlopen, Request
-from six.moves.urllib.error import HTTPError, URLError
-from six.moves import map
+from io import BytesIO
+from urllib.parse import quote
+from urllib.request import urlopen, Request
+from urllib.error import HTTPError, URLError
 # Required for Windows
 import colorama
 
