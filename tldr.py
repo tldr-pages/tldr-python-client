@@ -12,7 +12,7 @@ from datetime import datetime
 from termcolor import colored, cprint
 from six import BytesIO
 from six.moves.urllib.parse import quote
-from six.moves.urllib.request import urlopen
+from six.moves.urllib.request import urlopen, Request
 from six.moves.urllib.error import HTTPError, URLError
 from six.moves import map
 # Required for Windows
@@ -28,6 +28,8 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 )
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
+
+REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 
 COMMAND_FILE_REGEX = re.compile(r'(?P<command>^.+?)_(?P<platform>.+?)\.md$')
 
@@ -148,7 +150,7 @@ def get_page_for_platform(command, platform, remote=None):
     else:
         page_url = get_page_url(platform, command, remote)
         try:
-            data = urlopen(page_url).read()
+            data = urlopen(Request(page_url, headers=REQUEST_HEADERS)).read()
             data_downloaded = True
         except Exception:
             data = load_page_from_cache(command, platform)
@@ -161,7 +163,7 @@ def get_page_for_platform(command, platform, remote=None):
 
 def download_and_store_page_for_platform(command, platform, remote=None):
     page_url = get_page_url(platform, command, remote)
-    data = urlopen(page_url).read()
+    data = urlopen(Request(page_url, headers=REQUEST_HEADERS)).read()
     store_page_to_cache(data, command, platform)
 
 
@@ -293,7 +295,10 @@ def download_cache():
     if not os.path.exists(cache_path):
         return
     try:
-        req = urlopen(DOWNLOAD_CACHE_LOCATION)
+        req = urlopen(Request(
+            DOWNLOAD_CACHE_LOCATION,
+            headers=REQUEST_HEADERS
+        ))
         zipfile = ZipFile(BytesIO(req.read()))
         pattern = re.compile(r'pages/(.+)/(.+)\.md')
         cached = 0
