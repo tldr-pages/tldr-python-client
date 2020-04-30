@@ -15,7 +15,7 @@ setup(
     license='MIT',
     py_modules=['tldr'],
     scripts=['tldr', 'tldr.py'],
-    install_requires=['six', 'termcolor', 'colorama'],
+    install_requires=['termcolor', 'colorama'],
     tests_require=[
         'pytest-runner',
     ],
@@ -30,7 +30,6 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: SunOS/Solaris",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",

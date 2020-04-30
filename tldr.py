@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-from __future__ import unicode_literals, print_function, division
+#!/usr/bin/env python3
 import sys
 import os
 import errno
@@ -10,11 +9,10 @@ from zipfile import ZipFile
 
 from datetime import datetime
 from termcolor import colored
-from six import BytesIO
-from six.moves.urllib.parse import quote
-from six.moves.urllib.request import urlopen, Request
-from six.moves.urllib.error import HTTPError, URLError
-from six.moves import map
+from io import BytesIO
+from urllib.parse import quote
+from urllib.request import urlopen, Request
+from urllib.error import HTTPError, URLError
 # Required for Windows
 import colorama
 
@@ -64,22 +62,9 @@ def load_page_from_cache(command, platform):
 
 
 def store_page_to_cache(page, command, platform):
-    def mkdir_p(path):
-        """
-        Create all the intermediate directories in a path.
-        Similar to the `mkdir -p` command.
-        """
-        try:
-            os.makedirs(path)
-        except OSError as exc:  # Python >2.5
-            if exc.errno == errno.EEXIST and os.path.isdir(path):
-                pass
-            else:
-                raise
-
     try:
         cache_file_path = get_cache_file_path(command, platform)
-        mkdir_p(os.path.dirname(cache_file_path))
+        os.makedirs(os.path.dirname(cache_file_path), exist_ok=True)
         with open(cache_file_path, "wb") as cache_file:
             cache_file.write(page)
     except Exception:
