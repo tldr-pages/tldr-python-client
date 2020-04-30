@@ -57,14 +57,19 @@ If you are experiencing issues with *tldr*, consider deleting the cache files be
 ### Colors
 
 Values of the `TLDR_COLOR_x` variables may consist of three parts:
-* Font color, *required*: `blue, green, yellow, cyan, magenta, white, grey, red`
+* Font color: `blue, green, yellow, cyan, magenta, white, grey, red`
 * Background color: `on_blue, on_cyan, on_magenta, on_white, on_grey, on_yellow, on_red, on_green`
 * Additional effects, which depends on platform: `reverse, blink, dark, concealed, underline, bold`
 
-Values of background color and additional effect may be omitted:
+You may specify as many additional effects as you want, while only one of font and background color.
+
+Any of the values of above may be omitted. For example, you can do similar things as the following:
+* `TLDR_COLOR_NAME=""` use default system font color with default background color without any effects
 * `TLDR_COLOR_DESCRIPTION="white"` for white text on default system background color without any effects
 * `TLDR_COLOR_NAME="cyan dark"` for dark cyan text on default system background color
+* `TLDR_COLOR_NAME="on_red"` for default system font color on red background color
 * `TLDR_COLOR_PARAMETER="red on_yellow underline"` for underlined red text on yellow background
+* `TLDR_COLOR_NAME="bold underline"` for default system font and background colors with underline and bolded effects
 
 ## Remote source
 

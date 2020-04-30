@@ -201,20 +201,27 @@ def get_page(command, remote=None, platform=None):
 
 DEFAULT_COLORS = {
     'blank': 'white',
-    'name': 'white bold',
-    'description': 'white',
+    'name': 'bold',
+    'description': '',
     'example': 'green',
     'command': 'red',
-    'parameter': 'white',
+    'parameter': '',
 }
 
 # See more details in the README:
 # https://github.com/tldr-pages/tldr-python-client#colors
 ACCEPTED_COLORS = [
     'blue', 'green', 'yellow', 'cyan', 'magenta', 'white',
-    'grey', 'red', 'on_blue', 'on_cyan', 'on_magenta', 'on_white',
-    'on_grey', 'on_yellow', 'on_red', 'on_green', 'reverse',
-    'blink', 'dark', 'concealed', 'underline', 'bold'
+    'grey', 'red'
+]
+
+ACCEPTED_COLOR_BACKGROUNDS = [
+    'on_blue', 'on_cyan', 'on_magenta', 'on_white',
+    'on_grey', 'on_yellow', 'on_red', 'on_green'
+]
+
+ACCEPTED_COLOR_ATTRS = [
+    'reverse', 'blink', 'dark', 'concealed', 'underline', 'bold'
 ]
 
 LEADING_SPACES_NUM = 2
@@ -225,17 +232,18 @@ param_regex = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
 def colors_of(key):
     env_key = 'TLDR_COLOR_%s' % key.upper()
-    user_value = os.environ.get(env_key, '').strip()
-    if user_value and user_value not in ACCEPTED_COLORS:
-        # you can put a warning statement here, but it will print a lot
-        user_value = None
-    values = user_value or DEFAULT_COLORS[key]
-    values = values.split()
-    return (
-        values[0] if len(values) > 0 else None,
-        values[1] if len(values) > 1 and values[1].startswith('on_') else None,
-        values[2:] if len(values) > 1 and values[1].startswith('on_') else values[1:],
-    )
+    values = os.environ.get(env_key, DEFAULT_COLORS[key]).strip().split()
+    color = None
+    on_color = None
+    attrs = []
+    for value in values:
+        if value in ACCEPTED_COLORS:
+            color = value
+        elif value in ACCEPTED_COLOR_BACKGROUNDS:
+            on_color = value
+        elif value in ACCEPTED_COLOR_ATTRS:
+            attrs.append(value)
+    return (color, on_color, attrs)
 
 
 def output(page):
