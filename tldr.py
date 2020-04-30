@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 from zipfile import ZipFile
 
 from datetime import datetime
-from termcolor import colored, cprint
+from termcolor import colored
 from six import BytesIO
 from six.moves.urllib.parse import quote
 from six.moves.urllib.request import urlopen, Request
@@ -18,6 +18,8 @@ from six.moves import map
 # Required for Windows
 import colorama
 
+
+REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
     'TLDR_PAGES_SOURCE_LOCATION',
     'https://raw.githubusercontent.com/tldr-pages/tldr/master/pages'
@@ -29,50 +31,7 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
 
-REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
-
 COMMAND_FILE_REGEX = re.compile(r'(?P<command>^.+?)_(?P<platform>.+?)\.md$')
-
-
-def get_terminal_size():
-    def get_terminal_size_windows():
-        try:
-            from ctypes import windll, create_string_buffer
-            import struct
-            # stdin handle is -10
-            # stdout handle is -11
-            # stderr handle is -12
-            h = windll.kernel32.GetStdHandle(-12)
-            csbi = create_string_buffer(22)
-            res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
-            if res:
-                (bufx, bufy, curx, cury, wattr,
-                 left, top, right, bottom,
-                 maxx, maxy) = struct.unpack("hhhhHhhhhhh", csbi.raw)
-                sizex = right - left + 1
-                sizey = bottom - top + 1
-                return sizex, sizey
-        except:
-            pass
-
-    def get_terminal_size_stty():
-        try:
-            return map(int, subprocess.check_output(['stty', 'size']).split())
-        except:
-            pass
-
-    def get_terminal_size_tput():
-        try:
-            return map(int, [subprocess.check_output(['tput', 'lines']), subprocess.check_output(['tput', 'rows'])])
-        except:
-            pass
-
-    return get_terminal_size_windows() or get_terminal_size_stty() or get_terminal_size_tput() or (25, 80)
-
-
-# get terminal size
-rows, columns = get_terminal_size()
-
 os_directories = {
     "linux": "linux",
     "darwin": "osx",
@@ -200,12 +159,11 @@ def get_page(command, remote=None, platform=None):
 
 
 DEFAULT_COLORS = {
-    'blank': 'white',
     'name': 'bold',
     'description': '',
     'example': 'green',
     'command': 'red',
-    'parameter': '',
+    'parameter': ''
 }
 
 # See more details in the README:
@@ -249,22 +207,26 @@ def colors_of(key):
 def output(page):
     # Need a better fancy method?
     if page is not None:
+        print()
         for line in page:
             line = line.rstrip().decode('utf-8')
-            if len(line) < 1:
-                cprint(line.ljust(columns), *colors_of('blank'))
+            if len(line) == 0:
+                None
             elif line[0] == '#':
-                cprint(line.ljust(columns), *colors_of('name'))
+                line = ' ' * LEADING_SPACES_NUM + \
+                colored(line.replace('# ', ''), *colors_of('name')) + '\n'
+                print(line)
             elif line[0] == '>':
-                line = ' ' + line[1:]
-                cprint(line.ljust(columns), *colors_of('description'))
+                line = ' ' * (LEADING_SPACES_NUM - 1) + \
+                colored(line.replace('>', '').replace('<', ''), *colors_of('description'))
+                print(line)
             elif line[0] == '-':
-                cprint(line.ljust(columns), *colors_of('example'))
+                line = '\n' + ' ' * LEADING_SPACES_NUM + \
+                colored(line, *colors_of('example'))
+                print(line)
             elif line[0] == '`':
                 line = line[1:-1]  # need to actually parse ``
-                elements = [
-                    colored(' ' * LEADING_SPACES_NUM, *colors_of('blank')), ]
-                replaced_spaces = 0
+                elements = [' ' * 2 * LEADING_SPACES_NUM]
                 for item in command_splitter.split(line):
                     item, replaced = param_regex.subn(
                         lambda x: colored(
@@ -272,20 +234,9 @@ def output(page):
                         item)
                     if not replaced:
                         item = colored(item, *colors_of('command'))
-                    else:
-                        # In replacement of {{}} from template pattern
-                        replaced_spaces += 4
                     elements.append(item)
-                # Manually adding painted in blank spaces
-                elements.append(colored(' ' * (columns
-                                               - len(line)
-                                               - LEADING_SPACES_NUM
-                                               + replaced_spaces), *colors_of('blank')))
                 print(''.join(elements))
-            else:
-                cprint(line.ljust(columns), *colors_of('description'))
-        # Need a cleaner way to pad three colored lines
-        [cprint(''.ljust(columns), *colors_of('blank')) for i in range(3)]
+        print()
 
 
 def update_cache(remote=None):
