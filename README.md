@@ -28,7 +28,6 @@ A `Python` command line client for [tldr](https://github.com/tldr-pages/tldr).
 ## Configuration
 You can configure the behaviour and output of the `tldr` client by setting environment variables. For example, in the `.bashrc` file:
 
-    export TLDR_COLOR_BLANK="white"
     export TLDR_COLOR_NAME="cyan"
     export TLDR_COLOR_DESCRIPTION="white"
     export TLDR_COLOR_EXAMPLE="green"
