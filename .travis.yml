@@ -1,19 +1,16 @@
 sudo: false
 language: python
 python:
-  - "2.7"
   - "3.4"
   - "3.5"
   - "3.6"
   - "3.7"
   - "3.8"
   - "nightly"
-  - "pypy"
   - "pypy3"
 matrix:
   allow_failures:
     - python: "nightly"
-    - python: "pypy"
     - python: "pypy3"
-install: pip install -U pytest pytest-runner
-script: python setup.py pytest
+install: pip3 install -U pytest pytest-runner
+script: python3 setup.py pytest
