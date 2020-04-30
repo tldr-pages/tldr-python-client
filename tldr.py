@@ -103,22 +103,9 @@ def load_page_from_cache(command, platform):
 
 
 def store_page_to_cache(page, command, platform):
-    def mkdir_p(path):
-        """
-        Create all the intermediate directories in a path.
-        Similar to the `mkdir -p` command.
-        """
-        try:
-            os.makedirs(path)
-        except OSError as exc:  # Python >2.5
-            if exc.errno == errno.EEXIST and os.path.isdir(path):
-                pass
-            else:
-                raise
-
     try:
         cache_file_path = get_cache_file_path(command, platform)
-        mkdir_p(os.path.dirname(cache_file_path))
+        os.makedirs(os.path.dirname(cache_file_path), exist_ok=True)
         with open(cache_file_path, "wb") as cache_file:
             cache_file.write(page)
     except Exception:
