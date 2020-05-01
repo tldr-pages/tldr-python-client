@@ -26,6 +26,7 @@ A `Python` command line client for [tldr](https://github.com/tldr-pages/tldr).
     tldr <command>
 
 ## Configuration
+
 You can configure the behaviour and output of the `tldr` client by setting environment variables. For example, in the `.bashrc` file:
 
     export TLDR_COLOR_NAME="cyan"
@@ -39,17 +40,20 @@ You can configure the behaviour and output of the `tldr` client by setting envir
     export TLDR_DOWNLOAD_CACHE_LOCATION="https://tldr-pages.github.io/assets/tldr.zip"
 
 ### Cache
+
+Cache is downloaded from `TLDR_DOWNLOAD_CACHE_LOCATION` (defaults to the one described in [the client specification](https://github.com/tldr-pages/tldr/blob/master/CLIENT-SPECIFICATION.md#caching)), unzipped and extracted into the [local cache directory](#cache-location). Pages are loaded directly from `TLDR_PAGES_SOURCE_LOCATION` if `tldr <command>` is used.
+
 * `TLDR_CACHE_ENABLED` (default is `1`):
     * If set to `1`, the client will first try to load from cache, and fall back to fetching from the internet if the cache doesn't exist or is too old.
     * If set to `0`, the client will fetch from the internet, and fall back to the cache if the page cannot be fetched from the internet.
 * `TLDR_CACHE_MAX_AGE` (default is `24`): maximum age of the cache in hours to be considered as valid when `TLDR_CACHE_ENABLED` is set to `1`.
 
-#### Cache location in order of precedence
+#### Cache location
 
+In order of precedence:
 * `$XDG_CACHE_HOME/tldr`
 * `$HOME/.cache/tldr`
 * `~/.cache/tldr`
-* Previously, the cache resided in `$HOME/.tldr_cache`
 
 If you are experiencing issues with *tldr*, consider deleting the cache files before trying other measures.
 
