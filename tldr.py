@@ -241,7 +241,7 @@ def main():
 
     parser.add_argument('-u', '--update_cache',
                         action='store_true',
-                        help="Update the local cache of pages")
+                        help="Update the local cache of pages and exit")
 
     parser.add_argument('-p', '--platform',
                         nargs=1,
