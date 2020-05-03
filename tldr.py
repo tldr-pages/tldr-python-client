@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
+
 import sys
 import os
-import errno
-import subprocess
 import re
 from argparse import ArgumentParser
 from zipfile import ZipFile
-
 from datetime import datetime
-from termcolor import colored
 from io import BytesIO
 from urllib.parse import quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
-# Required for Windows
-import colorama
+from termcolor import colored
+import colorama # Required for Windows
 
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
@@ -29,12 +26,11 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
 
-COMMAND_FILE_REGEX = re.compile(r'(?P<command>^.+?)_(?P<platform>.+?)\.md$')
-os_directories = {
+OS_DIRECTORIES = {
     "linux": "linux",
     "darwin": "osx",
     "sunos": "sunos",
-    "win32": "windows",
+    "win32": "windows"
 }
 
 
@@ -47,9 +43,7 @@ def get_cache_dir():
 
 
 def get_cache_file_path(command, platform):
-    cache_file_name = command + "_" + platform + ".md"
-    cache_file_path = os.path.join(get_cache_dir(), cache_file_name)
-    return cache_file_path
+    return os.path.join(get_cache_dir(), platform, command) + ".md"
 
 
 def load_page_from_cache(command, platform):
@@ -105,20 +99,20 @@ def get_page_for_platform(command, platform, remote=None):
     return data.splitlines()
 
 
-def download_and_store_page_for_platform(command, platform, remote=None):
+def update_page_for_platform(command, platform, remote=None):
     page_url = get_page_url(platform, command, remote)
     data = urlopen(Request(page_url, headers=REQUEST_HEADERS)).read()
     store_page_to_cache(data, command, platform)
 
 
 def get_platform():
-    for key in os_directories:
+    for key in OS_DIRECTORIES:
         if sys.platform.startswith(key):
-            return os_directories[key]
+            return OS_DIRECTORIES[key]
 
 
 def get_platform_list():
-    platforms = ['common'] + list(os_directories.values())
+    platforms = ['common'] + list(OS_DIRECTORIES.values())
     current_platform = get_platform()
     platforms.remove(current_platform)
     platforms.insert(0, current_platform)
@@ -133,8 +127,8 @@ def get_page(command, remote=None, platform=None):
             continue
         try:
             return get_page_for_platform(command, _platform, remote=remote)
-        except HTTPError as e:
-            if e.code != 404:
+        except HTTPError as err:
+            if err.code != 404:
                 raise
         except URLError:
             if not PAGES_SOURCE_LOCATION.startswith('file://'):
@@ -154,8 +148,7 @@ DEFAULT_COLORS = {
 # See more details in the README:
 # https://github.com/tldr-pages/tldr-python-client#colors
 ACCEPTED_COLORS = [
-    'blue', 'green', 'yellow', 'cyan', 'magenta', 'white',
-    'grey', 'red'
+    'blue', 'green', 'yellow', 'cyan', 'magenta', 'white', 'grey', 'red'
 ]
 
 ACCEPTED_COLOR_BACKGROUNDS = [
@@ -169,8 +162,8 @@ ACCEPTED_COLOR_ATTRS = [
 
 LEADING_SPACES_NUM = 2
 
-command_splitter = re.compile(r'(?P<param>{{.+?}})')
-param_regex = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
+COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}})')
+PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
 
 def colors_of(key):
@@ -196,7 +189,7 @@ def output(page):
         for line in page:
             line = line.rstrip().decode('utf-8')
             if len(line) == 0:
-                None
+                pass
             elif line[0] == '#':
                 line = ' ' * LEADING_SPACES_NUM + \
                 colored(line.replace('# ', ''), *colors_of('name')) + '\n'
@@ -212,8 +205,8 @@ def output(page):
             elif line[0] == '`':
                 line = line[1:-1]  # need to actually parse ``
                 elements = [' ' * 2 * LEADING_SPACES_NUM]
-                for item in command_splitter.split(line):
-                    item, replaced = param_regex.subn(
+                for item in COMMAND_SPLIT_REGEX.split(line):
+                    item, replaced = PARAM_REGEX.subn(
                         lambda x: colored(
                             x.group('param'), *colors_of('parameter')),
                         item)
@@ -224,28 +217,7 @@ def output(page):
         print()
 
 
-def update_cache(remote=None):
-    cache_path = get_cache_dir()
-    if not os.path.exists(cache_path):
-        return
-    files = [file_name for file_name in os.listdir(cache_path)
-             if os.path.isfile(os.path.join(cache_path, file_name)) and
-             COMMAND_FILE_REGEX.match(file_name)]
-    for file_name in files:
-        match = COMMAND_FILE_REGEX.match(file_name)
-        command = match.group('command')
-        platform = match.group('platform')
-        try:
-            download_and_store_page_for_platform(command, platform, remote=remote)
-            print('Updated cache for %s (%s) from %s' % (command, platform, remote))
-        except Exception:
-            sys.exit('Error: Unable to get %s (%s) from %s' % (command, platform, remote))
-
-
-def download_cache():
-    cache_path = get_cache_dir()
-    if not os.path.exists(cache_path):
-        return
+def update_cache():
     try:
         req = urlopen(Request(
             DOWNLOAD_CACHE_LOCATION,
@@ -261,7 +233,7 @@ def download_cache():
                 cached += 1
         print("Updated cache for {:d} entries".format(cached))
     except Exception:
-        sys.exit("Error: Unable to update cache from tldr site")
+        sys.exit("Error: Unable to update cache from " + DOWNLOAD_CACHE_LOCATION)
 
 
 def main():
@@ -269,11 +241,7 @@ def main():
 
     parser.add_argument('-u', '--update_cache',
                         action='store_true',
-                        help="Update the cached commands")
-
-    parser.add_argument('--download_cache',
-                        action='store_true',
-                        help='Downloads and caches all tldr pages from tldr site')
+                        help="Update the local cache of pages and exit")
 
     parser.add_argument('-p', '--platform',
                         nargs=1,
@@ -304,12 +272,8 @@ def main():
 
     colorama.init(strip=options.color)
 
-    if options.download_cache:
-        download_cache()
-        return
-
     if options.update_cache:
-        update_cache(remote=options.source)
+        update_cache()
         return
 
     parser.add_argument(
