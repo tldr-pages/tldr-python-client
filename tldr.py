@@ -1,24 +1,21 @@
-#!/usr/bin/env python
-from __future__ import unicode_literals, print_function, division
+#!/usr/bin/env python3
+
 import sys
 import os
-import errno
-import subprocess
 import re
 import locale
 from argparse import ArgumentParser
 from zipfile import ZipFile
-
 from datetime import datetime
-from termcolor import colored, cprint
-from six import BytesIO
-from six.moves.urllib.parse import quote
-from six.moves.urllib.request import urlopen, Request
-from six.moves.urllib.error import HTTPError, URLError
-from six.moves import map
-# Required for Windows
-import colorama
+from io import BytesIO
+from urllib.parse import quote
+from urllib.request import urlopen, Request
+from urllib.error import HTTPError, URLError
+from termcolor import colored
+import colorama # Required for Windows
 
+
+REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
     'TLDR_PAGES_SOURCE_LOCATION',
     'https://raw.githubusercontent.com/tldr-pages/tldr/master/pages'
@@ -31,55 +28,11 @@ DEFAULT_LANG = locale.getlocale()[0]
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
 
-REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
-
-COMMAND_FILE_REGEX = re.compile(r'(?P<command>^.+?)_(?P<platform>.+?)\.md$')
-
-
-def get_terminal_size():
-    def get_terminal_size_windows():
-        try:
-            from ctypes import windll, create_string_buffer
-            import struct
-            # stdin handle is -10
-            # stdout handle is -11
-            # stderr handle is -12
-            h = windll.kernel32.GetStdHandle(-12)
-            csbi = create_string_buffer(22)
-            res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
-            if res:
-                (bufx, bufy, curx, cury, wattr,
-                 left, top, right, bottom,
-                 maxx, maxy) = struct.unpack("hhhhHhhhhhh", csbi.raw)
-                sizex = right - left + 1
-                sizey = bottom - top + 1
-                return sizex, sizey
-        except:
-            pass
-
-    def get_terminal_size_stty():
-        try:
-            return map(int, subprocess.check_output(['stty', 'size']).split())
-        except:
-            pass
-
-    def get_terminal_size_tput():
-        try:
-            return map(int, [subprocess.check_output(['tput', 'lines']), subprocess.check_output(['tput', 'rows'])])
-        except:
-            pass
-
-    return get_terminal_size_windows() or get_terminal_size_stty() or get_terminal_size_tput() or (25, 80)
-
-
-# get terminal size
-rows, columns = get_terminal_size()
-
-os_directories = {
+OS_DIRECTORIES = {
     "linux": "linux",
     "darwin": "osx",
     "sunos": "sunos",
-    "win32": "windows",
+    "win32": "windows"
 }
 
 
@@ -92,9 +45,7 @@ def get_cache_dir():
 
 
 def get_cache_file_path(command, platform):
-    cache_file_name = command + "_" + platform + ".md"
-    cache_file_path = os.path.join(get_cache_dir(), cache_file_name)
-    return cache_file_path
+    return os.path.join(get_cache_dir(), platform, command) + ".md"
 
 
 def load_page_from_cache(command, platform):
@@ -106,23 +57,10 @@ def load_page_from_cache(command, platform):
         pass
 
 
-def store_page_to_cache(page, command, platform):
-    def mkdir_p(path):
-        """
-        Create all the intermediate directories in a path.
-        Similar to the `mkdir -p` command.
-        """
-        try:
-            os.makedirs(path)
-        except OSError as exc:  # Python >2.5
-            if exc.errno == errno.EEXIST and os.path.isdir(path):
-                pass
-            else:
-                raise
-
+def store_page_to_cache(page, command, platform, language=None):
     try:
         cache_file_path = get_cache_file_path(command, platform)
-        mkdir_p(os.path.dirname(cache_file_path))
+        os.makedirs(os.path.dirname(cache_file_path), exist_ok=True)
         with open(cache_file_path, "wb") as cache_file:
             cache_file.write(page)
     except Exception:
@@ -178,19 +116,19 @@ def get_page_for_platform(command, platform, remote=None, language=None):
     return data.splitlines()
 
 
-def download_and_store_page_for_platform(command, platform, remote=None, language=None):
+def update_page_for_platform(command, platform, remote=None, language=None):
     data = get_page_for_language(platform, command, remote, language)
     store_page_to_cache(data, command, platform)
 
 
 def get_platform():
-    for key in os_directories:
+    for key in OS_DIRECTORIES:
         if sys.platform.startswith(key):
-            return os_directories[key]
+            return OS_DIRECTORIES[key]
 
 
 def get_platform_list():
-    platforms = ['common'] + list(os_directories.values())
+    platforms = ['common'] + list(OS_DIRECTORIES.values())
     current_platform = get_platform()
     platforms.remove(current_platform)
     platforms.insert(0, current_platform)
@@ -205,8 +143,8 @@ def get_page(command, remote=None, platform=None, language=None):
             continue
         try:
             return get_page_for_platform(command, _platform, remote=remote, language=language)
-        except HTTPError as e:
-            if e.code != 404:
+        except HTTPError as err:
+            if err.code != 404:
                 raise
         except URLError:
             if not PAGES_SOURCE_LOCATION.startswith('file://'):
@@ -216,108 +154,86 @@ def get_page(command, remote=None, platform=None, language=None):
 
 
 DEFAULT_COLORS = {
-    'blank': 'white',
-    'name': 'white bold',
-    'description': 'white',
+    'name': 'bold',
+    'description': '',
     'example': 'green',
     'command': 'red',
-    'parameter': 'white',
+    'parameter': ''
 }
 
 # See more details in the README:
 # https://github.com/tldr-pages/tldr-python-client#colors
 ACCEPTED_COLORS = [
-    'blue', 'green', 'yellow', 'cyan', 'magenta', 'white',
-    'grey', 'red', 'on_blue', 'on_cyan', 'on_magenta', 'on_white',
-    'on_grey', 'on_yellow', 'on_red', 'on_green', 'reverse',
-    'blink', 'dark', 'concealed', 'underline', 'bold'
+    'blue', 'green', 'yellow', 'cyan', 'magenta', 'white', 'grey', 'red'
+]
+
+ACCEPTED_COLOR_BACKGROUNDS = [
+    'on_blue', 'on_cyan', 'on_magenta', 'on_white',
+    'on_grey', 'on_yellow', 'on_red', 'on_green'
+]
+
+ACCEPTED_COLOR_ATTRS = [
+    'reverse', 'blink', 'dark', 'concealed', 'underline', 'bold'
 ]
 
 LEADING_SPACES_NUM = 2
 
-command_splitter = re.compile(r'(?P<param>{{.+?}})')
-param_regex = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
+COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}})')
+PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
 
 def colors_of(key):
     env_key = 'TLDR_COLOR_%s' % key.upper()
-    user_value = os.environ.get(env_key, '').strip()
-    if user_value and user_value not in ACCEPTED_COLORS:
-        # you can put a warning statement here, but it will print a lot
-        user_value = None
-    values = user_value or DEFAULT_COLORS[key]
-    values = values.split()
-    return (
-        values[0] if len(values) > 0 else None,
-        values[1] if len(values) > 1 and values[1].startswith('on_') else None,
-        values[2:] if len(values) > 1 and values[1].startswith('on_') else values[1:],
-    )
+    values = os.environ.get(env_key, DEFAULT_COLORS[key]).strip().split()
+    color = None
+    on_color = None
+    attrs = []
+    for value in values:
+        if value in ACCEPTED_COLORS:
+            color = value
+        elif value in ACCEPTED_COLOR_BACKGROUNDS:
+            on_color = value
+        elif value in ACCEPTED_COLOR_ATTRS:
+            attrs.append(value)
+    return (color, on_color, attrs)
 
 
 def output(page):
     # Need a better fancy method?
     if page is not None:
+        print()
         for line in page:
             line = line.rstrip().decode('utf-8')
-            if len(line) < 1:
-                cprint(line.ljust(columns), *colors_of('blank'))
+            if len(line) == 0:
+                pass
             elif line[0] == '#':
-                cprint(line.ljust(columns), *colors_of('name'))
+                line = ' ' * LEADING_SPACES_NUM + \
+                colored(line.replace('# ', ''), *colors_of('name')) + '\n'
+                print(line)
             elif line[0] == '>':
-                line = ' ' + line[1:]
-                cprint(line.ljust(columns), *colors_of('description'))
+                line = ' ' * (LEADING_SPACES_NUM - 1) + \
+                colored(line.replace('>', '').replace('<', ''), *colors_of('description'))
+                print(line)
             elif line[0] == '-':
-                cprint(line.ljust(columns), *colors_of('example'))
+                line = '\n' + ' ' * LEADING_SPACES_NUM + \
+                colored(line, *colors_of('example'))
+                print(line)
             elif line[0] == '`':
                 line = line[1:-1]  # need to actually parse ``
-                elements = [
-                    colored(' ' * LEADING_SPACES_NUM, *colors_of('blank')), ]
-                replaced_spaces = 0
-                for item in command_splitter.split(line):
-                    item, replaced = param_regex.subn(
+                elements = [' ' * 2 * LEADING_SPACES_NUM]
+                for item in COMMAND_SPLIT_REGEX.split(line):
+                    item, replaced = PARAM_REGEX.subn(
                         lambda x: colored(
                             x.group('param'), *colors_of('parameter')),
                         item)
                     if not replaced:
                         item = colored(item, *colors_of('command'))
-                    else:
-                        # In replacement of {{}} from template pattern
-                        replaced_spaces += 4
                     elements.append(item)
-                # Manually adding painted in blank spaces
-                elements.append(colored(' ' * (columns
-                                               - len(line)
-                                               - LEADING_SPACES_NUM
-                                               + replaced_spaces), *colors_of('blank')))
                 print(''.join(elements))
-            else:
-                cprint(line.ljust(columns), *colors_of('description'))
-        # Need a cleaner way to pad three colored lines
-        [cprint(''.ljust(columns), *colors_of('blank')) for i in range(3)]
+        print()
 
 
-def update_cache(remote=None, language=None):
-    cache_path = get_cache_dir()
-    if not os.path.exists(cache_path):
-        return
-    files = [file_name for file_name in os.listdir(cache_path)
-             if os.path.isfile(os.path.join(cache_path, file_name)) and
-             COMMAND_FILE_REGEX.match(file_name)]
-    for file_name in files:
-        match = COMMAND_FILE_REGEX.match(file_name)
-        command = match.group('command')
-        platform = match.group('platform')
-        try:
-            download_and_store_page_for_platform(command, platform, remote=remote, language=language)
-            print('Updated cache for %s (%s) from %s' % (command, platform, remote))
-        except Exception:
-            sys.exit('Error: Unable to get %s (%s) from %s' % (command, platform, remote))
-
-
-def download_cache():
-    cache_path = get_cache_dir()
-    if not os.path.exists(cache_path):
-        return
+def update_cache(language=None):
     try:
         req = urlopen(Request(
             DOWNLOAD_CACHE_LOCATION,
@@ -329,11 +245,11 @@ def download_cache():
         for entry in zipfile.namelist():
             match = pattern.match(entry)
             if match:
-                store_page_to_cache(zipfile.read(entry), match.group(2), match.group(1))
+                store_page_to_cache(zipfile.read(entry), match.group(2), match.group(1), language)
                 cached += 1
         print("Updated cache for {:d} entries".format(cached))
     except Exception:
-        sys.exit("Error: Unable to update cache from tldr site")
+        sys.exit("Error: Unable to update cache from " + DOWNLOAD_CACHE_LOCATION)
 
 
 def main():
@@ -341,11 +257,7 @@ def main():
 
     parser.add_argument('-u', '--update_cache',
                         action='store_true',
-                        help="Update the cached commands")
-
-    parser.add_argument('--download_cache',
-                        action='store_true',
-                        help='Downloads and caches all tldr pages from tldr site')
+                        help="Update the local cache of pages and exit")
 
     parser.add_argument('-p', '--platform',
                         nargs=1,
@@ -381,12 +293,8 @@ def main():
 
     colorama.init(strip=options.color)
 
-    if options.download_cache:
-        download_cache()
-        return
-
     if options.update_cache:
-        update_cache(remote=options.source, language=options.language)
+        update_cache(language=options.language)
         return
 
     parser.add_argument(
