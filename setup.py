@@ -14,16 +14,13 @@ setup(
     long_description_markdown_filename='README.md',
     license='MIT',
     py_modules=['tldr'],
-    scripts=['tldr.py'],
-    install_requires=['six', 'termcolor', 'colorama'],
+    scripts=['tldr', 'tldr.py'],
+    install_requires=['termcolor', 'colorama'],
     tests_require=[
         'pytest-runner',
     ],
     setup_requires=setup_requires,
     use_scm_version=True,
-    entry_points={
-        'console_scripts': ['tldr = tldr:main']
-    },
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
@@ -33,10 +30,11 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: SunOS/Solaris",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Utilities",
         "Topic :: System"
     ]
