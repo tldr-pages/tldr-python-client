@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from zipfile import ZipFile
 from datetime import datetime
 from io import BytesIO
+import ssl
 from urllib.parse import quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
@@ -25,6 +26,11 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 )
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
+URLOPEN_CONTEXT = None
+if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
+    URLOPEN_CONTEXT = ssl.create_default_context()
+    URLOPEN_CONTEXT.check_hostname = False
+    URLOPEN_CONTEXT.verify_mode = ssl.CERT_NONE
 
 OS_DIRECTORIES = {
     "linux": "linux",
@@ -88,7 +94,7 @@ def get_page_for_platform(command, platform, remote=None):
     else:
         page_url = get_page_url(platform, command, remote)
         try:
-            data = urlopen(Request(page_url, headers=REQUEST_HEADERS)).read()
+            data = urlopen(Request(page_url, headers=REQUEST_HEADERS), context=URLOPEN_CONTEXT).read()
             data_downloaded = True
         except Exception:
             data = load_page_from_cache(command, platform)
@@ -101,7 +107,7 @@ def get_page_for_platform(command, platform, remote=None):
 
 def update_page_for_platform(command, platform, remote=None):
     page_url = get_page_url(platform, command, remote)
-    data = urlopen(Request(page_url, headers=REQUEST_HEADERS)).read()
+    data = urlopen(Request(page_url, headers=REQUEST_HEADERS), context=URLOPEN_CONTEXT).read()
     store_page_to_cache(data, command, platform)
 
 
@@ -222,7 +228,7 @@ def update_cache():
         req = urlopen(Request(
             DOWNLOAD_CACHE_LOCATION,
             headers=REQUEST_HEADERS
-        ))
+        ), context=URLOPEN_CONTEXT)
         zipfile = ZipFile(BytesIO(req.read()))
         pattern = re.compile(r'pages/(.+)/(.+)\.md')
         cached = 0
