@@ -247,7 +247,7 @@ def update_cache():
 def main():
     parser = ArgumentParser(prog="tldr", description="Python command line client for tldr")
     parser.add_argument(
-        '--version',
+        '-v', '--version',
         action='version',
         version='%(prog)s {} (Client Specification {})'.format(
             __version__,
