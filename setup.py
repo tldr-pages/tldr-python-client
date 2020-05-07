@@ -6,7 +6,7 @@ from setuptools import setup
 setup_dir = Path(__file__).resolve().parent
 version = re.search(
     r'__version__ = "(.*)"',
-    Path(setup_dir, 'tldr.py').read_text()
+    Path(setup_dir, 'tldr.py').open().read()
 )
 if version is None:
     raise SystemExit("Could not determine version to use")
