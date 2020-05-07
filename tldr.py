@@ -12,8 +12,10 @@ from urllib.parse import quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from termcolor import colored
-import colorama # Required for Windows
+import colorama  # Required for Windows
 
+__version__ = "1.0.0"
+__client_specification__ = "1.2"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
@@ -244,6 +246,14 @@ def update_cache():
 
 def main():
     parser = ArgumentParser(prog="tldr", description="Python command line client for tldr")
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='%(prog)s {} (Client Specification {})'.format(
+            __version__,
+            __client_specification__
+        )
+    )
 
     parser.add_argument('-u', '--update_cache',
                         action='store_true',
