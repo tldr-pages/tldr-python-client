@@ -57,6 +57,14 @@ In order of precedence:
 
 If you are experiencing issues with *tldr*, consider deleting the cache files before trying other measures.
 
+### SSL Inspection
+
+For networks that sit behind a proxy, it may be necessary to disable SSL verification for the client to function. Setting the following:
+
+* `TLDR_ALLOW_INSECURE=1` 
+
+will disable SSL certificate inspection. This __should be avoided__ unless absolutely necessary.
+
 ### Colors
 
 Values of the `TLDR_COLOR_x` variables may consist of three parts:
