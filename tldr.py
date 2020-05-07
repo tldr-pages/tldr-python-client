@@ -3,6 +3,7 @@
 import sys
 import os
 import re
+import locale
 from argparse import ArgumentParser
 from zipfile import ZipFile
 from datetime import datetime
@@ -26,6 +27,7 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'TLDR_DOWNLOAD_CACHE_LOCATION',
     'https://tldr-pages.github.io/assets/tldr.zip'
 )
+DEFAULT_LANG = os.environ.get('LANG', locale.getlocale()[0]).split("_")[0]
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
 URLOPEN_CONTEXT = None
@@ -50,22 +52,25 @@ def get_cache_dir():
     return os.path.join(os.environ.get('XDG_CACHE_HOME'), 'tldr')
 
 
-def get_cache_file_path(command, platform):
-    return os.path.join(get_cache_dir(), platform, command) + ".md"
+def get_cache_file_path(command, platform, language):
+    pages_dir = "pages"
+    if language and language != 'en':
+      pages_dir += "." + language
+    return os.path.join(get_cache_dir(), pages_dir, platform, command) + ".md"
 
 
-def load_page_from_cache(command, platform):
+def load_page_from_cache(command, platform, language):
     try:
-        with open(get_cache_file_path(command, platform), 'rb') as cache_file:
+        with open(get_cache_file_path(command, platform, language), 'rb') as cache_file:
             cache_file_contents = cache_file.read()
         return cache_file_contents
     except Exception:
         pass
 
 
-def store_page_to_cache(page, command, platform):
+def store_page_to_cache(page, command, platform, language):
     try:
-        cache_file_path = get_cache_file_path(command, platform)
+        cache_file_path = get_cache_file_path(command, platform, language)
         os.makedirs(os.path.dirname(cache_file_path), exist_ok=True)
         with open(cache_file_path, "wb") as cache_file:
             cache_file.write(page)
@@ -73,9 +78,9 @@ def store_page_to_cache(page, command, platform):
         pass
 
 
-def have_recent_cache(command, platform):
+def have_recent_cache(command, platform, language):
     try:
-        cache_file_path = get_cache_file_path(command, platform)
+        cache_file_path = get_cache_file_path(command, platform, language)
         last_modified = datetime.fromtimestamp(os.path.getmtime(cache_file_path))
         hours_passed = (datetime.now() - last_modified).total_seconds() / 3600
         return hours_passed <= MAX_CACHE_AGE
@@ -83,34 +88,40 @@ def have_recent_cache(command, platform):
         return False
 
 
-def get_page_url(platform, command, remote=None):
+def get_page_url(command, platform, remote, language):
     if remote is None:
         remote = PAGES_SOURCE_LOCATION
-    return remote + "/" + platform + "/" + quote(command) + ".md"
 
-
-def get_page_for_platform(command, platform, remote=None):
-    data_downloaded = False
-    if USE_CACHE and have_recent_cache(command, platform):
-        data = load_page_from_cache(command, platform)
+    if language is None or language == 'en':
+        language = ''
     else:
-        page_url = get_page_url(platform, command, remote)
+        language = '.' + language
+
+    return remote + language + "/" + platform + "/" + quote(command) + ".md"
+
+
+def get_page_for_platform(command, platform, remote, language):
+    data_downloaded = False
+    if USE_CACHE and have_recent_cache(command, platform, language):
+        data = load_page_from_cache(command, platform, language)
+    else:
+        page_url = get_page_url(command, platform, remote, language)
         try:
             data = urlopen(Request(page_url, headers=REQUEST_HEADERS), context=URLOPEN_CONTEXT).read()
             data_downloaded = True
         except Exception:
-            data = load_page_from_cache(command, platform)
+            data = load_page_from_cache(command, platform, language)
             if data is None:
                 raise
     if data_downloaded:
-        store_page_to_cache(data, command, platform)
+        store_page_to_cache(data, command, platform, language)
     return data.splitlines()
 
 
-def update_page_for_platform(command, platform, remote=None):
-    page_url = get_page_url(platform, command, remote)
+def update_page_for_platform(command, platform, remote, language):
+    page_url = get_page_url(platform, command, remote, language)
     data = urlopen(Request(page_url, headers=REQUEST_HEADERS), context=URLOPEN_CONTEXT).read()
-    store_page_to_cache(data, command, platform)
+    store_page_to_cache(data, command, platform, language)
 
 
 def get_platform():
@@ -127,14 +138,14 @@ def get_platform_list():
     return platforms
 
 
-def get_page(command, remote=None, platform=None):
+def get_page(command, remote=None, platform=None, language=None):
     if platform is None:
         platform = get_platform_list()
     for _platform in platform:
         if _platform is None:
             continue
         try:
-            return get_page_for_platform(command, _platform, remote=remote)
+            return get_page_for_platform(command, _platform, remote, language)
         except HTTPError as err:
             if err.code != 404:
                 raise
@@ -225,19 +236,22 @@ def output(page):
         print()
 
 
-def update_cache():
+def update_cache(language=None):
     try:
+        pages_dir = "pages"
+        if language and language != 'en':
+          pages_dir += "." + language
         req = urlopen(Request(
             DOWNLOAD_CACHE_LOCATION,
             headers=REQUEST_HEADERS
         ), context=URLOPEN_CONTEXT)
         zipfile = ZipFile(BytesIO(req.read()))
-        pattern = re.compile(r'pages/(.+)/(.+)\.md')
+        pattern = re.compile("{}/(.+)/(.+)\.md".format(pages_dir))
         cached = 0
         for entry in zipfile.namelist():
             match = pattern.match(entry)
             if match:
-                store_page_to_cache(zipfile.read(entry), match.group(2), match.group(1))
+                store_page_to_cache(zipfile.read(entry), match.group(2), match.group(1), language)
                 cached += 1
         print("Updated cache for {:d} entries".format(cached))
     except Exception:
@@ -284,12 +298,17 @@ def main():
                         help='Render local markdown files'
                         )
 
+    parser.add_argument('-L', '--language',
+                        default=DEFAULT_LANG,
+                        type=str,
+                        help='Override the default language')
+
     options, rest = parser.parse_known_args()
 
     colorama.init(strip=options.color)
 
     if options.update_cache:
-        update_cache()
+        update_cache(language=options.language)
         return
 
     parser.add_argument(
@@ -312,7 +331,8 @@ def main():
             result = get_page(
                 command,
                 platform=options.platform,
-                remote=options.source
+                remote=options.source,
+                language=options.language
             )
             if not result:
                 print((
