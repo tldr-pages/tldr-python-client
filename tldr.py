@@ -55,13 +55,17 @@ def get_cache_dir():
 def get_cache_file_path(command, platform, language):
     pages_dir = "pages"
     if language and language != 'en':
-      pages_dir += "." + language
+        pages_dir += "." + language
     return os.path.join(get_cache_dir(), pages_dir, platform, command) + ".md"
 
 
 def load_page_from_cache(command, platform, language):
     try:
-        with open(get_cache_file_path(command, platform, language), 'rb') as cache_file:
+        with open(get_cache_file_path(
+            command,
+            platform,
+            language), 'rb'
+        ) as cache_file:
             cache_file_contents = cache_file.read()
         return cache_file_contents
     except Exception:
@@ -107,7 +111,10 @@ def get_page_for_platform(command, platform, remote, language):
     else:
         page_url = get_page_url(command, platform, remote, language)
         try:
-            data = urlopen(Request(page_url, headers=REQUEST_HEADERS), context=URLOPEN_CONTEXT).read()
+            data = urlopen(
+                Request(page_url, headers=REQUEST_HEADERS),
+                context=URLOPEN_CONTEXT
+            ).read()
             data_downloaded = True
         except Exception:
             data = load_page_from_cache(command, platform, language)
@@ -120,7 +127,10 @@ def get_page_for_platform(command, platform, remote, language):
 
 def update_page_for_platform(command, platform, remote, language):
     page_url = get_page_url(platform, command, remote, language)
-    data = urlopen(Request(page_url, headers=REQUEST_HEADERS), context=URLOPEN_CONTEXT).read()
+    data = urlopen(
+        Request(page_url, headers=REQUEST_HEADERS),
+        context=URLOPEN_CONTEXT
+    ).read()
     store_page_to_cache(data, command, platform, language)
 
 
@@ -211,15 +221,18 @@ def output(page):
                 pass
             elif line[0] == '#':
                 line = ' ' * LEADING_SPACES_NUM + \
-                colored(line.replace('# ', ''), *colors_of('name')) + '\n'
+                    colored(line.replace('# ', ''), *colors_of('name')) + '\n'
                 print(line)
             elif line[0] == '>':
                 line = ' ' * (LEADING_SPACES_NUM - 1) + \
-                colored(line.replace('>', '').replace('<', ''), *colors_of('description'))
+                    colored(
+                        line.replace('>', '').replace('<', ''),
+                        *colors_of('description')
+                    )
                 print(line)
             elif line[0] == '-':
                 line = '\n' + ' ' * LEADING_SPACES_NUM + \
-                colored(line, *colors_of('example'))
+                    colored(line, *colors_of('example'))
                 print(line)
             elif line[0] == '`':
                 line = line[1:-1]  # need to actually parse ``
@@ -240,18 +253,23 @@ def update_cache(language=None):
     try:
         pages_dir = "pages"
         if language and language != 'en':
-          pages_dir += "." + language
+            pages_dir += "." + language
         req = urlopen(Request(
             DOWNLOAD_CACHE_LOCATION,
             headers=REQUEST_HEADERS
         ), context=URLOPEN_CONTEXT)
         zipfile = ZipFile(BytesIO(req.read()))
-        pattern = re.compile("{}/(.+)/(.+)\.md".format(pages_dir))
+        pattern = re.compile(r"{}/(.+)/(.+)\.md".format(pages_dir))
         cached = 0
         for entry in zipfile.namelist():
             match = pattern.match(entry)
             if match:
-                store_page_to_cache(zipfile.read(entry), match.group(2), match.group(1), language)
+                store_page_to_cache(
+                    zipfile.read(entry),
+                    match.group(2),
+                    match.group(1),
+                    language
+                )
                 cached += 1
         print("Updated cache for {:d} entries".format(cached))
     except Exception:
@@ -259,7 +277,10 @@ def update_cache(language=None):
 
 
 def main():
-    parser = ArgumentParser(prog="tldr", description="Python command line client for tldr")
+    parser = ArgumentParser(
+        prog="tldr",
+        description="Python command line client for tldr"
+    )
     parser.add_argument(
         '-v', '--version',
         action='version',
@@ -273,13 +294,15 @@ def main():
                         action='store_true',
                         help="Update the local cache of pages and exit")
 
-    parser.add_argument('-p', '--platform',
-                        nargs=1,
-                        default=None,
-                        type=str,
-                        choices=['linux', 'osx', 'sunos', 'windows', 'common'],
-                        metavar='PLATFORM',
-                        help="Override the operating system [linux, osx, sunos, windows, common]")
+    parser.add_argument(
+        '-p', '--platform',
+        nargs=1,
+        default=None,
+        type=str,
+        choices=['linux', 'osx', 'sunos', 'windows', 'common'],
+        metavar='PLATFORM',
+        help="Override the operating system [linux, osx, sunos, windows, common]"
+    )
 
     parser.add_argument('-s', '--source',
                         default=PAGES_SOURCE_LOCATION,
@@ -312,7 +335,8 @@ def main():
         return
 
     parser.add_argument(
-        'command', type=str, nargs='+', help="command to lookup")
+        'command', type=str, nargs='+', help="command to lookup"
+    )
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -337,7 +361,8 @@ def main():
             if not result:
                 print((
                     "`{cmd}` documentation is not available. "
-                    "Consider contributing Pull Request to https://github.com/tldr-pages/tldr"
+                    "Consider contributing Pull Request to "
+                    "https://github.com/tldr-pages/tldr"
                 ).format(cmd=command), file=sys.stderr)
             else:
                 output(result)
