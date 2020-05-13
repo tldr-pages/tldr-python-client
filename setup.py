@@ -29,6 +29,7 @@ setup(
     scripts=['tldr', 'tldr.py'],
     install_requires=['termcolor', 'colorama'],
     tests_require=[
+        'pytest',
         'pytest-runner',
     ],
     setup_requires=setup_requires,
