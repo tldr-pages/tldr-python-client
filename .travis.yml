@@ -12,5 +12,7 @@ matrix:
   allow_failures:
     - python: "nightly"
     - python: "pypy3"
-install: pip3 install -U pytest pytest-runner
-script: python3 setup.py pytest
+install: pip3 install -U pytest pytest-runner flake8
+script:
+    - python3 -m flake8
+    - python3 setup.py pytest
