@@ -370,8 +370,12 @@ def main():
             sys.exit("No internet connection detected. Please reconnect and try again.")
 
 
-if __name__ == "__main__":
+def cli():
     try:
         main()
     except KeyboardInterrupt:
-        print('\nExited on keyboard interrupt.')
+        print("\nExited on keyboard interrupt.")
+
+
+if __name__ == "__main__":
+    cli()

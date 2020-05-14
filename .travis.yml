@@ -16,3 +16,5 @@ install: pip3 install -U pytest pytest-runner flake8
 script:
     - python3 -m flake8
     - python3 setup.py pytest
+    - python3 setup.py install
+    - tldr --version

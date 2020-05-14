@@ -32,3 +32,8 @@ jobs:
 
     - name: Run testsuite
       run: python3 setup.py pytest
+
+    - name: Test tldr cli
+      run: |
+        python3 setup.py install
+        tldr --version

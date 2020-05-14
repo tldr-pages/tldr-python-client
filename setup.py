@@ -26,7 +26,11 @@ setup(
     long_description_content_type='text/markdown',
     license='MIT',
     py_modules=['tldr'],
-    scripts=['tldr', 'tldr.py'],
+    entry_points={
+        "console_scripts": [
+            "tldr = tldr:cli"
+        ]
+    },
     install_requires=['termcolor', 'colorama'],
     tests_require=[
         'pytest',
