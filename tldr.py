@@ -281,6 +281,8 @@ def output(page):
 def update_cache(language=None):
     if language is None:
         language = DEFAULT_LANG if DEFAULT_LANG is not None else 'en'
+    elif isinstance(language, list):
+        language = language[0]
     try:
         pages_dir = "pages"
         if language and language != 'en':
