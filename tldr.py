@@ -3,7 +3,6 @@
 import sys
 import os
 import re
-import locale
 from argparse import ArgumentParser
 from zipfile import ZipFile
 from datetime import datetime
@@ -27,9 +26,18 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'TLDR_DOWNLOAD_CACHE_LOCATION',
     'https://tldr-pages.github.io/assets/tldr.zip'
 )
-DEFAULT_LANG = os.environ.get('LANG', locale.getlocale()[0]).split("_")[0]
+
+DEFAULT_LANG = os.environ.get(
+    'TLDR_LANGUAGE',
+    os.environ.get('LANG', None)
+).split('_')[0]
+
+if DEFAULT_LANG == 'C':
+    DEFAULT_LANG = None
+
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
+
 URLOPEN_CONTEXT = None
 if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
     URLOPEN_CONTEXT = ssl.create_default_context()
@@ -148,20 +156,40 @@ def get_platform_list():
     return platforms
 
 
-def get_page(command, remote=None, platform=None, language=None):
-    if platform is None:
-        platform = get_platform_list()
-    for _platform in platform:
-        if _platform is None:
-            continue
+def get_language_list():
+    languages = os.environ.get('LANGUAGES', '').split(':')
+    languages = list(map(
+        lambda x: x.split('_')[0],
+        filter(lambda x: x != 'C', languages)
+    ))
+    if DEFAULT_LANG is not None:
         try:
-            return get_page_for_platform(command, _platform, remote, language)
-        except HTTPError as err:
-            if err.code != 404:
-                raise
-        except URLError:
-            if not PAGES_SOURCE_LOCATION.startswith('file://'):
-                raise
+            languages.remove(DEFAULT_LANG)
+        except ValueError:
+            pass
+        languages.insert(0, DEFAULT_LANG)
+    else:
+        languages.append('en')
+    return languages
+
+
+def get_page(command, remote=None, platforms=None, languages=None):
+    if platforms is None:
+        platforms = get_platform_list()
+    if languages is None:
+        languages = get_language_list()
+    for platform in platforms:
+        for language in languages:
+            if platform is None:
+                continue
+            try:
+                return get_page_for_platform(command, platform, remote, language)
+            except HTTPError as err:
+                if err.code != 404:
+                    raise
+            except URLError:
+                if not PAGES_SOURCE_LOCATION.startswith('file://'):
+                    raise
 
     return False
 
@@ -218,22 +246,22 @@ def output(page):
         for line in page:
             line = line.rstrip().decode('utf-8')
             if len(line) == 0:
-                pass
+                continue
             elif line[0] == '#':
                 line = ' ' * LEADING_SPACES_NUM + \
                     colored(line.replace('# ', ''), *colors_of('name')) + '\n'
-                print(line)
+                sys.stdout.buffer.write(line.encode('utf-8'))
             elif line[0] == '>':
                 line = ' ' * (LEADING_SPACES_NUM - 1) + \
                     colored(
                         line.replace('>', '').replace('<', ''),
                         *colors_of('description')
                     )
-                print(line)
+                sys.stdout.buffer.write(line.encode('utf-8'))
             elif line[0] == '-':
                 line = '\n' + ' ' * LEADING_SPACES_NUM + \
                     colored(line, *colors_of('example'))
-                print(line)
+                sys.stdout.buffer.write(line.encode('utf-8'))
             elif line[0] == '`':
                 line = line[1:-1]  # need to actually parse ``
                 elements = [' ' * 2 * LEADING_SPACES_NUM]
@@ -245,11 +273,14 @@ def output(page):
                     if not replaced:
                         item = colored(item, *colors_of('command'))
                     elements.append(item)
-                print(''.join(elements))
+                sys.stdout.buffer.write(''.join(elements).encode('utf-8'))
+            print()
         print()
 
 
 def update_cache(language=None):
+    if language is None:
+        language = DEFAULT_LANG if DEFAULT_LANG is not None else 'en'
     try:
         pages_dir = "pages"
         if language and language != 'en':
@@ -322,7 +353,8 @@ def main():
                         )
 
     parser.add_argument('-L', '--language',
-                        default=DEFAULT_LANG,
+                        nargs=1,
+                        default=None,
                         type=str,
                         help='Override the default language')
 
@@ -354,9 +386,9 @@ def main():
             command = '-'.join(rest.command)
             result = get_page(
                 command,
-                platform=options.platform,
-                remote=options.source,
-                language=options.language
+                options.source,
+                options.platform,
+                options.language
             )
             if not result:
                 print((
