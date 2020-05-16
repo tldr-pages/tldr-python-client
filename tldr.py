@@ -310,6 +310,8 @@ def update_cache(language=None):
 def main():
     parser = ArgumentParser(
         prog="tldr",
+        usage="tldr [-u] [-p PLATFORM] [-s SOURCE] [-c] [-r] [-L LANGUAGE] " +
+        "command",
         description="Python command line client for tldr"
     )
     parser.add_argument(
@@ -358,32 +360,29 @@ def main():
                         type=str,
                         help='Override the default language')
 
-    options, rest = parser.parse_known_args()
+    parser.add_argument(
+        'command', type=str, nargs='*', help="command to lookup"
+    )
+
+    options = parser.parse_args()
 
     colorama.init(strip=options.color)
 
     if options.update_cache:
         update_cache(language=options.language)
         return
-
-    parser.add_argument(
-        'command', type=str, nargs='+', help="command to lookup"
-    )
-
-    if len(sys.argv) == 1:
+    elif len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    rest = parser.parse_args(rest)
-
     if options.render:
-        for command in rest.command:
+        for command in options.command:
             if os.path.exists(command):
                 with open(command, encoding='utf-8') as open_file:
                     output(open_file.read().encode('utf-8').splitlines())
     else:
         try:
-            command = '-'.join(rest.command)
+            command = '-'.join(options.command)
             result = get_page(
                 command,
                 options.source,
