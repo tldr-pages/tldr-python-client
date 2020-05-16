@@ -1,6 +1,5 @@
 from pathlib import Path
 import re
-import sys
 from setuptools import setup
 
 setup_dir = Path(__file__).resolve().parent
@@ -11,10 +10,6 @@ version = re.search(
 if version is None:
     raise SystemExit("Could not determine version to use")
 version = version.group(1)
-
-setup_requires = ['setuptools_scm']
-if sys.argv[-1] in ('sdist', 'bdist_wheel'):
-    setup_requires.append('setuptools-markdown')
 
 setup(
     name='tldr',
@@ -36,7 +31,6 @@ setup(
         'pytest',
         'pytest-runner',
     ],
-    setup_requires=setup_requires,
     version=version,
     python_requires='~=3.5',
     classifiers=[
