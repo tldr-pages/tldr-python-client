@@ -21,6 +21,10 @@ A `Python` command line client for [tldr](https://github.com/tldr-pages/tldr).
 
     sudo dnf install tldr
 
+### from Debian / Ubuntu packages repository
+
+    sudo apt install tldr-py
+
 ## Usage
 
     tldr <command>
