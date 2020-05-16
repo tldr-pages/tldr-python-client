@@ -366,8 +366,8 @@ def main():
                 ).format(cmd=command), file=sys.stderr)
             else:
                 output(result)
-        except Exception:
-            sys.exit("No internet connection detected. Please reconnect and try again.")
+        except URLError as e:
+            sys.exit("Error fetching from tldr: {}".format(e))
 
 
 def cli():
