@@ -1,6 +1,5 @@
 from pathlib import Path
 import re
-import sys
 from setuptools import setup
 
 setup_dir = Path(__file__).resolve().parent
