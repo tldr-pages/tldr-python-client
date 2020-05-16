@@ -23,7 +23,23 @@ A `Python` command line client for [tldr](https://github.com/tldr-pages/tldr).
 
 ## Usage
 
-    tldr <command>
+    usage: tldr [-u] [-p PLATFORM] [-s SOURCE] [-c] [-r] [-L LANGUAGE] command
+
+    Python command line client for tldr
+
+    optional arguments:
+    -h, --help            show this help message and exit
+    -v, --version         show program's version number and exit
+    -u, --update_cache    Update the local cache of pages and exit
+    -p PLATFORM, --platform PLATFORM
+                            Override the operating system [linux, osx, sunos,
+                            windows, common]
+    -s SOURCE, --source SOURCE
+                            Override the default page source
+    -c, --color           Override color stripping
+    -r, --render          Render local markdown files
+    -L LANGUAGE, --language LANGUAGE
+                            Override the default language
 
 ## Configuration
 
