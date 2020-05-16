@@ -35,5 +35,5 @@ jobs:
 
     - name: Test tldr cli
       run: |
-        python3 setup.py install
+        python3 -m pip install .
         tldr --version
