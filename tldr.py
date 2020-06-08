@@ -162,7 +162,6 @@ def get_language_list():
         lambda x: x.split('_')[0],
         filter(lambda x: x != 'C', languages)
     ))
-    languages = [None if language == '' else language for language in languages]
     if DEFAULT_LANG is not None:
         try:
             languages.remove(DEFAULT_LANG)
