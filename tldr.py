@@ -160,7 +160,7 @@ def get_language_list():
     languages = os.environ.get('LANGUAGES', '').split(':')
     languages = list(map(
         lambda x: x.split('_')[0],
-        filter(lambda x: x != 'C', languages)
+        filter(lambda x: not (x == 'C' or x == ''), languages)
     ))
     if DEFAULT_LANG is not None:
         try:
