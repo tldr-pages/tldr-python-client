@@ -157,7 +157,7 @@ def get_platform_list():
 
 
 def get_language_list():
-    languages = os.environ.get('LANGUAGES', '').split(':')
+    languages = os.environ.get('LANGUAGE', '').split(':')
     languages = list(map(
         lambda x: x.split('_')[0],
         filter(lambda x: not (x == 'C' or x == ''), languages)
