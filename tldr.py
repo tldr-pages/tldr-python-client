@@ -162,21 +162,24 @@ def get_platform_list():
 
 
 def get_language_list():
-    if TLDR_LANG is not None:
-        return [TLDR_LANG]
     languages = os.environ.get('LANGUAGE', '').split(':')
     languages = list(map(
         lambda x: x.split('_')[0],
         filter(lambda x: not (x == 'C' or x == ''), languages)
     ))
     if DEFAULT_LANG is not None:
+        if DEFAULT_LANG not in languages:
+            languages.append(DEFAULT_LANG)
+    else:
+        languages = []
+    if TLDR_LANG is not None:
         try:
-            languages.remove(DEFAULT_LANG)
+            languages.remove(TLDR_LANG)
         except ValueError:
             pass
-        languages.insert(0, DEFAULT_LANG)
-    else:
-        languages.append('en')
+        languages.insert(0, TLDR_LANG)
+    if "en" not in languages:
+        languages.append(None)
     return languages
 
 
