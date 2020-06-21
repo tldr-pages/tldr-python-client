@@ -27,11 +27,6 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'https://tldr-pages.github.io/assets/tldr.zip'
 )
 
-TLDR_LANG = os.environ.get(
-    'TLDR_LANGUAGE',
-    None
-)
-
 DEFAULT_LANG = os.environ.get(
     'LANG',
     'C'
@@ -172,12 +167,6 @@ def get_language_list():
             languages.append(DEFAULT_LANG)
     else:
         languages = []
-    if TLDR_LANG is not None:
-        try:
-            languages.remove(TLDR_LANG)
-        except ValueError:
-            pass
-        languages.insert(0, TLDR_LANG)
     if "en" not in languages:
         languages.append(None)
     return languages
