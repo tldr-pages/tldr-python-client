@@ -228,8 +228,9 @@ CACHE_FILE_REGEX = re.compile(r'.*\/(.*)\.md')
 
 
 def get_commands(platforms=['**']):
+    cache_files = []
     for platform in platforms:
-        cache_files = glob(os.path.join(get_cache_dir(), 'pages', platform, '*.md'))
+        cache_files += glob(os.path.join(get_cache_dir(), 'pages', platform, '*.md'))
     return [re.search(CACHE_FILE_REGEX, x).group(1) for x in cache_files]
 
 
