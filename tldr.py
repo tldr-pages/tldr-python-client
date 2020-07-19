@@ -227,7 +227,10 @@ PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 CACHE_FILE_REGEX = re.compile(r'.*\/(.*)\.md')
 
 
-def get_commands(platforms=['**']):
+def get_commands(platforms=None):
+    if platforms is None:
+        platforms = get_platform_list()
+
     cache_files = []
     for platform in platforms:
         cache_files += glob(os.path.join(get_cache_dir(), 'pages', platform, '*.md'))
@@ -396,8 +399,7 @@ def main():
         sys.exit(1)
 
     if options.list:
-        platform = options.platform or ['**']
-        print(get_commands(platform))
+        print(get_commands(options.platform))
     elif options.render:
         for command in options.command:
             if os.path.exists(command):
