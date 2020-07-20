@@ -32,7 +32,7 @@ DEFAULT_LANG = os.environ.get(
     'C'
 ).split('_')[0]
 
-if DEFAULT_LANG == 'C':
+if DEFAULT_LANG == 'C' or DEFAULT_LANG == 'POSIX':
     DEFAULT_LANG = None
 
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
@@ -160,14 +160,14 @@ def get_language_list():
     languages = os.environ.get('LANGUAGE', '').split(':')
     languages = list(map(
         lambda x: x.split('_')[0],
-        filter(lambda x: not (x == 'C' or x == ''), languages)
+        filter(lambda x: not (x == 'C' or x == 'POSIX' or x == ''), languages)
     ))
     if DEFAULT_LANG is not None:
         if DEFAULT_LANG not in languages:
             languages.append(DEFAULT_LANG)
     else:
         languages = []
-    if "en" not in languages:
+    if 'en' not in languages:
         languages.append(None)
     return languages
 
