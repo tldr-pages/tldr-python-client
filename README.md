@@ -110,7 +110,7 @@ The language that tldr will use is dependent on a number of factors. If you spec
 default to language set using `LANGUAGE` and `LANG` (ignoring the value `C` and `POSIX`).
 If neither are set, then tldr will always attempt to get the `en` page. Finally, if `LANG` is set, it uses `LANGUAGE`, if set,
 first as the priority list to try languages in, followed by `LANG` if not included in `LANGUAGE`
-and `en` as fallback (assuming it does not already appear somewhere in `LANGUAGES` or `LANG`).
+and `en` as fallback (assuming it does not already appear somewhere in `LANGUAGE` or `LANG`).
 All language values should be set to a value that follows [RFC 1766](https://tools.ietf.org/html/rfc1766.html),
 with the special exception of `C` and `POSIX` which is ignored.
 
