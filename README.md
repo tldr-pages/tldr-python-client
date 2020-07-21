@@ -59,7 +59,6 @@ You can configure the behavior and output of the `tldr` client by setting enviro
     export TLDR_CACHE_MAX_AGE=720
     export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/master/pages"
     export TLDR_DOWNLOAD_CACHE_LOCATION="https://tldr-pages.github.io/assets/tldr.zip"
-    export TLDR_LANGUAGE="en"
 
 ### Cache
 
@@ -104,16 +103,16 @@ Any of the values of above may be omitted. For example, you can do similar thing
 * `TLDR_COLOR_PARAMETER="red on_yellow underline"` for underlined red text on yellow background
 * `TLDR_COLOR_NAME="bold underline"` for default system font and background colors with underline and bolded effects
 
-### Language 
+### Language
 
 The language that tldr will use is dependent on a number of factors. If you specify a language via the
 `--language` flag, tldr will attempt to use that language and only that language. Otherwise, it will
-default to language set using either `TLDR_LANGUAGE` before falling back to `LANG` (ignoring the value `C`).
-If neither are set, then tldr will always attempt to get the `en` page. Finally, if `LANGUAGES` is set, it uses
-this as the priority list to try languages in, with the exception that it will attempt `TLDR_LANGUAGE` and `LANG`
-first, and if neither are set, will use `en` last (assuming it does not already appear somewhere in `LANGUAGES`).
+default to language set using `LANGUAGE` and `LANG` (ignoring the value `C` and `POSIX`).
+If neither are set, then tldr will always attempt to get the `en` page. Finally, if `LANG` is set, it uses `LANGUAGE`, if set,
+first as the priority list to try languages in, followed by `LANG` if not included in `LANGUAGE`
+and `en` as fallback (assuming it does not already appear somewhere in `LANGUAGES` or `LANG`).
 All language values should be set to a value that follows [RFC 1766](https://tools.ietf.org/html/rfc1766.html),
-with the special exception of `C` which is ignored.
+with the special exception of `C` and `POSIX` which is ignored.
 
 ### Remote source
 
