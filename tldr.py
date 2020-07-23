@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
 
 import sys
 import os
@@ -13,6 +14,8 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from termcolor import colored
 import colorama  # Required for Windows
+import argcomplete
+from glob import glob
 
 __version__ = "1.0.0"
 __client_specification__ = "1.2"
@@ -221,6 +224,17 @@ LEADING_SPACES_NUM = 2
 
 COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
+CACHE_FILE_REGEX = re.compile(r'.*\/(.*)\.md')
+
+
+def get_commands(platforms=None):
+    if platforms is None:
+        platforms = get_platform_list()
+
+    cache_files = []
+    for platform in platforms:
+        cache_files += glob(os.path.join(get_cache_dir(), 'pages', platform, '*.md'))
+    return [re.search(CACHE_FILE_REGEX, x).group(1) for x in cache_files]
 
 
 def colors_of(key):
@@ -312,7 +326,7 @@ def update_cache(language=None):
 def main():
     parser = ArgumentParser(
         prog="tldr",
-        usage="tldr [-u] [-p PLATFORM] [-s SOURCE] [-c] [-r] [-L LANGUAGE] " +
+        usage="tldr [-u] [-p PLATFORM] [-l] [-s SOURCE] [-c] [-r] [-L LANGUAGE]" +
         "command",
         description="Python command line client for tldr"
     )
@@ -339,6 +353,11 @@ def main():
         help="Override the operating system [linux, osx, sunos, windows, common]"
     )
 
+    parser.add_argument('-l', '--list',
+                        default=False,
+                        action='store_true',
+                        help="List all available commands for operating system")
+
     parser.add_argument('-s', '--source',
                         default=PAGES_SOURCE_LOCATION,
                         type=str,
@@ -363,9 +382,11 @@ def main():
                         help='Override the default language')
 
     parser.add_argument(
-        'command', type=str, nargs='*', help="command to lookup"
+        'command', type=str, nargs='*', help="command to lookup", metavar='command',
+        choices=get_commands() + [[]]
     )
 
+    argcomplete.autocomplete(parser)
     options = parser.parse_args()
 
     colorama.init(strip=options.color)
@@ -377,7 +398,9 @@ def main():
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    if options.render:
+    if options.list:
+        print(get_commands(options.platform))
+    elif options.render:
         for command in options.command:
             if os.path.exists(command):
                 with open(command, encoding='utf-8') as open_file:

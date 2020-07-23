@@ -26,7 +26,7 @@ setup(
             "tldr = tldr:cli"
         ]
     },
-    install_requires=['termcolor', 'colorama'],
+    install_requires=['termcolor', 'colorama', 'argcomplete'],
     tests_require=[
         'pytest',
         'pytest-runner',

@@ -42,6 +42,7 @@ optional arguments:
                         Override the default page source
   -c, --color           Override color stripping
   -r, --render          Render local markdown files
+  -l, --list            List all available commands for operating system    
   -L LANGUAGE, --language LANGUAGE
                         Override the default language
 ```
@@ -78,6 +79,10 @@ In order of precedence:
 * `~/.cache/tldr`
 
 If you are experiencing issues with *tldr*, consider deleting the cache files before trying other measures.
+
+#### Autocomplete
+
+`argcomplete` is required for autocompletion. See the `argcomplete` [docs](https://pypi.org/project/argcomplete/) for how to enable `argcomplete`. Cache will also need to be enabled and downloaded.
 
 ### SSL Inspection
 
