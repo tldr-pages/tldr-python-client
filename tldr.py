@@ -18,7 +18,7 @@ import argcomplete
 from glob import glob
 
 __version__ = "1.0.0"
-__client_specification__ = "1.2"
+__client_specification__ = "1.3"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
@@ -31,11 +31,11 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 )
 
 DEFAULT_LANG = os.environ.get(
-    'TLDR_LANGUAGE',
-    os.environ.get('LANG', None)
+    'LANG',
+    'C'
 ).split('_')[0]
 
-if DEFAULT_LANG == 'C':
+if DEFAULT_LANG == 'C' or DEFAULT_LANG == 'POSIX':
     DEFAULT_LANG = None
 
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
@@ -163,16 +163,15 @@ def get_language_list():
     languages = os.environ.get('LANGUAGE', '').split(':')
     languages = list(map(
         lambda x: x.split('_')[0],
-        filter(lambda x: not (x == 'C' or x == ''), languages)
+        filter(lambda x: not (x == 'C' or x == 'POSIX' or x == ''), languages)
     ))
     if DEFAULT_LANG is not None:
-        try:
-            languages.remove(DEFAULT_LANG)
-        except ValueError:
-            pass
-        languages.insert(0, DEFAULT_LANG)
+        if DEFAULT_LANG not in languages:
+            languages.append(DEFAULT_LANG)
     else:
-        languages.append('en')
+        languages = []
+    if 'en' not in languages:
+        languages.append(None)
     return languages
 
 
