@@ -3,7 +3,7 @@
 [![PyPI Release](https://img.shields.io/pypi/v/tldr.svg)](https://pypi.python.org/pypi/tldr)
 [![Build Status](https://travis-ci.org/tldr-pages/tldr-python-client.svg?branch=master)](https://travis-ci.org/tldr-pages/tldr-python-client)
 
-A `Python` command line client for [tldr](https://github.com/tldr-pages/tldr).
+Python command-line client for [tldr pages](https://github.com/tldr-pages/tldr).
 
 ![tldr screenshot](http://raw.github.com/tldr-pages/tldr/master/images/screenshot.png)
 
@@ -11,15 +11,21 @@ A `Python` command line client for [tldr](https://github.com/tldr-pages/tldr).
 
 ### from PyPI
 
-    pip install tldr
+```bash
+pip install tldr
+```
 
 ### from Arch Linux repository
 
-    sudo pacman -S tldr
+```bash
+sudo pacman -S tldr
+```
 
 ### from Fedora packages repository
 
-    sudo dnf install tldr
+```bash
+sudo dnf install tldr
+```
 
 ## Usage
 
@@ -51,15 +57,17 @@ optional arguments:
 
 You can configure the behavior and output of the `tldr` client by setting environment variables. For example, in the `.bashrc` file:
 
-    export TLDR_COLOR_NAME="cyan"
-    export TLDR_COLOR_DESCRIPTION="white"
-    export TLDR_COLOR_EXAMPLE="green"
-    export TLDR_COLOR_COMMAND="red"
-    export TLDR_COLOR_PARAMETER="white"
-    export TLDR_CACHE_ENABLED=1
-    export TLDR_CACHE_MAX_AGE=720
-    export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/master/pages"
-    export TLDR_DOWNLOAD_CACHE_LOCATION="https://tldr-pages.github.io/assets/tldr.zip"
+```bash
+export TLDR_COLOR_NAME="cyan"
+export TLDR_COLOR_DESCRIPTION="white"
+export TLDR_COLOR_EXAMPLE="green"
+export TLDR_COLOR_COMMAND="red"
+export TLDR_COLOR_PARAMETER="white"
+export TLDR_CACHE_ENABLED=1
+export TLDR_CACHE_MAX_AGE=720
+export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/master/pages"
+export TLDR_DOWNLOAD_CACHE_LOCATION="https://tldr-pages.github.io/assets/tldr.zip"
+```
 
 ### Cache
 
