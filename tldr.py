@@ -188,10 +188,10 @@ def get_page(command, remote=None, platforms=None, languages=None):
                 return get_page_for_platform(command, platform, remote, language)
             except HTTPError as err:
                 if err.code != 404:
-                    raise
+                    continue
             except URLError:
                 if not PAGES_SOURCE_LOCATION.startswith('file://'):
-                    raise
+                    continue
 
     return False
 
@@ -269,7 +269,7 @@ def output(page):
                     colored(
                         line.replace('>', '').replace('<', ''),
                         *colors_of('description')
-                    )
+                )
                 sys.stdout.buffer.write(line.encode('utf-8'))
             elif line[0] == '-':
                 line = '\n' + ' ' * LEADING_SPACES_NUM + \
