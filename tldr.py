@@ -414,11 +414,11 @@ def main():
                 options.language
             )
             if not result:
-                print((
+                sys.exit((
                     "`{cmd}` documentation is not available. "
                     "Consider contributing Pull Request to "
                     "https://github.com/tldr-pages/tldr"
-                ).format(cmd=command), file=sys.stderr)
+                ).format(cmd=command))
             else:
                 output(result)
         except URLError as e:
