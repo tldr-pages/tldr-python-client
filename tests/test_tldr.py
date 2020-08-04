@@ -2,9 +2,9 @@ import sys
 import io
 import types
 import unittest
+import unittest.mock
 import tldr
 import pytest
-from mock import patch
 
 
 class TLDRTests(unittest.TestCase):
@@ -25,8 +25,7 @@ class TLDRTests(unittest.TestCase):
                 self.assertEqual(tldr_output, correct_output)
 
     def test_error_message(self):
-        testargs = ["tldr", "73eb6f19cd6f"]
-        with patch.object(sys, "argv", testargs):
+        with unittest.mock.patch("sys.argv", ["tldr", "73eb6f19cd6f"]):
             with pytest.raises(SystemExit) as pytest_wrapped_e:
                 tldr.main()
             correct_output = "`73eb6f19cd6f` documentation is not available. Consider contributing Pull Request to https://github.com/tldr-pages/tldr"  # noqa
