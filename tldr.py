@@ -186,19 +186,19 @@ def get_page(command, remote=None, platforms=None, languages=None):
             if platform is None:
                 continue
             try:
-                return {"entry": get_page_for_platform(command, platform, remote, language), "error": False}
+                return {
+                    "entry": get_page_for_platform(
+                        command,
+                        platform,
+                        remote,
+                        language),
+                    "error": False}
             except HTTPError as err:
-<<<<<<< Updated upstream
-                pass
-            except URLError:
-                pass
-=======
                 if err.code != 404:
                     returnErr = {"entry": err, "error": True}
             except URLError as err:
                 if not PAGES_SOURCE_LOCATION.startswith('file://'):
                     returnErr = {"entry": err, "error": True}
->>>>>>> Stashed changes
 
     return returnErr
 
@@ -412,25 +412,6 @@ def main():
                 with open(command, encoding='utf-8') as open_file:
                     output(open_file.read().encode('utf-8').splitlines())
     else:
-<<<<<<< Updated upstream
-        try:
-            command = '-'.join(options.command)
-            result = get_page(
-                command,
-                options.source,
-                options.platform,
-                options.language
-            )
-            if not result:
-                print((
-                    "`{cmd}` documentation is not available. "
-                    "Consider contributing Pull Request to "
-                    "https://github.com/tldr-pages/tldr"
-                ).format(cmd=command), file=sys.stderr)
-            else:
-                output(result)
-        except URLError as e:
-=======
         command = '-'.join(options.command)
         result = get_page(
             command,
@@ -442,8 +423,7 @@ def main():
         if result.get("entry"):
             output(result['entry'])
         elif result['error']:
->>>>>>> Stashed changes
-            sys.exit("Error fetching from tldr: {}".format(e))
+            sys.exit("Error fetching from tldr: {}".format(result['error']))
         else:
             sys.exit((
                 "`{cmd}` documentation is not available. "
