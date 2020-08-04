@@ -419,7 +419,7 @@ def main():
             options.platform,
             options.language
         )
-        if result['error']:
+        if result.get('error'):
             sys.exit("Error fetching from tldr: {}".format(result['entry']))
         elif result.get("entry"):
             output(result['entry'])
@@ -440,3 +440,5 @@ def cli():
 
 if __name__ == "__main__":
     cli()
+y'])
+        else:
