@@ -14,7 +14,7 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from termcolor import colored
 import colorama  # Required for Windows
-import argcomplete
+from argcomplete.completers import ChoicesCompleter
 from glob import glob
 
 __version__ = "1.0.0"
@@ -269,7 +269,7 @@ def output(page):
                     colored(
                         line.replace('>', '').replace('<', ''),
                         *colors_of('description')
-                    )
+                )
                 sys.stdout.buffer.write(line.encode('utf-8'))
             elif line[0] == '-':
                 line = '\n' + ' ' * LEADING_SPACES_NUM + \
@@ -381,11 +381,9 @@ def main():
                         help='Override the default language')
 
     parser.add_argument(
-        'command', type=str, nargs='*', help="command to lookup", metavar='command',
-        choices=get_commands() + [[]]
-    )
+        'command', type=str, nargs='*', help="command to lookup", metavar='command'
+    ).completer = ChoicesCompleter(get_commands() + [[]])
 
-    argcomplete.autocomplete(parser)
     options = parser.parse_args()
 
     colorama.init(strip=options.color)
