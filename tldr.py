@@ -419,7 +419,6 @@ def main():
             options.platform,
             options.language
         )
-        print(result)
         if result.get("entry"):
             output(result['entry'])
         elif result['error']:
