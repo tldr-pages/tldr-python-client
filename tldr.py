@@ -385,7 +385,6 @@ def main():
     ).completer = argcomplete.completers.ChoicesCompleter(get_commands() + [[]])
 
     argcomplete.autocomplete(parser)
-
     options = parser.parse_args()
 
     colorama.init(strip=options.color)
