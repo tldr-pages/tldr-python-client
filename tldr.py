@@ -419,10 +419,10 @@ def main():
             options.platform,
             options.language
         )
-        if result.get("entry"):
+        if result['error']:
+            sys.exit("Error fetching from tldr: {}".format(result['entry']))
+        elif result.get("entry"):
             output(result['entry'])
-        elif result['error']:
-            sys.exit("Error fetching from tldr: {}".format(result['error']))
         else:
             sys.exit((
                 "`{cmd}` documentation is not available. "
