@@ -15,6 +15,7 @@ from urllib.error import HTTPError, URLError
 from termcolor import colored
 import colorama  # Required for Windows
 from argcomplete.completers import ChoicesCompleter
+import argcomplete
 from glob import glob
 
 __version__ = "1.0.0"
@@ -383,6 +384,8 @@ def main():
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
     ).completer = ChoicesCompleter(get_commands() + [[]])
+
+    argcomplete.autocomplete(parser)
 
     options = parser.parse_args()
 
