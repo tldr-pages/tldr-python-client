@@ -229,9 +229,10 @@ def get_commands(platforms=None):
         platforms = get_platform_list()
 
     commands = []
-    for platform in platforms:
-        path = os.path.join(get_cache_dir(), 'pages', platform)
-        commands += [file[:-3] for file in os.listdir(path) if file.endswith(".md")]
+    if os.path.exists(get_cache_dir()):
+        for platform in platforms:
+            path = os.path.join(get_cache_dir(), 'pages', platform)
+            commands += [file[:-3] for file in os.listdir(path) if file.endswith(".md")]
     return commands
 
 
