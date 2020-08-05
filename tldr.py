@@ -15,7 +15,6 @@ from urllib.error import HTTPError, URLError
 from termcolor import colored
 import colorama  # Required for Windows
 import argcomplete
-from glob import glob
 
 __version__ = "1.0.0"
 __client_specification__ = "1.3"
@@ -223,17 +222,17 @@ LEADING_SPACES_NUM = 2
 
 COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
-CACHE_FILE_REGEX = re.compile(r'.*\/(.*)\.md')
 
 
 def get_commands(platforms=None):
     if platforms is None:
         platforms = get_platform_list()
 
-    cache_files = []
+    commands = []
     for platform in platforms:
-        cache_files += glob(os.path.join(get_cache_dir(), 'pages', platform, '*.md'))
-    return [re.search(CACHE_FILE_REGEX, x).group(1) for x in cache_files]
+        path = os.path.join(get_cache_dir(), 'pages', platform)
+        commands += [file[:-3] for file in os.listdir(path) if file.endswith(".md")]
+    return commands
 
 
 def colors_of(key):
