@@ -175,7 +175,7 @@ def get_language_list():
     languages = list(map(
         get_language_code,
         filter(lambda x: not (x == 'C' or x == 'POSIX' or x == ''), languages)
-        ))
+    ))
     if DEFAULT_LANG is not None:
         if DEFAULT_LANG not in languages:
             languages.append(DEFAULT_LANG)
