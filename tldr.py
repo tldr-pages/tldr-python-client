@@ -31,19 +31,20 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 )
 
 
-def filter_languages(lang):
-    if lang in ['pt_PT', 'pt_BR', 'zh_TW']:
-        return lang
-    elif lang == "pt":
+def get_language_code(language):
+    language = language.split('.')[0]
+    if language in ['pt_PT', 'pt_BR', 'zh_TW']:
+        return language
+    elif language == "pt":
         return "pt_PT"
-    return lang.split('_')[0]
+    return language.split('_')[0]
 
 
-DEFAULT_LANG = filter_languages(
+DEFAULT_LANG = get_language_code(
     os.environ.get(
         'LANG',
         'C'
-    ).split('.')[0])
+    ))
 
 if DEFAULT_LANG == 'C' or DEFAULT_LANG == 'POSIX':
     DEFAULT_LANG = None
@@ -172,11 +173,9 @@ def get_platform_list():
 def get_language_list():
     languages = os.environ.get('LANGUAGE', '').split(':')
     languages = list(map(
-        filter_languages,
-        map(
-            lambda x: x.split('.')[0],
-            filter(lambda x: not (x == 'C' or x == 'POSIX' or x == ''), languages)
-        )))
+        get_language_code,
+        filter(lambda x: not (x == 'C' or x == 'POSIX' or x == ''), languages)
+        ))
     if DEFAULT_LANG is not None:
         if DEFAULT_LANG not in languages:
             languages.append(DEFAULT_LANG)
