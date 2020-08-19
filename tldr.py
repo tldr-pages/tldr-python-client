@@ -434,8 +434,8 @@ def main():
                         help='Override the default language')
 
     parser.add_argument(
-        'command', type=str, nargs='*', help="command to lookup", metavar='command'
-    ).completer = argcomplete.completers.ChoicesCompleter(get_commands())
+        'command', type=str, nargs='*', help="command to lookup", metavar='command',
+    )
 
     argcomplete.autocomplete(parser)
     options = parser.parse_args()
