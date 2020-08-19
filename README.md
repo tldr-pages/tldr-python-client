@@ -90,7 +90,16 @@ If you are experiencing issues with *tldr*, consider deleting the cache files be
 
 #### Autocomplete
 
-`argcomplete` is required for autocompletion. See the `argcomplete` [docs](https://pypi.org/project/argcomplete/) for how to enable `argcomplete`. Cache will also need to be enabled and downloaded.
+`shtab` is required for autocompletion using the `--print-completion` argument.
+
+```bash
+# bash
+tldr --print-completion bash | sudo tee "$BASH_COMPLETION_COMPAT_DIR"/tldr
+# zsh
+tldr --print-completion zsh | sudo tee /usr/local/share/zsh/site-functions/_tldr
+```
+
+See the `shtab` [docs](https://pypi.org/project/shtab/#usage) for other installation methods.
 
 ### SSL Inspection
 
