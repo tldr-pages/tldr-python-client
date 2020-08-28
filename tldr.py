@@ -191,8 +191,10 @@ def get_page(command, remote=None, platforms=None, languages=None):
                         command,
                         platform,
                         remote,
-                        language),
-                    "error": False}
+                        language
+                    ),
+                    "error": False
+                }
             except HTTPError as err:
                 if err.code != 404:
                     returnErr = {"entry": err, "error": True}
