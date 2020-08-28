@@ -75,8 +75,8 @@ def load_page_from_cache(command, platform, language):
         with open(get_cache_file_path(
             command,
             platform,
-            language), 'rb'
-        ) as cache_file:
+            language
+        ), 'rb') as cache_file:
             cache_file_contents = cache_file.read()
         return cache_file_contents
     except Exception:
