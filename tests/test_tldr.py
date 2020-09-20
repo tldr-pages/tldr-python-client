@@ -31,3 +31,31 @@ def test_error_message():
         print("Test {}".format(pytest_wrapped_e))
         assert pytest_wrapped_e.type == SystemExit
         assert str(pytest_wrapped_e.value) == correct_output
+
+
+@pytest.mark.parametrize("language,expected", [
+    ("en_US.UTF-8", "en"),
+    ("en_US", "en"),
+    ("en", "en"),
+    ("pt_BR", "pt_BR"),
+    ("pt_PT", "pt_PT"),
+    ("zh_TW", "zh_TW"),
+    ("pt", "pt_PT")
+])
+def test_get_language_code(language, expected):
+    assert tldr.get_language_code(language) == expected
+
+
+@pytest.mark.parametrize("language,expected", [
+    ("en_US.UTF-8", "en"),
+    ("POSIX", None),
+    ("C", None)
+])
+def test_get_default_language(language, expected, monkeypatch):
+    monkeypatch.setenv("LANG", language)
+    assert tldr.get_default_language() == expected
+
+
+def test_get_default_language_unset(monkeypatch):
+    monkeypatch.delenv("LANG", raising=False)
+    assert tldr.get_default_language() is None

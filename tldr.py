@@ -29,25 +29,6 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'https://tldr-pages.github.io/assets/tldr.zip'
 )
 
-
-def get_language_code(language):
-    language = language.split('.')[0]
-    if language in ['pt_PT', 'pt_BR', 'zh_TW']:
-        return language
-    elif language == "pt":
-        return "pt_PT"
-    return language.split('_')[0]
-
-
-DEFAULT_LANG = get_language_code(
-    os.environ.get(
-        'LANG',
-        'C'
-    ))
-
-if DEFAULT_LANG == 'C' or DEFAULT_LANG == 'POSIX':
-    DEFAULT_LANG = None
-
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
 
@@ -63,6 +44,29 @@ OS_DIRECTORIES = {
     "sunos": "sunos",
     "win32": "windows"
 }
+
+
+def get_language_code(language):
+    language = language.split('.')[0]
+    if language in ['pt_PT', 'pt_BR', 'zh_TW']:
+        return language
+    elif language == "pt":
+        return "pt_PT"
+    return language.split('_')[0]
+
+
+def get_default_language():
+    default_lang = get_language_code(
+        os.environ.get(
+            'LANG',
+            'C'
+        )
+    )
+
+    if default_lang == 'C' or default_lang == 'POSIX':
+        default_lang = None
+
+    return default_lang
 
 
 def get_cache_dir():
@@ -175,9 +179,11 @@ def get_language_list():
         get_language_code,
         filter(lambda x: not (x == 'C' or x == 'POSIX' or x == ''), languages)
     ))
-    if DEFAULT_LANG is not None:
-        if DEFAULT_LANG not in languages:
-            languages.append(DEFAULT_LANG)
+
+    default_lang = get_default_language()
+
+    if default_lang is not None and default_lang not in languages:
+        languages.append(default_lang)
     else:
         languages = []
     if 'en' not in languages:
@@ -306,7 +312,8 @@ def output(page):
 
 def update_cache(language=None):
     if language is None:
-        language = DEFAULT_LANG if DEFAULT_LANG is not None else 'en'
+        default_lang = get_default_language()
+        language = default_lang if default_lang is not None else 'en'
     elif isinstance(language, list):
         language = language[0]
     try:
