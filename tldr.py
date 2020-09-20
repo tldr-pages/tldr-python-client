@@ -16,8 +16,8 @@ from termcolor import colored
 import colorama  # Required for Windows
 import argcomplete
 
-__version__ = "1.0.0"
-__client_specification__ = "1.3"
+__version__ = "1.1.0"
+__client_specification__ = "1.4"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
