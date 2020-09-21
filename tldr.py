@@ -426,6 +426,13 @@ def main():
                 options.language
             )
             if not result:
+                result = get_page(
+                    command,
+                    options.source,
+                    options.platform,
+                    "en"
+                )
+            if not result:
                 sys.exit((
                     "`{cmd}` documentation is not available. "
                     "Consider contributing Pull Request to "
