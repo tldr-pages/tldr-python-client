@@ -200,8 +200,9 @@ def get_page(command, remote=None, platforms=None, languages=None):
                 if err.code != 404:
                     raise
             except URLError:
-                if not PAGES_SOURCE_LOCATION.startswith('file://'):
-                    raise
+                if (platform == "common" and (not (language and language != 'en'))):
+                    if not PAGES_SOURCE_LOCATION.startswith('file://'):
+                        raise
 
     return False
 
