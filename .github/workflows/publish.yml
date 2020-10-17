@@ -17,7 +17,22 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: '3.7'
+
+    - name: Install pep517
+      run: >-
+        python -m
+        pip install
+        pep517
+        --user
+
+    - name: Build a binary wheel and a source tarball
+      run: >-
+        python -m
+        pep517.build
+        --source
+        --binary
+        --out-dir dist/
 
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@master
