@@ -33,6 +33,7 @@ jobs:
         --source
         --binary
         --out-dir dist/
+        .
 
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@master
