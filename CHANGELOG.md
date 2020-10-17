@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 (10/17/2020)
+
+* Add autocomplete and `--list` command (thanks @wcheang)
+* Exit with code `1` when command not found (thanks @samuel-w)
+* Always fall back to English for LANG / LANGUAGE env vars (thanks @columbarius)
+* Check that cache directory exists on platform before using it
+
 ## 1.0.0 (05/16/2020)
 
 ### Features
