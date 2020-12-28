@@ -345,9 +345,8 @@ def update_cache(language=None):
 def main():
     parser = ArgumentParser(
         prog="tldr",
-        usage="tldr [-u] [-p PLATFORM] [-l] [-s SOURCE] [-c] [-r] [-L LANGUAGE]" +
-        " command",
-        description="Python command line client for tldr"
+        usage="tldr command [options]",
+        description="Simplified and community-driven man pages"
     )
     parser.add_argument(
         '-v', '--version',
