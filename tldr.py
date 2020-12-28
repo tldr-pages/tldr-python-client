@@ -346,7 +346,7 @@ def main():
     parser = ArgumentParser(
         prog="tldr",
         usage="tldr command [options]",
-        description="Simplified and community-driven man pages"
+        description="Python command line client for tldr"
     )
     parser.add_argument(
         '-v', '--version',
