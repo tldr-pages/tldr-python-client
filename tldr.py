@@ -138,11 +138,12 @@ def get_page_for_platform(command, platform, remote, language, only_use_cache=Fa
     data_downloaded = False
     if USE_CACHE and have_recent_cache(command, platform, language):
         data = load_page_from_cache(command, platform, language)
+    elif only_use_cache:
+        raise CacheNotExist("Cache for {} in {} not Found".format(
+            command,
+            platform,
+        ))
     else:
-        if only_use_cache:
-            raise CacheNotExist("Cache for {} in {} not Found".format(
-                    command, platform
-                ))
         page_url = get_page_url(command, platform, remote, language)
         try:
             data = urlopen(
