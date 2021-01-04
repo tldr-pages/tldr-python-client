@@ -206,20 +206,21 @@ def get_page(command, remote=None, platforms=None, languages=None):
     if languages is None:
         languages = get_language_list()
     # only use cache
-    for platform in platforms:
-        for language in languages:
-            if platform is None:
-                continue
-            try:
-                return get_page_for_platform(
-                    command,
-                    platform,
-                    remote,
-                    language,
-                    only_use_cache=True,
-                )
-            except CacheNotExist:
-                continue
+    if USE_CACHE:
+        for platform in platforms:
+            for language in languages:
+                if platform is None:
+                    continue
+                try:
+                    return get_page_for_platform(
+                        command,
+                        platform,
+                        remote,
+                        language,
+                        only_use_cache=True,
+                    )
+                except CacheNotExist:
+                    continue
     for platform in platforms:
         for language in languages:
             if platform is None:
