@@ -46,6 +46,10 @@ OS_DIRECTORIES = {
 }
 
 
+class CacheNotExist(Exception):
+    pass
+
+
 def get_language_code(language):
     language = language.split('.')[0]
     if language in ['pt_PT', 'pt_BR', 'zh_TW']:
@@ -129,10 +133,15 @@ def get_page_url(command, platform, remote, language):
     return remote + language + "/" + platform + "/" + quote(command) + ".md"
 
 
-def get_page_for_platform(command, platform, remote, language):
+def get_page_for_platform(command, platform, remote, language, only_use_cache=False):
     data_downloaded = False
     if USE_CACHE and have_recent_cache(command, platform, language):
         data = load_page_from_cache(command, platform, language)
+    elif only_use_cache:
+        raise CacheNotExist("Cache for {} in {} not Found".format(
+            command,
+            platform,
+        ))
     else:
         page_url = get_page_url(command, platform, remote, language)
         try:
@@ -196,6 +205,22 @@ def get_page(command, remote=None, platforms=None, languages=None):
         platforms = get_platform_list()
     if languages is None:
         languages = get_language_list()
+    # only use cache
+    if USE_CACHE:
+        for platform in platforms:
+            for language in languages:
+                if platform is None:
+                    continue
+                try:
+                    return get_page_for_platform(
+                        command,
+                        platform,
+                        remote,
+                        language,
+                        only_use_cache=True,
+                    )
+                except CacheNotExist:
+                    continue
     for platform in platforms:
         for language in languages:
             if platform is None:
