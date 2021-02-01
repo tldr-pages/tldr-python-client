@@ -47,7 +47,6 @@ OS_DIRECTORIES = {
 
 
 class CacheNotExist(Exception):
-
     pass
 
 
