@@ -1,7 +1,7 @@
 # tldr-python-client
 
 [![PyPI Release](https://img.shields.io/pypi/v/tldr.svg)](https://pypi.python.org/pypi/tldr)
-[![Build Status](https://travis-ci.org/tldr-pages/tldr-python-client.svg?branch=master)](https://travis-ci.org/tldr-pages/tldr-python-client)
+[![Build](https://github.com/tldr-pages/tldr-python-client/workflows/Test/badge.svg?branch=main)](https://github.com/tldr-pages/tldr-python-client/actions?query=branch%3Amain)
 
 Python command-line client for [tldr pages](https://github.com/tldr-pages/tldr).
 
