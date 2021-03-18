@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0 (1/31/2020)
+
+* Set `--help` usage line to match node client ([#149](https://github.com/tldr-pages/tldr-python-client/pull/149))
+* Get remote resource only after all cache failed ([#151](https://github.com/tldr-pages/tldr-python-client/pull/151))
+
 ## 1.1.0 (10/17/2020)
 
 * Add autocomplete and `--list` command (thanks @wcheang)
