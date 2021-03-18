@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Explicitly state support for Python 3.9 ([#153](https://github.com/tldr-pages/tldr-python-client/pull/153))
+
 ## 1.2.0 (1/31/2020)
 
 * Set `--help` usage line to match node client ([#149](https://github.com/tldr-pages/tldr-python-client/pull/149))
