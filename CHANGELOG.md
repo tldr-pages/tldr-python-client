@@ -2,18 +2,30 @@
 
 ## 1.2.1 (04/01/2021)
 
-* Fallback to using linux as platform if pages found for current platform
+### Fixes
+
+* Fallback to using linux as platform if no pages folder found for current platform
 
 ## 1.2.0 (01/31/2020)
 
-* Set `--help` usage line to match node client ([#149](https://github.com/tldr-pages/tldr-python-client/pull/149))
+### Features
+
 * Get remote resource only after all cache failed ([#151](https://github.com/tldr-pages/tldr-python-client/pull/151)) (thanks @ramwin)
+
+### Fixes
+
+* Set `--help` usage line to match node client ([#149](https://github.com/tldr-pages/tldr-python-client/pull/149))
 
 ## 1.1.0 (10/17/2020)
 
+### Features
+
 * Add autocomplete and `--list` command (thanks @wcheang)
-* Exit with code `1` when command not found (thanks @samuel-w)
 * Always fall back to English for LANG / LANGUAGE env vars (thanks @columbarius)
+
+### Fixes
+
+* Exit with code `1` when command not found (thanks @samuel-w)
 * Check that cache directory exists on platform before using it
 
 ## 1.0.0 (05/16/2020)
