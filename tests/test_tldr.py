@@ -59,3 +59,16 @@ def test_get_default_language(language, expected, monkeypatch):
 def test_get_default_language_unset(monkeypatch):
     monkeypatch.delenv("LANG", raising=False)
     assert tldr.get_default_language() is None
+
+
+@pytest.mark.parametrize("platform, expected", [
+    ("linux2", "linux"),
+    ("win32", "windows"),
+    ("darwin", "osx"),
+    ("sunos", "sunos"),
+    ("freebsd", "linux"),
+    ("aix", "linux"),
+])
+def test_get_platform(platform, expected):
+    with mock.patch("sys.platform", platform):
+        assert tldr.get_platform() == expected

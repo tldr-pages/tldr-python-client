@@ -172,6 +172,7 @@ def get_platform():
     for key in OS_DIRECTORIES:
         if sys.platform.startswith(key):
             return OS_DIRECTORIES[key]
+    return 'linux'
 
 
 def get_platform_list():
