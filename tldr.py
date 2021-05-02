@@ -184,6 +184,7 @@ def get_platform_list():
 
 
 def get_language_list():
+    tldr_language = get_language_code(os.environ.get('TLDR_LANGUAGE', ''))
     languages = os.environ.get('LANGUAGE', '').split(':')
     languages = list(map(
         get_language_code,
@@ -192,12 +193,19 @@ def get_language_list():
 
     default_lang = get_default_language()
 
-    if default_lang is not None and default_lang not in languages:
-        languages.append(default_lang)
-    else:
+    if default_lang is None:
         languages = []
+    elif default_lang not in languages:
+        languages.append(default_lang)
+    if tldr_language:
+        # remove tldr_language if it already exists to avoid double entry
+        try:
+            languages.remove(tldr_language)
+        except ValueError:
+            pass
+        languages.insert(0, tldr_language)
     if 'en' not in languages:
-        languages.append(None)
+        languages.append('en')
     return languages
 
 
