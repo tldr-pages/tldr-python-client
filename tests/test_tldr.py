@@ -77,6 +77,7 @@ def test_tldr_language(tldr_language, language, lang, expected, monkeypatch):
             monkeypatch.setenv(name, var)
     assert tldr.get_language_list() == expected
 
+
 @pytest.mark.parametrize("platform, expected", [
     ("linux2", "linux"),
     ("win32", "windows"),
