@@ -63,6 +63,7 @@ export TLDR_COLOR_DESCRIPTION="white"
 export TLDR_COLOR_EXAMPLE="green"
 export TLDR_COLOR_COMMAND="red"
 export TLDR_COLOR_PARAMETER="white"
+export TLDR_LANGUAGE="es"
 export TLDR_CACHE_ENABLED=1
 export TLDR_CACHE_MAX_AGE=720
 export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/master/pages"
@@ -120,12 +121,14 @@ Any of the values of above may be omitted. For example, you can do similar thing
 
 The language that tldr will use is dependent on a number of factors. If you specify a language via the
 `--language` flag, tldr will attempt to use that language and only that language. Otherwise, it will
-default to language set using `LANGUAGE` and `LANG` (ignoring the value `C` and `POSIX`).
+try to use the language specified by `TLDR_LANGUAGE`. If it is not set, or the page does not exist in that language,
+then tldr will use the
+language set using `LANGUAGE` and `LANG` (ignoring the values `C` and `POSIX`).
 If neither are set, then tldr will always attempt to get the `en` page. Finally, if `LANG` is set, it uses `LANGUAGE`, if set,
 first as the priority list to try languages in, followed by `LANG` if not included in `LANGUAGE`
 and `en` as fallback (assuming it does not already appear somewhere in `LANGUAGE` or `LANG`).
 All language values should be set to a value that follows [RFC 1766](https://tools.ietf.org/html/rfc1766.html),
-with the special exception of `C` and `POSIX` which is ignored.
+with the special exceptions of `C` and `POSIX` which are ignored.
 
 ### Remote source
 
