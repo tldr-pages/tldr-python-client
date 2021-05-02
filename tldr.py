@@ -346,8 +346,12 @@ def output(page):
 
 def update_cache(language=None):
     if language is None:
-        default_lang = get_default_language()
-        language = default_lang if default_lang is not None else 'en'
+        tldr_language = os.environ.get("TLDR_LANGUAGE")
+        if tldr_language is not None:
+            language = tldr_language
+        else:
+            default_lang = get_default_language()
+            language = default_lang if default_lang is not None else 'en'
     elif isinstance(language, list):
         language = language[0]
     try:
