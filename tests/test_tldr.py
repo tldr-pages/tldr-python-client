@@ -72,7 +72,7 @@ def test_tldr_language(tldr_language, language, lang, expected, monkeypatch):
                       ("LANG", lang)]:
         # Unset environment variable if their value is given as None
         if var is None:
-            monkeypatch.delenv(name)
+            monkeypatch.delenv(name, raising=False)
         else:
             monkeypatch.setenv(name, var)
     assert tldr.get_language_list() == expected
