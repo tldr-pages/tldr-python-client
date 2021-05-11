@@ -184,6 +184,7 @@ def get_platform_list():
 
 
 def get_language_list():
+    tldr_language = get_language_code(os.environ.get('TLDR_LANGUAGE', ''))
     languages = os.environ.get('LANGUAGE', '').split(':')
     languages = list(map(
         get_language_code,
@@ -192,12 +193,19 @@ def get_language_list():
 
     default_lang = get_default_language()
 
-    if default_lang is not None and default_lang not in languages:
-        languages.append(default_lang)
-    else:
+    if default_lang is None:
         languages = []
+    elif default_lang not in languages:
+        languages.append(default_lang)
+    if tldr_language:
+        # remove tldr_language if it already exists to avoid double entry
+        try:
+            languages.remove(tldr_language)
+        except ValueError:
+            pass
+        languages.insert(0, tldr_language)
     if 'en' not in languages:
-        languages.append(None)
+        languages.append('en')
     return languages
 
 
@@ -338,8 +346,8 @@ def output(page):
 
 def update_cache(language=None):
     if language is None:
-        default_lang = get_default_language()
-        language = default_lang if default_lang is not None else 'en'
+        tldr_language = os.environ.get("TLDR_LANGUAGE", get_default_language())
+        language = tldr_language if tldr_language else 'en'
     elif isinstance(language, list):
         language = language[0]
     try:

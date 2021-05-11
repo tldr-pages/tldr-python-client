@@ -61,6 +61,23 @@ def test_get_default_language_unset(monkeypatch):
     assert tldr.get_default_language() is None
 
 
+@pytest.mark.parametrize("tldr_language, language, lang, expected", [
+    ("en", None, "fr_FR", ["en", "fr"]),
+    ("de", "ja_JA:cz_CZ", "cz_CZ", ["de", "ja", "cz", "en"]),
+    ("it", None, "C", ["it", "en"]),
+])
+def test_tldr_language(tldr_language, language, lang, expected, monkeypatch):
+    for name, var in [("TLDR_LANGUAGE", tldr_language),
+                      ("LANGUAGE", language),
+                      ("LANG", lang)]:
+        # Unset environment variable if their value is given as None
+        if var is None:
+            monkeypatch.delenv(name, raising=False)
+        else:
+            monkeypatch.setenv(name, var)
+    assert tldr.get_language_list() == expected
+
+
 @pytest.mark.parametrize("platform, expected", [
     ("linux2", "linux"),
     ("win32", "windows"),
