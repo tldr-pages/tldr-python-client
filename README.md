@@ -5,7 +5,7 @@
 
 Python command-line client for [tldr pages](https://github.com/tldr-pages/tldr).
 
-![tldr screenshot](http://raw.github.com/tldr-pages/tldr/master/images/screenshot.png)
+![tldr pages example](https://raw.github.com/tldr-pages/tldr/main/images/tldr.svg)
 
 ## Installation
 
