@@ -27,7 +27,7 @@ def test_error_message():
     with mock.patch("sys.argv", ["tldr", "73eb6f19cd6f"]):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             tldr.main()
-        correct_output = "`73eb6f19cd6f` documentation is not available. Consider contributing Pull Request to https://github.com/tldr-pages/tldr"  # noqa
+        correct_output = "`73eb6f19cd6f` documentation is not available. Consider contributing a pull request to https://github.com/tldr-pages/tldr"  # noqa
         print("Test {}".format(pytest_wrapped_e))
         assert pytest_wrapped_e.type == SystemExit
         assert str(pytest_wrapped_e.value) == correct_output
