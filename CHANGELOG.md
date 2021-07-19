@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.0.0 (07/19/2021)
+
+* __breaking__ Drop support for Python 3.5 (thanks [@nebnola](https://github.com/nebnola))
+
+### Features
+
+* Allow overriding system language using `TLDR_LANGUAGE` environment variable (thanks [@nebnola](https://github.com/nebnola))
+
+### Fixes
+
+* Improve wording of missing page error message (thanks [@CleanMachine1](https://github.com/CleanMachine1))
+
 ## 1.2.1 (04/01/2021)
 
 ### Fixes
@@ -20,12 +32,12 @@
 
 ### Features
 
-* Add autocomplete and `--list` command (thanks @wcheang)
-* Always fall back to English for LANG / LANGUAGE env vars (thanks @columbarius)
+* Add autocomplete and `--list` command (thanks [@wcheang](https://github.com/wcheang))
+* Always fall back to English for LANG / LANGUAGE env vars (thanks [@columbarius](https://github.com/columbarius))
 
 ### Fixes
 
-* Exit with code `1` when command not found (thanks @samuel-w)
+* Exit with code `1` when command not found (thanks [@samuel-w](https://github.com/samuel-w))
 * Check that cache directory exists on platform before using it
 
 ## 1.0.0 (05/16/2020)
@@ -37,7 +49,7 @@
 * __breaking__ Remove ability to print out multiple pages at the same time
 * __breaking__ Make `--update` act the same as `--download_cache`, remove ability to only update currently cached pages
 * __breaking__ Remove `--download_cache` flag (redundant to `--update`)
-* __breaking__ Remove printing of tldr page to console width, and remove any ability to paint blank lines (see #98 for more info)
+* __breaking__ Remove printing of tldr page to console width, and remove any ability to paint blank lines (see [#98](https://github.com/tldr-pages/tldr-python-client/pull/98) for more info)
 * Verify if colors specified via environment variables are valid, fallback to default if not
 * Set `User-Agent` header for urlopen requests
 * Allow specifying endpoints for pages and cache via environment variables
