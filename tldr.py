@@ -468,7 +468,7 @@ def main():
             if not result:
                 sys.exit((
                     "`{cmd}` documentation is not available. "
-                    "If you want to contribute it, \n feel free to" 
+                    "If you want to contribute it, \n feel free to"
                     " send a pull request to:https://github.com/tldr-pages/tldr"
                 ).format(cmd=command))
             else:
