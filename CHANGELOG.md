@@ -2,10 +2,9 @@
 
 ## 2.0.0 (07/19/2021)
 
-* __breaking__ Drop support for Python 3.5 (thanks [@nebnola](https://github.com/nebnola))
-
 ### Features
 
+* __breaking__ Drop support for Python 3.5 (thanks [@nebnola](https://github.com/nebnola))
 * Allow overriding system language using `TLDR_LANGUAGE` environment variable (thanks [@nebnola](https://github.com/nebnola))
 
 ### Fixes
