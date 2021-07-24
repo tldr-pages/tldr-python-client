@@ -16,7 +16,7 @@ from termcolor import colored
 import colorama  # Required for Windows
 import argcomplete
 
-__version__ = "1.2.1"
+__version__ = "2.0.0"
 __client_specification__ = "1.4"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
