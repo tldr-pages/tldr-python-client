@@ -435,9 +435,16 @@ def main():
 
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command',
-    )
+    ).complete = {"bash": "shtab_tldr_cmd_list", "zsh": "shtab_tldr_cmd_list"}
 
-    shtab.add_argument_to(parser)
+    shtab.add_argument_to(parser, preamble={
+        "bash": '''shtab_tldr_cmd_list(){{
+          compgen -W "$("{py}" -m tldr --list | sed 's/\W/ /g')" -- "$1"
+        }}'''.format(py=sys.executable),
+        "zsh": '''shtab_tldr_cmd_list(){{
+          _describe 'command' "($("{py}" -m tldr --list | sed 's/\W/ /g'))"
+        }}'''.format(py=sys.executable)})
+
     options = parser.parse_args()
 
     colorama.init(strip=options.color)
