@@ -434,14 +434,14 @@ def main():
                         help='Override the default language')
 
     parser.add_argument(
-        'command', type=str, nargs='*', help="command to lookup", metavar='command',
+        'command', type=str, nargs='*', help="command to lookup", metavar='command'
     ).complete = {"bash": "shtab_tldr_cmd_list", "zsh": "shtab_tldr_cmd_list"}
 
     shtab.add_argument_to(parser, preamble={
-        "bash": '''shtab_tldr_cmd_list(){{
+        'bash': '''shtab_tldr_cmd_list(){{
           compgen -W "$("{py}" -m tldr --list | sed 's/\W/ /g')" -- "$1"
         }}'''.format(py=sys.executable),
-        "zsh": '''shtab_tldr_cmd_list(){{
+        'zsh': '''shtab_tldr_cmd_list(){{
           _describe 'command' "($("{py}" -m tldr --list | sed 's/\W/ /g'))"
         }}'''.format(py=sys.executable)})
 
