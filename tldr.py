@@ -438,10 +438,10 @@ def main():
     ).complete = {"bash": "shtab_tldr_cmd_list", "zsh": "shtab_tldr_cmd_list"}
 
     shtab.add_argument_to(parser, preamble={
-        'bash': '''shtab_tldr_cmd_list(){{
+        'bash': r'''shtab_tldr_cmd_list(){{
           compgen -W "$("{py}" -m tldr --list | sed 's/\W/ /g')" -- "$1"
         }}'''.format(py=sys.executable),
-        'zsh': '''shtab_tldr_cmd_list(){{
+        'zsh': r'''shtab_tldr_cmd_list(){{
           _describe 'command' "($("{py}" -m tldr --list | sed 's/\W/ /g'))"
         }}'''.format(py=sys.executable)})
 
