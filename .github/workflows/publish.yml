@@ -36,7 +36,8 @@ jobs:
         --user
 
     - name: Generate the manpage
-      run: (cd docs && make man)
+      working-directory: docs
+      run: make man
 
     - name: Install pep517
       run: >-
