@@ -11,6 +11,9 @@ if version is None:
     raise SystemExit("Could not determine version to use")
 version = version.group(1)
 
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
 setup(
     name='tldr',
     author='Felix Yan',
@@ -26,7 +29,8 @@ setup(
             "tldr = tldr:cli"
         ]
     },
-    install_requires=['termcolor', 'colorama', 'shtab>=1.3.10'],
+    data_files=[('share/man/man1', ['docs/man/tldr.1'])],
+    install_requires=required,
     tests_require=[
         'pytest',
         'pytest-runner',

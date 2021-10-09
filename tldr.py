@@ -376,7 +376,7 @@ def update_cache(language=None):
         sys.exit("Error: Unable to update cache from " + DOWNLOAD_CACHE_LOCATION)
 
 
-def main():
+def create_parser():
     parser = ArgumentParser(
         prog="tldr",
         usage="tldr command [options]",
@@ -443,7 +443,14 @@ def main():
         }}'''.format(py=sys.executable),
         'zsh': r'''shtab_tldr_cmd_list(){{
           _describe 'command' "($("{py}" -m tldr --list | sed 's/\W/ /g'))"
-        }}'''.format(py=sys.executable)})
+        }}'''.format(py=sys.executable)
+    })
+      
+    return parser
+
+
+def main():
+    parser = create_parser()
 
     options = parser.parse_args()
 
