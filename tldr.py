@@ -445,7 +445,7 @@ def create_parser():
           _describe 'command' "($("{py}" -m tldr --list | sed 's/\W/ /g'))"
         }}'''.format(py=sys.executable)
     })
-      
+
     return parser
 
 
