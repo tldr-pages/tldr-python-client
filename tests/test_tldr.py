@@ -1,9 +1,10 @@
-import sys
 import io
+import os
+import pytest
+import sys
+import tldr
 import types
 from unittest import mock
-import tldr
-import pytest
 
 
 def test_whole_page():
@@ -89,3 +90,21 @@ def test_tldr_language(tldr_language, language, lang, expected, monkeypatch):
 def test_get_platform(platform, expected):
     with mock.patch("sys.platform", platform):
         assert tldr.get_platform() == expected
+
+
+def test_get_cache_dir_xdg(monkeypatch):
+    monkeypatch.setenv("XDG_CACHE_HOME", "/tmp/cache")
+    assert tldr.get_cache_dir() == "/tmp/cache/tldr"
+
+
+def test_get_cache_dir_home(monkeypatch):
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
+    monkeypatch.setenv("HOME", "/tmp/home")
+    assert tldr.get_cache_dir() == "/tmp/home/.cache/tldr"
+
+
+def test_get_cache_dir_default(monkeypatch):
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
+    monkeypatch.delenv("HOME", raising=False)
+    monkeypatch.setattr(os.path, 'expanduser', lambda _: '/tmp/expanduser')
+    assert tldr.get_cache_dir() == "/tmp/expanduser/.cache/tldr"

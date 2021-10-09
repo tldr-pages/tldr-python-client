@@ -30,6 +30,7 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'https://tldr-pages.github.io/assets/tldr.zip'
 )
 
+USE_NETWORK = int(os.environ.get('TLDR_NETWORK_ENABLED', '1')) > 0
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24))
 
@@ -75,11 +76,11 @@ def get_default_language() -> str:
 
 
 def get_cache_dir() -> str:
-    if not os.environ.get('XDG_CACHE_HOME', False):
-        if not os.environ.get('HOME', False):
-            return os.path.join(os.path.expanduser("~"), ".cache", "tldr")
+    if os.environ.get('XDG_CACHE_HOME', False):
+        return os.path.join(os.environ.get('XDG_CACHE_HOME'), 'tldr')
+    if os.environ.get('HOME', False):
         return os.path.join(os.environ.get('HOME'), '.cache', 'tldr')
-    return os.path.join(os.environ.get('XDG_CACHE_HOME'), 'tldr')
+    return os.path.join(os.path.expanduser("~"), ".cache", "tldr")
 
 
 def get_cache_file_path(command: str, platform: str, language: str) -> str:
@@ -163,10 +164,12 @@ def get_page_for_platform(
             ).read()
             data_downloaded = True
         except Exception:
+            if not USE_CACHE:
+                raise
             data = load_page_from_cache(command, platform, language)
             if data is None:
                 raise
-    if data_downloaded:
+    if data_downloaded and USE_CACHE:
         store_page_to_cache(data, command, platform, language)
     return data.splitlines()
 
