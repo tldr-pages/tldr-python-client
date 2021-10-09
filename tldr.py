@@ -14,7 +14,7 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from termcolor import colored
 import colorama  # Required for Windows
-import argcomplete
+import shtab
 
 __version__ = "2.0.0"
 __client_specification__ = "1.4"
@@ -435,7 +435,16 @@ def create_parser():
 
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
-    ).completer = argcomplete.completers.ChoicesCompleter(get_commands())
+    ).complete = {"bash": "shtab_tldr_cmd_list", "zsh": "shtab_tldr_cmd_list"}
+
+    shtab.add_argument_to(parser, preamble={
+        'bash': r'''shtab_tldr_cmd_list(){{
+          compgen -W "$("{py}" -m tldr --list | sed 's/\W/ /g')" -- "$1"
+        }}'''.format(py=sys.executable),
+        'zsh': r'''shtab_tldr_cmd_list(){{
+          _describe 'command' "($("{py}" -m tldr --list | sed 's/\W/ /g'))"
+        }}'''.format(py=sys.executable)
+    })
 
     return parser
 
@@ -443,7 +452,6 @@ def create_parser():
 def main():
     parser = create_parser()
 
-    argcomplete.autocomplete(parser)
     options = parser.parse_args()
 
     colorama.init(strip=options.color)
