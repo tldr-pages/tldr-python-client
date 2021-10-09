@@ -375,6 +375,7 @@ def update_cache(language=None):
     except Exception:
         sys.exit("Error: Unable to update cache from " + DOWNLOAD_CACHE_LOCATION)
 
+
 def create_parser():
     parser = ArgumentParser(
         prog="tldr",
