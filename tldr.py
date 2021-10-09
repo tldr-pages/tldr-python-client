@@ -9,6 +9,7 @@ from zipfile import ZipFile
 from datetime import datetime
 from io import BytesIO
 import ssl
+from typing import List, Optional, Tuple, Union
 from urllib.parse import quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
@@ -50,7 +51,7 @@ class CacheNotExist(Exception):
     pass
 
 
-def get_language_code(language):
+def get_language_code(language: str) -> str:
     language = language.split('.')[0]
     if language in ['pt_PT', 'pt_BR', 'zh_TW']:
         return language
@@ -59,7 +60,7 @@ def get_language_code(language):
     return language.split('_')[0]
 
 
-def get_default_language():
+def get_default_language() -> str:
     default_lang = get_language_code(
         os.environ.get(
             'LANG',
@@ -73,7 +74,7 @@ def get_default_language():
     return default_lang
 
 
-def get_cache_dir():
+def get_cache_dir() -> str:
     if not os.environ.get('XDG_CACHE_HOME', False):
         if not os.environ.get('HOME', False):
             return os.path.join(os.path.expanduser("~"), ".cache", "tldr")
@@ -81,14 +82,14 @@ def get_cache_dir():
     return os.path.join(os.environ.get('XDG_CACHE_HOME'), 'tldr')
 
 
-def get_cache_file_path(command, platform, language):
+def get_cache_file_path(command: str, platform: str, language: str) -> str:
     pages_dir = "pages"
     if language and language != 'en':
         pages_dir += "." + language
     return os.path.join(get_cache_dir(), pages_dir, platform, command) + ".md"
 
 
-def load_page_from_cache(command, platform, language):
+def load_page_from_cache(command: str, platform: str, language: str) -> Optional[str]:
     try:
         with open(get_cache_file_path(
             command,
@@ -101,7 +102,12 @@ def load_page_from_cache(command, platform, language):
         pass
 
 
-def store_page_to_cache(page, command, platform, language):
+def store_page_to_cache(
+    page: str,
+    command: str,
+    platform: str,
+    language: str
+) -> Optional[str]:
     try:
         cache_file_path = get_cache_file_path(command, platform, language)
         os.makedirs(os.path.dirname(cache_file_path), exist_ok=True)
@@ -111,7 +117,7 @@ def store_page_to_cache(page, command, platform, language):
         pass
 
 
-def have_recent_cache(command, platform, language):
+def have_recent_cache(command: str, platform: str, language: str) -> bool:
     try:
         cache_file_path = get_cache_file_path(command, platform, language)
         last_modified = datetime.fromtimestamp(os.path.getmtime(cache_file_path))
@@ -121,7 +127,7 @@ def have_recent_cache(command, platform, language):
         return False
 
 
-def get_page_url(command, platform, remote, language):
+def get_page_url(command: str, platform: str, remote: str, language: str) -> str:
     if remote is None:
         remote = PAGES_SOURCE_LOCATION
 
@@ -133,7 +139,13 @@ def get_page_url(command, platform, remote, language):
     return remote + language + "/" + platform + "/" + quote(command) + ".md"
 
 
-def get_page_for_platform(command, platform, remote, language, only_use_cache=False):
+def get_page_for_platform(
+    command: str,
+    platform: str,
+    remote: str,
+    language: str,
+    only_use_cache: bool = False
+) -> str:
     data_downloaded = False
     if USE_CACHE and have_recent_cache(command, platform, language):
         data = load_page_from_cache(command, platform, language)
@@ -159,7 +171,12 @@ def get_page_for_platform(command, platform, remote, language, only_use_cache=Fa
     return data.splitlines()
 
 
-def update_page_for_platform(command, platform, remote, language):
+def update_page_for_platform(
+    command: str,
+    platform: str,
+    remote: str,
+    language: str
+) -> None:
     page_url = get_page_url(platform, command, remote, language)
     data = urlopen(
         Request(page_url, headers=REQUEST_HEADERS),
@@ -168,14 +185,14 @@ def update_page_for_platform(command, platform, remote, language):
     store_page_to_cache(data, command, platform, language)
 
 
-def get_platform():
+def get_platform() -> str:
     for key in OS_DIRECTORIES:
         if sys.platform.startswith(key):
             return OS_DIRECTORIES[key]
     return 'linux'
 
 
-def get_platform_list():
+def get_platform_list() -> List[str]:
     platforms = ['common'] + list(OS_DIRECTORIES.values())
     current_platform = get_platform()
     platforms.remove(current_platform)
@@ -183,7 +200,7 @@ def get_platform_list():
     return platforms
 
 
-def get_language_list():
+def get_language_list() -> List[str]:
     tldr_language = get_language_code(os.environ.get('TLDR_LANGUAGE', ''))
     languages = os.environ.get('LANGUAGE', '').split(':')
     languages = list(map(
@@ -209,7 +226,12 @@ def get_language_list():
     return languages
 
 
-def get_page(command, remote=None, platforms=None, languages=None):
+def get_page(
+    command: str,
+    remote: Optional[str] = None,
+    platforms: Optional[List[str]] = None,
+    languages: Optional[List[str]] = None
+) -> Union[str, bool]:
     if platforms is None:
         platforms = get_platform_list()
     if languages is None:
@@ -275,7 +297,7 @@ COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
 
-def get_commands(platforms=None):
+def get_commands(platforms: Optional[List[str]] = None) -> List[str]:
     if platforms is None:
         platforms = get_platform_list()
 
@@ -289,7 +311,7 @@ def get_commands(platforms=None):
     return commands
 
 
-def colors_of(key):
+def colors_of(key: str) -> Tuple[str, str, List[str]]:
     env_key = 'TLDR_COLOR_%s' % key.upper()
     values = os.environ.get(env_key, DEFAULT_COLORS[key]).strip().split()
     color = None
@@ -305,46 +327,44 @@ def colors_of(key):
     return (color, on_color, attrs)
 
 
-def output(page):
-    # Need a better fancy method?
-    if page is not None:
+def output(page: str) -> None:
+    print()
+    for line in page:
+        line = line.rstrip().decode('utf-8')
+        if len(line) == 0:
+            continue
+        elif line[0] == '#':
+            line = ' ' * LEADING_SPACES_NUM + \
+                colored(line.replace('# ', ''), *colors_of('name')) + '\n'
+            sys.stdout.buffer.write(line.encode('utf-8'))
+        elif line[0] == '>':
+            line = ' ' * (LEADING_SPACES_NUM - 1) + \
+                colored(
+                    line.replace('>', '').replace('<', ''),
+                    *colors_of('description')
+            )
+            sys.stdout.buffer.write(line.encode('utf-8'))
+        elif line[0] == '-':
+            line = '\n' + ' ' * LEADING_SPACES_NUM + \
+                colored(line, *colors_of('example'))
+            sys.stdout.buffer.write(line.encode('utf-8'))
+        elif line[0] == '`':
+            line = line[1:-1]  # need to actually parse ``
+            elements = [' ' * 2 * LEADING_SPACES_NUM]
+            for item in COMMAND_SPLIT_REGEX.split(line):
+                item, replaced = PARAM_REGEX.subn(
+                    lambda x: colored(
+                        x.group('param'), *colors_of('parameter')),
+                    item)
+                if not replaced:
+                    item = colored(item, *colors_of('command'))
+                elements.append(item)
+            sys.stdout.buffer.write(''.join(elements).encode('utf-8'))
         print()
-        for line in page:
-            line = line.rstrip().decode('utf-8')
-            if len(line) == 0:
-                continue
-            elif line[0] == '#':
-                line = ' ' * LEADING_SPACES_NUM + \
-                    colored(line.replace('# ', ''), *colors_of('name')) + '\n'
-                sys.stdout.buffer.write(line.encode('utf-8'))
-            elif line[0] == '>':
-                line = ' ' * (LEADING_SPACES_NUM - 1) + \
-                    colored(
-                        line.replace('>', '').replace('<', ''),
-                        *colors_of('description')
-                )
-                sys.stdout.buffer.write(line.encode('utf-8'))
-            elif line[0] == '-':
-                line = '\n' + ' ' * LEADING_SPACES_NUM + \
-                    colored(line, *colors_of('example'))
-                sys.stdout.buffer.write(line.encode('utf-8'))
-            elif line[0] == '`':
-                line = line[1:-1]  # need to actually parse ``
-                elements = [' ' * 2 * LEADING_SPACES_NUM]
-                for item in COMMAND_SPLIT_REGEX.split(line):
-                    item, replaced = PARAM_REGEX.subn(
-                        lambda x: colored(
-                            x.group('param'), *colors_of('parameter')),
-                        item)
-                    if not replaced:
-                        item = colored(item, *colors_of('command'))
-                    elements.append(item)
-                sys.stdout.buffer.write(''.join(elements).encode('utf-8'))
-            print()
-        print()
+    print()
 
 
-def update_cache(language=None):
+def update_cache(language: Optional[List[str]] = None) -> None:
     if language is None:
         tldr_language = os.environ.get("TLDR_LANGUAGE", get_default_language())
         language = tldr_language if tldr_language else 'en'
@@ -376,7 +396,7 @@ def update_cache(language=None):
         sys.exit("Error: Unable to update cache from " + DOWNLOAD_CACHE_LOCATION)
 
 
-def create_parser():
+def create_parser() -> ArgumentParser:
     parser = ArgumentParser(
         prog="tldr",
         usage="tldr command [options]",
@@ -449,7 +469,7 @@ def create_parser():
     return parser
 
 
-def main():
+def main() -> None:
     parser = create_parser()
 
     options = parser.parse_args()
@@ -491,7 +511,7 @@ def main():
             sys.exit("Error fetching from tldr: {}".format(e))
 
 
-def cli():
+def cli() -> None:
     try:
         main()
     except KeyboardInterrupt:
