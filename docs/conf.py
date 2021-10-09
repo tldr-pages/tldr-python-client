@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 project = 'tldr'
 copyright = '2014, Felix Yan'
 author = 'Felix Yan'
-from tldr import __version__
+from tldr import __version__  # noqa: E402
 release = __version__
 
 # -- General configuration ---------------------------------------------------
