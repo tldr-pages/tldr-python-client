@@ -376,7 +376,7 @@ def update_cache(language=None):
         sys.exit("Error: Unable to update cache from " + DOWNLOAD_CACHE_LOCATION)
 
 
-def main():
+def create_parser():
     parser = ArgumentParser(
         prog="tldr",
         usage="tldr command [options]",
@@ -436,6 +436,12 @@ def main():
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
     ).completer = argcomplete.completers.ChoicesCompleter(get_commands())
+
+    return parser
+
+
+def main():
+    parser = create_parser()
 
     argcomplete.autocomplete(parser)
     options = parser.parse_args()
