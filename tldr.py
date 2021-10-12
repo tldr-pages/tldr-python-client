@@ -330,11 +330,15 @@ def colors_of(key: str) -> Tuple[str, str, List[str]]:
     return (color, on_color, attrs)
 
 
-def output(page: str) -> None:
+def output(page: str, plain: bool = False) -> None:
     print()
     for line in page:
         line = line.rstrip().decode('utf-8')
-        if len(line) == 0:
+
+        if plain:
+            print(line)
+            continue
+        elif len(line) == 0:
             continue
         elif line[0] == '#':
             line = ' ' * LEADING_SPACES_NUM + \
@@ -456,6 +460,11 @@ def create_parser() -> ArgumentParser:
                         type=str,
                         help='Override the default language')
 
+    parser.add_argument('-m', '--markdown',
+                        default=False,
+                        action='store_true',
+                        help='Just print the plain page file.')
+
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
     ).complete = {"bash": "shtab_tldr_cmd_list", "zsh": "shtab_tldr_cmd_list"}
@@ -492,7 +501,7 @@ def main() -> None:
         for command in options.command:
             if os.path.exists(command):
                 with open(command, encoding='utf-8') as open_file:
-                    output(open_file.read().encode('utf-8').splitlines())
+                    output(open_file.read().encode('utf-8').splitlines(), plain=options.markdown)
     else:
         try:
             command = '-'.join(options.command)
@@ -509,7 +518,7 @@ def main() -> None:
                     " send a pull request to: https://github.com/tldr-pages/tldr"
                 ).format(cmd=command))
             else:
-                output(result)
+                output(result, plain=options.markdown)
         except URLError as e:
             sys.exit("Error fetching from tldr: {}".format(e))
 
