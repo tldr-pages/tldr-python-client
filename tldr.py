@@ -503,7 +503,8 @@ def main() -> None:
         for command in options.command:
             if os.path.exists(command):
                 with open(command, encoding='utf-8') as open_file:
-                    output(open_file.read().encode('utf-8').splitlines(), plain=options.markdown)
+                    output(open_file.read().encode('utf-8').splitlines(),
+                           plain=options.markdown)
     else:
         try:
             command = '-'.join(options.command)

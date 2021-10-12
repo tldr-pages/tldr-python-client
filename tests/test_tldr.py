@@ -23,6 +23,7 @@ def test_whole_page():
             correct_output = f_rendered.read()
             assert tldr_output == correct_output
 
+
 def test_markdown_mode():
     with open("tests/data/gem.md", "rb") as f_original:
         d_original = f_original.read()
@@ -37,6 +38,7 @@ def test_markdown_mode():
         sys.stdout = old_stdout
 
         assert tldr_output == d_original
+
 
 def test_error_message():
     with mock.patch("sys.argv", ["tldr", "73eb6f19cd6f"]):
