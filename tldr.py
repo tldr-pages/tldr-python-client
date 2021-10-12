@@ -331,7 +331,8 @@ def colors_of(key: str) -> Tuple[str, str, List[str]]:
 
 
 def output(page: str, plain: bool = False) -> None:
-    print()
+    if not plain:
+        print()
     for line in page:
         line = line.rstrip().decode('utf-8')
 
