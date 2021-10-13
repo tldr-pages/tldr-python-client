@@ -37,7 +37,8 @@ def test_markdown_mode():
         tldr_output = sys.stdout.read().encode("utf-8")
         sys.stdout = old_stdout
 
-        assert tldr_output == d_original
+        # tldr adds a trailing newline
+        assert tldr_output == d_original + b"\n"
 
 
 def test_error_message():
