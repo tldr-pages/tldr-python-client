@@ -369,8 +369,7 @@ def output(page: str, plain: bool = False) -> None:
                 elements.append(item)
             sys.stdout.buffer.write(''.join(elements).encode('utf-8'))
         print()
-    if not plain:
-        print()
+    print()
 
 
 def update_cache(language: Optional[List[str]] = None) -> None:
