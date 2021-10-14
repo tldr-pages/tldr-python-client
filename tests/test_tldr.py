@@ -24,6 +24,23 @@ def test_whole_page():
             assert tldr_output == correct_output
 
 
+def test_markdown_mode():
+    with open("tests/data/gem.md", "rb") as f_original:
+        d_original = f_original.read()
+        old_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+        sys.stdout.buffer = types.SimpleNamespace()
+        sys.stdout.buffer.write = lambda x: sys.stdout.write(x.decode("utf-8"))
+        tldr.output(d_original.splitlines(), plain=True)
+
+        sys.stdout.seek(0)
+        tldr_output = sys.stdout.read().encode("utf-8")
+        sys.stdout = old_stdout
+
+        # tldr adds a trailing newline
+        assert tldr_output == d_original + b"\n"
+
+
 def test_error_message():
     with mock.patch("sys.argv", ["tldr", "73eb6f19cd6f"]):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
