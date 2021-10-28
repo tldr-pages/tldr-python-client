@@ -1,5 +1,22 @@
 # Changelog
 
+## 3.0.0 (10/27/2021)
+
+### Breaking
+
+We have moved to from [argcomplete](https://github.com/kislyuk/argcomplete) to [shtab](https://github.com/iterative/shtab) for
+providing shell completions. This library is more efficient on doing tab completion, avoiding costly time it takes for the python
+intrepreter to parse tldr to get options.
+
+See [Readme#autocomplete](https://github.com/tldr-pages/tldr-python-client#autocomplete) for details on setting up shtab. Please
+see the [argcomplete README](https://github.com/kislyuk/argcomplete) for details on where to look to remove its provided completions.
+
+### Features
+
+* __breaking__ Move to shtab for tab completion support (thanks [@casperdcl](https://github.com/casperdcl))
+* Install manpage in pypi package
+* Add option to print raw markdown (thanks [@dadav](https://github.com/dadav))
+
 ## 2.0.0 (07/19/2021)
 
 ### Features
