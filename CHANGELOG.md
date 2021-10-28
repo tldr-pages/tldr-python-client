@@ -4,7 +4,7 @@
 
 ### Breaking
 
-We have moved to from [argcomplete](https://github.com/kislyuk/argcomplete) to [shtab](https://github.com/iterative/shtab) for
+We have moved from [argcomplete](https://github.com/kislyuk/argcomplete) to [shtab](https://github.com/iterative/shtab) for
 providing shell completions. This library is more efficient on doing tab completion, avoiding costly time it takes for the python
 intrepreter to parse tldr to get options.
 
