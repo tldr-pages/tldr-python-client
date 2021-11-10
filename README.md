@@ -77,7 +77,7 @@ Cache is downloaded from `TLDR_DOWNLOAD_CACHE_LOCATION` (defaults to the one des
 * `TLDR_CACHE_ENABLED` (default is `1`):
     * If set to `1`, the client will first try to load from cache, and fall back to fetching from the internet if the cache doesn't exist or is too old.
     * If set to `0`, the client will fetch from the internet, and fall back to the cache if the page cannot be fetched from the internet.
-* `TLDR_CACHE_MAX_AGE` (default is `168`): maximum age of the cache in hours to be considered as valid when `TLDR_CACHE_ENABLED` is set to `1`.
+* `TLDR_CACHE_MAX_AGE` (default is `168` hours, which is equivalent to a week): maximum age of the cache in hours to be considered as valid when `TLDR_CACHE_ENABLED` is set to `1`.
 
 #### Cache location
 
