@@ -14,6 +14,7 @@ see the [argcomplete README](https://github.com/kislyuk/argcomplete) for details
 ### Features
 
 * __breaking__ Move to shtab for tab completion support (thanks [@casperdcl](https://github.com/casperdcl))
+* Change default max cache age from 1 day to 7 days, can get prior behavior by setting the `TLDR_CACHE_MAX_AGE` environment variable
 * Install manpage in pypi package
 * Add option to print raw markdown (thanks [@dadav](https://github.com/dadav))
 
