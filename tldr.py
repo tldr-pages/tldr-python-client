@@ -299,6 +299,8 @@ LEADING_SPACES_NUM = 2
 COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
+def test(platforms: Optional[List[str]] = None) -> List[str]:
+    print("Hello world this is a test!")
 
 def get_commands(platforms: Optional[List[str]] = None) -> List[str]:
     if platforms is None:
@@ -419,6 +421,12 @@ def create_parser() -> ArgumentParser:
         )
     )
 
+
+    parser.add_argument("--search",
+                        metavar='"KEYWORDS"',
+                        type=str,
+                        help="Searches for the specific command for a given program")
+
     parser.add_argument('-u', '--update_cache',
                         action='store_true',
                         help="Update the local cache of pages and exit")
@@ -495,7 +503,6 @@ def main() -> None:
     elif len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
-
     if options.list:
         print(get_commands(options.platform))
     elif options.render:
@@ -504,6 +511,39 @@ def main() -> None:
                 with open(command, encoding='utf-8') as open_file:
                     output(open_file.read().encode('utf-8').splitlines(),
                            plain=options.markdown)
+    elif options.search:
+        command = '-'.join(options.command)
+        get_commands(options.platform)
+        page = ''
+        maxprob = 0
+        searchquery = options.search.split(' ')
+        x = len(searchquery)
+        for i in get_commands(options.platform):
+            if i.startswith(command):
+                result = get_page(
+                        i,
+                        options.source,
+                        options.platform,
+                        options.language
+                    )
+                for word in searchquery:
+                    prob = 0
+                    for line in result:
+                        if word in str(line):
+                            p = (x - searchquery.index(word) + 1)
+                            prob+= p
+                    if prob > maxprob:
+                        maxprob = prob
+                        page = i
+
+        result = get_page(
+                page,
+                options.source,
+                options.platform,
+                options.language)
+        output(result, plain=options.markdown)
+
+
     else:
         try:
             command = '-'.join(options.command)
