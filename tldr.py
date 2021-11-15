@@ -299,9 +299,6 @@ LEADING_SPACES_NUM = 2
 COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
-def test(platforms: Optional[List[str]] = None) -> List[str]:
-    print("Hello world this is a test!")
-
 def get_commands(platforms: Optional[List[str]] = None) -> List[str]:
     if platforms is None:
         platforms = get_platform_list()
