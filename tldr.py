@@ -299,6 +299,7 @@ LEADING_SPACES_NUM = 2
 COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
+
 def get_commands(platforms: Optional[List[str]] = None) -> List[str]:
     if platforms is None:
         platforms = get_platform_list()
@@ -418,7 +419,6 @@ def create_parser() -> ArgumentParser:
         )
     )
 
-
     parser.add_argument("--search",
                         metavar='"KEYWORDS"',
                         type=str,
@@ -528,7 +528,7 @@ def main() -> None:
                     for line in result:
                         if word in str(line):
                             p = (x - searchquery.index(word) + 1)
-                            prob+= p
+                            prob += p
                     if prob > maxprob:
                         maxprob = prob
                         page = i
@@ -539,7 +539,6 @@ def main() -> None:
                 options.platform,
                 options.language)
         output(result, plain=options.markdown)
-
 
     else:
         try:
