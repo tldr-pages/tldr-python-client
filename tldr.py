@@ -532,13 +532,15 @@ def main() -> None:
                     if prob > maxprob:
                         maxprob = prob
                         page = i
-
-        result = get_page(
-                page,
-                options.source,
-                options.platform,
-                options.language)
-        output(result, plain=options.markdown)
+        if page: 
+            result = get_page(
+                    page,
+                    options.source,
+                    options.platform,
+                    options.language)
+            output(result, plain=options.markdown)
+        else:
+            print("No results found")
 
     else:
         try:
