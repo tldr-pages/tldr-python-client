@@ -526,9 +526,9 @@ def main() -> None:
                 for word in searchquery:
                     prob = 0
                     for line in result:
-                        if word in str(line):
-                            p = (x - searchquery.index(word) + 1)
-                            prob += p
+                        line = line.decode('utf-8')
+                        if word in line and (line.startswith('-') or line.startswith('>')):
+                            prob += 1
                     if prob > maxprob:
                         maxprob = prob
                         page = i
