@@ -514,7 +514,6 @@ def main() -> None:
         page = ''
         maxprob = 0
         searchquery = options.search.split(' ')
-        x = len(searchquery)
         for i in get_commands(options.platform):
             if i.startswith(command):
                 result = get_page(
@@ -527,12 +526,13 @@ def main() -> None:
                     prob = 0
                     for line in result:
                         line = line.decode('utf-8')
-                        if word in line and (line.startswith('-') or line.startswith('>')):
+                        if word in line and (line.startswith('-') 
+                                or line.startswith('>')):
                             prob += 1
                     if prob > maxprob:
                         maxprob = prob
                         page = i
-        if page: 
+        if page:
             result = get_page(
                     page,
                     options.source,
