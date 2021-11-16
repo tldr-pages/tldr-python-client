@@ -526,9 +526,9 @@ def main() -> None:
                     prob = 0
                     for line in result:
                         line = line.decode('utf-8')
-                        if word in line and (line.startswith('-') 
-                                or line.startswith('>')):
-                            prob += 1
+                        if word in line:
+                            if (line.startswith('-') or line.startswith('>')):
+                                prob += 1
                     if prob > maxprob:
                         maxprob = prob
                         page = i
