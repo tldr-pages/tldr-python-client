@@ -422,7 +422,7 @@ def create_parser() -> ArgumentParser:
     parser.add_argument("--search",
                         metavar='"KEYWORDS"',
                         type=str,
-                        help="Searches for the specific command for a given program")
+                        help="Search for a specific command from a query")
 
     parser.add_argument('-u', '--update_cache',
                         action='store_true',
