@@ -506,7 +506,7 @@ def main() -> None:
                            plain=options.markdown)
     else:
         try:
-            command = '-'.join(options.command)
+            command = '-'.join(options.command).lower()
             result = get_page(
                 command,
                 options.source,
