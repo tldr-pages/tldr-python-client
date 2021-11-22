@@ -511,7 +511,7 @@ def main() -> None:
     elif options.search:
         command = '-'.join(options.command)
         get_commands(options.platform)
-        page = ''
+        page = None
         maxprob = 0
         searchquery = options.search.split(' ')
         for i in get_commands(options.platform):
