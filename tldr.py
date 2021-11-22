@@ -510,7 +510,6 @@ def main() -> None:
                            plain=options.markdown)
     elif options.search:
         command = '-'.join(options.command)
-        get_commands(options.platform)
         page = None
         maxprob = 0
         searchquery = options.search.split(' ')
