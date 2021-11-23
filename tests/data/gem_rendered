@@ -2,6 +2,7 @@
   [1mgem[0m
 
   Interact with the package manager for the Ruby programming language.[0m
+  More information: https://rubygems.org.[0m
 
   [32m- Install latest version of a gem[0m
     [31mgem install [0mgemname[0m[31m[0m
