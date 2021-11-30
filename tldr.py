@@ -513,30 +513,27 @@ def main() -> None:
         page = None
         maxprob = 0
         searchquery = options.search.split(' ')
-        for i in get_commands(options.platform):
+
+        for i in get_commands():
             if i.startswith(command):
-                result = get_page(
-                        i,
-                        options.source,
-                        options.platform,
-                        options.language
-                    )
+                for p in get_platform_list():
+                    result = load_page_from_cache(i, p, options.language)
+                    if result is not None:
+                        break
+                result = result.decode("utf-8")
+                result = result.split()
                 for word in searchquery:
                     prob = 0
                     for line in result:
-                        line = line.decode('utf-8')
                         if word in line and \
                                 (line.startswith('-') or line.startswith('>')):
                             prob += 1
                     if prob > maxprob:
                         maxprob = prob
                         page = i
+
         if page:
-            result = get_page(
-                    page,
-                    options.source,
-                    options.platform,
-                    options.language)
+            result = get_page(page, None, options.platform, options.language)
             output(result, plain=options.markdown)
         else:
             print("No results found")
