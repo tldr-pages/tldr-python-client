@@ -518,10 +518,14 @@ def main() -> None:
             if i.startswith(command):
                 for p in get_platform_list():
                     result = load_page_from_cache(i, p, options.language)
-                    if result is not None:
+                    if result is not None and have_recent_cache(i, p, options.language):
                         break
-                result = result.decode("utf-8")
-                result = result.split()
+                try:
+                    result = result.decode("utf-8")
+                    result = result.split()
+                except AttributeError:
+                    print("Please update cache")
+                    quit()
                 for word in searchquery:
                     prob = 0
                     for line in result:
