@@ -514,9 +514,10 @@ def main() -> None:
         maxprob = 0
         searchquery = options.search.split(' ')
 
-        for i in get_commands():
+        platforms = get_platform_list()
+        for i in get_commands(platforms):
             if i.startswith(command):
-                for p in get_platform_list():
+                for p in platforms:
                     result = load_page_from_cache(i, p, options.language)
                     if result is not None and have_recent_cache(i, p, options.language):
                         break
