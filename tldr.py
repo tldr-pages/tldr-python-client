@@ -526,7 +526,7 @@ def main() -> None:
                     result = result.split()
                 except AttributeError:
                     print("Please update cache")
-                    quit()
+                    raise SystemExit
                 for word in searchquery:
                     prob = 0
                     for line in result:
