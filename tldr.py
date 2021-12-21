@@ -522,11 +522,9 @@ def main() -> None:
                     if result is not None and have_recent_cache(i, p, options.language):
                         break
                 if result is None:
-                    print("Please update cache")
-                    raise SystemExit
-                else:
-                    result = result.decode("utf-8")
-                    result = result.split()
+                    raise SystemExit("Please update cache")
+                result = result.decode("utf-8")
+                result = result.split()
                 for word in searchquery:
                     prob = 0
                     for line in result:
