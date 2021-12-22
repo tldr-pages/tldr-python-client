@@ -419,6 +419,11 @@ def create_parser() -> ArgumentParser:
         )
     )
 
+    parser.add_argument("--search",
+                        metavar='"KEYWORDS"',
+                        type=str,
+                        help="Search for a specific command from a query")
+
     parser.add_argument('-u', '--update_cache',
                         action='store_true',
                         help="Update the local cache of pages and exit")
@@ -495,7 +500,6 @@ def main() -> None:
     elif len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
-
     if options.list:
         print(get_commands(options.platform))
     elif options.render:
@@ -504,6 +508,39 @@ def main() -> None:
                 with open(command, encoding='utf-8') as open_file:
                     output(open_file.read().encode('utf-8').splitlines(),
                            plain=options.markdown)
+    elif options.search:
+        command = '-'.join(options.command)
+        page = None
+        maxprob = 0
+        searchquery = options.search.split(' ')
+
+        platforms = get_platform_list()
+        for i in get_commands(platforms):
+            if i.startswith(command):
+                for p in platforms:
+                    result = load_page_from_cache(i, p, options.language)
+                    if result is not None and have_recent_cache(i, p, options.language):
+                        break
+                if result is None:
+                    raise SystemExit("Please update cache")
+                result = result.decode("utf-8")
+                result = result.split()
+                for word in searchquery:
+                    prob = 0
+                    for line in result:
+                        if word in line and \
+                                (line.startswith('-') or line.startswith('>')):
+                            prob += 1
+                    if prob > maxprob:
+                        maxprob = prob
+                        page = i
+
+        if page:
+            result = get_page(page, None, options.platform, options.language)
+            output(result, plain=options.markdown)
+        else:
+            print("No results found")
+
     else:
         try:
             command = '-'.join(options.command).lower()
