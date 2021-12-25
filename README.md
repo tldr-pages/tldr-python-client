@@ -96,7 +96,7 @@ If you are experiencing issues with *tldr*, consider deleting the cache files be
 # bash
 tldr --print-completion bash | sudo tee "$BASH_COMPLETION_COMPAT_DIR"/tldr
 # zsh
-tldr --print-completion zsh | sudo tee /usr/local/share/zsh/site-functions/_tldr
+tldr --print-completion zsh | sudo tee /usr/share/zsh/site-functions/_tldr
 ```
 
 See the `shtab` [docs](https://pypi.org/project/shtab/#usage) for other installation methods.
