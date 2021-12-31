@@ -528,13 +528,15 @@ def main() -> None:
                 for word in searchquery:
                     prob = 0
                     for line in result:
+                        line = line.lower()
                         if word in line:
-                            if line.startswith('-'):
-                                prob += 1
+                            prob += 1
+                            if line.startswith("#"):
+                                prob += 7
                             elif line.startswith(">"):
-                                prob += 3
-                            elif line.startswith("#"):
                                 prob += 5
+                            elif line.startswith("-"):
+                                prob += 2
                     if prob > maxprob:
                         maxprob = prob
                         page = i
