@@ -6,7 +6,10 @@ import tldr
 import types
 from unittest import mock
 
+# gem is a basic test of page rendering
+# jq is a more complicated test for token parsing
 page_names = ('gem', 'jq')
+
 
 @pytest.mark.parametrize("page_name", page_names)
 def test_whole_page(page_name):
