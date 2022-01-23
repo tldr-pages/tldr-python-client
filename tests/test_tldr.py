@@ -6,10 +6,12 @@ import tldr
 import types
 from unittest import mock
 
+page_names = ('gem', 'jq')
 
-def test_whole_page():
-    with open("tests/data/gem.md", "rb") as f_original:
-        with open("tests/data/gem_rendered", "rb") as f_rendered:
+@pytest.mark.parametrize("page_name", page_names)
+def test_whole_page(page_name):
+    with open(f"tests/data/{page_name}.md", "rb") as f_original:
+        with open(f"tests/data/{page_name}_rendered", "rb") as f_rendered:
             old_stdout = sys.stdout
             sys.stdout = io.StringIO()
             sys.stdout.buffer = types.SimpleNamespace()
@@ -24,8 +26,9 @@ def test_whole_page():
             assert tldr_output == correct_output
 
 
-def test_markdown_mode():
-    with open("tests/data/gem.md", "rb") as f_original:
+@pytest.mark.parametrize("page_name", page_names)
+def test_markdown_mode(page_name):
+    with open(f"tests/data/{page_name}.md", "rb") as f_original:
         d_original = f_original.read()
         old_stdout = sys.stdout
         sys.stdout = io.StringIO()
