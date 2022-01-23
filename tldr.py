@@ -296,7 +296,7 @@ ACCEPTED_COLOR_ATTRS = [
 
 LEADING_SPACES_NUM = 2
 
-COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}})')
+COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}*}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
 
