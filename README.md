@@ -95,7 +95,7 @@ If you are experiencing issues with *tldr*, consider deleting the cache files be
 ```bash
 # bash
 tldr --print-completion bash | sudo tee "$BASH_COMPLETION_COMPAT_DIR"/tldr
-# zsh (recommend double checking where zsh/site-functions directory is located)
+# zsh (it is recommended to check where zsh/site-functions directory is located)
 ## for macOS:
 tldr --print-completion zsh | sudo tee /usr/local/share/zsh/site-functions/_tldr
 ## for Linux:
