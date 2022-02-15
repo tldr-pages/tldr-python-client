@@ -90,7 +90,7 @@ If you are experiencing issues with *tldr*, consider deleting the cache files be
 
 #### Autocomplete
 
-`shtab` is required for autocompletion using the `--print-completion` argument.
+[`shtab`](https://pypi.org/project/shtab) is required for autocompletion using the `--print-completion` argument.
 
 ```bash
 # bash
@@ -102,7 +102,12 @@ tldr --print-completion zsh | sudo tee /usr/local/share/zsh/site-functions/_tldr
 tldr --print-completion zsh | sudo tee /usr/share/zsh/site-functions/_tldr
 ```
 
-See the `shtab` [docs](https://pypi.org/project/shtab/#usage) for other installation methods.
+See the `shtab` [docs](https://pypi.org/project/shtab/#usage) for other installation methods and
+supported shells.
+
+For autocomplete in [`fish`](https://fishshell.com/), while it is not supported in `shtab` yet,
+please see (#183)[https://github.com/tldr-pages/tldr-python-client/issues/183] for manually adding
+an autocomplete for `tldr` for `fish`.
 
 ### SSL Inspection
 
