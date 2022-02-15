@@ -18,7 +18,7 @@ import colorama  # Required for Windows
 import shtab
 
 __version__ = "3.0.0"
-__client_specification__ = "1.4"
+__client_specification__ = "1.5"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
