@@ -38,7 +38,7 @@ setup(
     version=version,
     python_requires='~=3.6',
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
         "Environment :: Console",
         "Intended Audience :: End Users/Desktop",
