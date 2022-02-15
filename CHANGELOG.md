@@ -5,6 +5,7 @@
 ### Features
 
 * Add `--search` option to find tldr pages based on keywords (thanks [@gotlougit](https://github.com/gotlougit))
+* Specify support for v1.5 of the [tldr client specification](https://github.com/tldr-pages/tldr/blob/main/CLIENT-SPECIFICATION.md)
 
 ### Bugfixes
 
