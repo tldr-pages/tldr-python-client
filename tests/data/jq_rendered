@@ -1,0 +1,30 @@
+
+  [1mjq[0m
+
+  A command-line JSON processor that uses a domain-specific language.[0m
+  More information: https://stedolan.github.io/jq.[0m
+
+  [32m- Output a JSON file, in pretty-print format:[0m
+    [31mjq . [0mfile.json[0m[31m[0m
+
+  [32m- Output all elements from arrays (or all the values from objects) in a JSON file:[0m
+    [31mjq '.[]' [0mfile.json[0m[31m[0m
+
+  [32m- Read JSON objects from a file into an array, and output it (inverse of `jq .[]`):[0m
+    [31mjq --slurp . [0mfile.json[0m[31m[0m
+
+  [32m- Output the first element in a JSON file:[0m
+    [31mjq '.[0]' [0mfile.json[0m[31m[0m
+
+  [32m- Output the value of a given key of each element in a JSON text from stdin:[0m
+    [31mcat [0mfile.json[0m[31m | jq 'map(.[0mkey_name[0m[31m)'[0m
+
+  [32m- Output the value of multiple keys as a new JSON object (assuming the input JSON has the keys `key_name` and `other_key_name`):[0m
+    [31mcat [0mfile.json[0m[31m | jq '[0m{my_new_key[0m[31m: .[0mkey_name[0m[31m, [0mmy_other_key[0m[31m: .[0mother_key_name[0m}[31m'[0m
+
+  [32m- Combine multiple filters:[0m
+    [31mcat [0mfile.json[0m[31m | jq 'unique | sort | reverse'[0m
+
+  [32m- Output the value of a given key to a string (and disable JSON output):[0m
+    [31mcat [0mfile.json[0m[31m | jq --raw-output '"some text: \(.[0mkey_name[0m[31m)"'[0m
+
