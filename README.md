@@ -106,7 +106,7 @@ See the `shtab` [docs](https://pypi.org/project/shtab/#usage) for other installa
 supported shells.
 
 For autocomplete in [`fish`](https://fishshell.com/), while it is not supported in `shtab` yet,
-please see (#183)[https://github.com/tldr-pages/tldr-python-client/issues/183] for manually adding
+please see [#183](https://github.com/tldr-pages/tldr-python-client/issues/183) for manually adding
 an autocomplete for `tldr` for `fish`.
 
 ### SSL Inspection
