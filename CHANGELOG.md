@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.1.0 (02/16/2022)
+
+### Features
+
+* Add `--search` option to find tldr pages based on keywords (thanks [@gotlougit](https://github.com/gotlougit))
+* Specify support for v1.5 of the [tldr client specification](https://github.com/tldr-pages/tldr/blob/main/CLIENT-SPECIFICATION.md)
+
+### Bugfixes
+
+* Command names are lowercased before searching for page
+* Fix color printing for tokens that end with curly braces
+
 ## 3.0.0 (10/27/2021)
 
 ### Breaking
