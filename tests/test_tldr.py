@@ -131,3 +131,28 @@ def test_get_cache_dir_default(monkeypatch):
     monkeypatch.delenv("HOME", raising=False)
     monkeypatch.setattr(os.path, 'expanduser', lambda _: '/tmp/expanduser')
     assert tldr.get_cache_dir() == "/tmp/expanduser/.cache/tldr"
+
+
+@pytest.fixture()
+def clean_cache(monkeypatch, tmp_path):
+    # Ensure that we have a clean cache to prevent test pollution
+    tmp_cache = tmp_path / "throw-away-tldr-cache"
+    tmp_cache.mkdir()
+    monkeypatch.setenv(name="XDG_CACHE_HOME", value=str(tmp_cache))
+
+
+def test_get_page_from_local_pages_repository(clean_cache, tmp_path):
+    pages_path = tmp_path / "pages.fixture-specific-locale"
+    platform_path = pages_path / "fixture-specific-platform"
+    platform_path.mkdir(parents=True)
+    (platform_path / "command-under-test.md").write_text("# Content under test")
+
+    local_pages_repository = f"file://{str(pages_path).replace('.fixture-specific-locale', '')}"
+
+    test_page_first_line = tldr.get_page(
+        command="command-under-test",
+        platforms=["fixture-specific-platform"],
+        remote=local_pages_repository,
+        languages=["fixture-specific-locale"]
+    )[0]
+    assert b'# Content under test' in test_page_first_line
