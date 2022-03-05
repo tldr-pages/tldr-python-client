@@ -152,7 +152,29 @@ def test_get_page_from_local_pages_repository(clean_cache, tmp_path):
     test_page_first_line = tldr.get_page(
         command="command-under-test",
         platforms=["fixture-specific-platform"],
-        remote=local_pages_repository,
+        source=local_pages_repository,
         languages=["fixture-specific-locale"]
     )[0]
     assert b'# Content under test' in test_page_first_line
+
+
+def test_default_source_configuration():
+    source = tldr.get_pages_source_location()
+    assert source == tldr.DEFAULT_SOURCE_LOCATION
+
+
+def test_source_arg_configuration():
+    source = tldr.get_pages_source_location("source_arg/")
+    assert source == "source_arg"
+
+
+def test_source_env_configuration(monkeypatch):
+    monkeypatch.setenv(name="TLDR_PAGES_SOURCE_LOCATION", value="env_source/")
+    source = tldr.get_pages_source_location()
+    assert source == "env_source"
+
+
+def test_source_overrides_env_configuration(monkeypatch):
+    monkeypatch.setenv(name="TLDR_PAGES_SOURCE_LOCATION", value="env_source/")
+    source = tldr.get_pages_source_location("source_arg")
+    assert source == "source_arg"

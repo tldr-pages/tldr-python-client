@@ -21,10 +21,8 @@ __version__ = "3.1.0"
 __client_specification__ = "1.5"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
-PAGES_SOURCE_LOCATION = os.environ.get(
-    'TLDR_PAGES_SOURCE_LOCATION',
-    'https://raw.githubusercontent.com/tldr-pages/tldr/master/pages'
-).rstrip('/')
+DEFAULT_SOURCE_LOCATION = 'https://raw.githubusercontent.com/tldr-pages/tldr/master/pages'
+
 DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'TLDR_DOWNLOAD_CACHE_LOCATION',
     'https://tldr-pages.github.io/assets/tldr.zip'
@@ -46,6 +44,13 @@ OS_DIRECTORIES = {
     "sunos": "sunos",
     "win32": "windows"
 }
+
+
+def get_pages_source_location(source_arg=None):
+    source_location = source_arg \
+                      or os.environ.get('TLDR_PAGES_SOURCE_LOCATION') \
+                      or DEFAULT_SOURCE_LOCATION
+    return source_location.rstrip('/')
 
 
 class CacheNotExist(Exception):
@@ -129,9 +134,6 @@ def have_recent_cache(command: str, platform: str, language: str) -> bool:
 
 
 def get_page_url(command: str, platform: str, remote: str, language: str) -> str:
-    if remote is None:
-        remote = PAGES_SOURCE_LOCATION
-
     if language is None or language == 'en':
         language = ''
     else:
@@ -231,7 +233,7 @@ def get_language_list() -> List[str]:
 
 def get_page(
     command: str,
-    remote: Optional[str] = None,
+    source: str,
     platforms: Optional[List[str]] = None,
     languages: Optional[List[str]] = None
 ) -> Union[str, bool]:
@@ -249,7 +251,7 @@ def get_page(
                     return get_page_for_platform(
                         command,
                         platform,
-                        remote,
+                        source,
                         language,
                         only_use_cache=True,
                     )
@@ -260,12 +262,12 @@ def get_page(
             if platform is None:
                 continue
             try:
-                return get_page_for_platform(command, platform, remote, language)
+                return get_page_for_platform(command, platform, source, language)
             except HTTPError as err:
                 if err.code != 404:
                     raise
             except URLError:
-                if not PAGES_SOURCE_LOCATION.startswith('file://'):
+                if not source.startswith('file://'):
                     raise
 
     return False
@@ -444,7 +446,7 @@ def create_parser() -> ArgumentParser:
                         help="List all available commands for operating system")
 
     parser.add_argument('-s', '--source',
-                        default=PAGES_SOURCE_LOCATION,
+                        default=None,
                         type=str,
                         help="Override the default page source")
 
@@ -542,7 +544,8 @@ def main() -> None:
                         page = i
 
         if page:
-            result = get_page(page, None, options.platform, options.language)
+            source = get_pages_source_location(options.source)
+            result = get_page(page, source, options.platform, options.language)
             output(result, plain=options.markdown)
         else:
             print("No results found")
@@ -550,12 +553,8 @@ def main() -> None:
     else:
         try:
             command = '-'.join(options.command).lower()
-            result = get_page(
-                command,
-                options.source,
-                options.platform,
-                options.language
-            )
+            source = get_pages_source_location(options.source)
+            result = get_page(command, source, options.platform, options.language)
             if not result:
                 sys.exit((
                     "`{cmd}` documentation is not available.\n"
