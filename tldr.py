@@ -46,11 +46,11 @@ OS_DIRECTORIES = {
 }
 
 
-def get_pages_source_location(source_arg=None):
+def get_pages_source_locations(source_arg=None):
     source_location = source_arg \
                       or os.environ.get('TLDR_PAGES_SOURCE_LOCATION') \
                       or DEFAULT_SOURCE_LOCATION
-    return source_location.rstrip('/')
+    return [source_location.rstrip('/')]
 
 
 class CacheNotExist(Exception):
@@ -233,7 +233,7 @@ def get_language_list() -> List[str]:
 
 def get_page(
     command: str,
-    source: str,
+    sources: List[str],
     platforms: Optional[List[str]] = None,
     languages: Optional[List[str]] = None
 ) -> Union[str, bool]:
@@ -248,10 +248,11 @@ def get_page(
                 if platform is None:
                     continue
                 try:
+                    remote = sources[0]
                     return get_page_for_platform(
                         command,
                         platform,
-                        source,
+                        remote,
                         language,
                         only_use_cache=True,
                     )
@@ -262,12 +263,14 @@ def get_page(
             if platform is None:
                 continue
             try:
-                return get_page_for_platform(command, platform, source, language)
+                remote = sources[0]
+                return get_page_for_platform(command, platform, remote, language)
             except HTTPError as err:
                 if err.code != 404:
                     raise
             except URLError:
-                if not source.startswith('file://'):
+                remote = sources[0]
+                if not remote.startswith('file://'):
                     raise
 
     return False
@@ -544,8 +547,8 @@ def main() -> None:
                         page = i
 
         if page:
-            source = get_pages_source_location(options.source)
-            result = get_page(page, source, options.platform, options.language)
+            sources = get_pages_source_locations(options.source)
+            result = get_page(page, sources, options.platform, options.language)
             output(result, plain=options.markdown)
         else:
             print("No results found")
@@ -553,8 +556,8 @@ def main() -> None:
     else:
         try:
             command = '-'.join(options.command).lower()
-            source = get_pages_source_location(options.source)
-            result = get_page(command, source, options.platform, options.language)
+            sources = get_pages_source_locations(options.source)
+            result = get_page(command, sources, options.platform, options.language)
             if not result:
                 sys.exit((
                     "`{cmd}` documentation is not available.\n"
