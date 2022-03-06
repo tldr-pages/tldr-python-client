@@ -47,10 +47,10 @@ OS_DIRECTORIES = {
 
 
 def get_pages_source_locations(source_arg=None):
-    source_location = source_arg \
+    source_locations = source_arg \
                       or os.environ.get('TLDR_PAGES_SOURCE_LOCATION') \
                       or DEFAULT_SOURCE_LOCATION
-    return [source_location.rstrip('/')]
+    return [location.rstrip('/') for location in source_locations.split(';')]
 
 
 class CacheNotExist(Exception):
@@ -243,35 +243,34 @@ def get_page(
         languages = get_language_list()
     # only use cache
     if USE_CACHE:
+        for remote in sources:
+            for platform in platforms:
+                for language in languages:
+                    if platform is None:
+                        continue
+                    try:
+                        return get_page_for_platform(
+                            command,
+                            platform,
+                            remote,
+                            language,
+                            only_use_cache=True,
+                        )
+                    except CacheNotExist:
+                        continue
+    for remote in sources:
         for platform in platforms:
             for language in languages:
                 if platform is None:
                     continue
                 try:
-                    remote = sources[0]
-                    return get_page_for_platform(
-                        command,
-                        platform,
-                        remote,
-                        language,
-                        only_use_cache=True,
-                    )
-                except CacheNotExist:
-                    continue
-    for platform in platforms:
-        for language in languages:
-            if platform is None:
-                continue
-            try:
-                remote = sources[0]
-                return get_page_for_platform(command, platform, remote, language)
-            except HTTPError as err:
-                if err.code != 404:
-                    raise
-            except URLError:
-                remote = sources[0]
-                if not remote.startswith('file://'):
-                    raise
+                    return get_page_for_platform(command, platform, remote, language)
+                except HTTPError as err:
+                    if err.code != 404:
+                        raise
+                except URLError:
+                    if not remote.startswith('file://'):
+                        raise
 
     return False
 
