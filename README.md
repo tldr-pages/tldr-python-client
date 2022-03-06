@@ -155,5 +155,6 @@ can either use the `--source` flag when using tldr or by specifying the followin
 * `TLDR_PAGES_SOURCE_LOCATION` to control where to get individual pages from
   * defaults to `https://raw.githubusercontent.com/tldr-pages/tldr/master/pages`
   * it can also point to local directory using `file:///path/to/directory`
+  * multiple sources can be specified in a ';' delimited string, with the first match being returned.
 * `TLDR_DOWNLOAD_CACHE_LOCATION` to control where to pull a zip of all pages from
   * defaults to `https://tldr-pages.github.io/assets/tldr.zip`
