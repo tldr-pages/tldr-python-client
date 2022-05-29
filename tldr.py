@@ -14,7 +14,7 @@ from urllib.parse import quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from termcolor import colored
-import colorama  # Required for Windows
+import colorama
 import shtab
 
 __version__ = "3.1.0"
@@ -492,7 +492,21 @@ def main() -> None:
 
     options = parser.parse_args()
 
-    colorama.init(strip=options.color)
+    isWindows = True if get_platform() == 'windows' else None
+    if isWindows:
+        # Sets the ENABLE_VIRTUAL_TERMINAL_PROCESSING flag using the Windows API
+        from ctypes import windll, wintypes, byref
+        kernel32 = windll.kernel32
+        mode = wintypes.DWORD()
+
+        for std_id in (-11, -12): # stdout, stderr
+            hConsoleHandle = kernel32.GetStdHandle(std_id)
+            kernel32.GetConsoleMode(hConsoleHandle, byref(mode))
+            if not mode.value & 0x4:
+                mode.value |= 0x4
+                kernel32.SetConsoleMode(hConsoleHandle, mode)
+
+    colorama.init(strip=options.color, convert=isWindows)
 
     if options.update_cache:
         update_cache(language=options.language)
