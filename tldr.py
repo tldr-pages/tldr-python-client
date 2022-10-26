@@ -331,6 +331,9 @@ def colors_of(key: str) -> Tuple[str, str, List[str]]:
 
 
 def output(page: str, plain: bool = False) -> None:
+    if not sys.stdout.isatty():
+        plain = True
+
     if not plain:
         print()
     for line in page:
