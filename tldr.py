@@ -23,7 +23,7 @@ __client_specification__ = "1.5"
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
     'TLDR_PAGES_SOURCE_LOCATION',
-    'https://raw.githubusercontent.com/tldr-pages/tldr/master/pages'
+    'https://raw.githubusercontent.com/tldr-pages/tldr/main/pages'
 ).rstrip('/')
 DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'TLDR_DOWNLOAD_CACHE_LOCATION',
