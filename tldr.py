@@ -23,7 +23,7 @@ __client_specification__ = "1.5"
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
     'TLDR_PAGES_SOURCE_LOCATION',
-    'https://raw.githubusercontent.com/tldr-pages/tldr/master/pages'
+    'https://raw.githubusercontent.com/tldr-pages/tldr/main/pages'
 ).rstrip('/')
 DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'TLDR_DOWNLOAD_CACHE_LOCATION',
@@ -477,10 +477,10 @@ def create_parser() -> ArgumentParser:
 
     shtab.add_argument_to(parser, preamble={
         'bash': r'''shtab_tldr_cmd_list(){{
-          compgen -W "$("{py}" -m tldr --list | sed 's/\W/ /g')" -- "$1"
+          compgen -W "$("{py}" -m tldr --list | sed 's/[^[:alnum:]_]/ /g')" -- "$1"
         }}'''.format(py=sys.executable),
         'zsh': r'''shtab_tldr_cmd_list(){{
-          _describe 'command' "($("{py}" -m tldr --list | sed 's/\W/ /g'))"
+          _describe 'command' "($("{py}" -m tldr --list | sed 's/[^[:alnum:]_]/ /g'))"
         }}'''.format(py=sys.executable)
     })
 
@@ -493,6 +493,8 @@ def main() -> None:
     options = parser.parse_args()
 
     colorama.init(strip=options.color)
+    if options.color is False:
+        os.environ["FORCE_COLOR"] = "true"
 
     if options.update_cache:
         update_cache(language=options.language)

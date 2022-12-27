@@ -66,13 +66,13 @@ export TLDR_COLOR_PARAMETER="white"
 export TLDR_LANGUAGE="es"
 export TLDR_CACHE_ENABLED=1
 export TLDR_CACHE_MAX_AGE=720
-export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/master/pages"
+export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/main/pages"
 export TLDR_DOWNLOAD_CACHE_LOCATION="https://tldr-pages.github.io/assets/tldr.zip"
 ```
 
 ### Cache
 
-Cache is downloaded from `TLDR_DOWNLOAD_CACHE_LOCATION` (defaults to the one described in [the client specification](https://github.com/tldr-pages/tldr/blob/master/CLIENT-SPECIFICATION.md#caching)), unzipped and extracted into the [local cache directory](#cache-location). Pages are loaded directly from `TLDR_PAGES_SOURCE_LOCATION` if `tldr <command>` is used.
+Cache is downloaded from `TLDR_DOWNLOAD_CACHE_LOCATION` (defaults to the one described in [the client specification](https://github.com/tldr-pages/tldr/blob/main/CLIENT-SPECIFICATION.md#caching)), unzipped and extracted into the [local cache directory](#cache-location). Pages are loaded directly from `TLDR_PAGES_SOURCE_LOCATION` if `tldr <command>` is used.
 
 * `TLDR_CACHE_ENABLED` (default is `1`):
     * If set to `1`, the client will first try to load from cache, and fall back to fetching from the internet if the cache doesn't exist or is too old.
@@ -153,7 +153,7 @@ If you wish to use your own instance of the tldr pages instead of the default re
 can either use the `--source` flag when using tldr or by specifying the following environment variables:
 
 * `TLDR_PAGES_SOURCE_LOCATION` to control where to get individual pages from
-  * defaults to `https://raw.githubusercontent.com/tldr-pages/tldr/master/pages`
+  * defaults to `https://raw.githubusercontent.com/tldr-pages/tldr/main/pages`
   * it can also point to local directory using `file:///path/to/directory`
 * `TLDR_DOWNLOAD_CACHE_LOCATION` to control where to pull a zip of all pages from
   * defaults to `https://tldr-pages.github.io/assets/tldr.zip`
