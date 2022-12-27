@@ -12,7 +12,8 @@ page_names = ('gem', 'jq')
 
 
 @pytest.mark.parametrize("page_name", page_names)
-def test_whole_page(page_name):
+def test_whole_page(page_name, monkeypatch):
+    monkeypatch.setenv("FORCE_COLOR", "1")
     with open(f"tests/data/{page_name}.md", "rb") as f_original:
         with open(f"tests/data/{page_name}_rendered", "rb") as f_rendered:
             old_stdout = sys.stdout
