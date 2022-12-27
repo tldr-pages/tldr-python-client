@@ -477,10 +477,10 @@ def create_parser() -> ArgumentParser:
 
     shtab.add_argument_to(parser, preamble={
         'bash': r'''shtab_tldr_cmd_list(){{
-          compgen -W "$("{py}" -m tldr --list | sed 's/\W/ /g')" -- "$1"
+          compgen -W "$("{py}" -m tldr --list | sed 's/[^[:alnum:]_]/ /g')" -- "$1"
         }}'''.format(py=sys.executable),
         'zsh': r'''shtab_tldr_cmd_list(){{
-          _describe 'command' "($("{py}" -m tldr --list | sed 's/\W/ /g'))"
+          _describe 'command' "($("{py}" -m tldr --list | sed 's/[^[:alnum:]_]/ /g'))"
         }}'''.format(py=sys.executable)
     })
 
