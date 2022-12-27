@@ -493,7 +493,7 @@ def main() -> None:
     options = parser.parse_args()
 
     colorama.init(strip=options.color)
-    if options.color == False:
+    if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
 
     if options.update_cache:
