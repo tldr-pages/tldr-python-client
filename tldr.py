@@ -160,6 +160,7 @@ def get_page_for_platform(
         try:
             data = urlopen(
                 Request(page_url, headers=REQUEST_HEADERS),
+                timeout = 2,
                 context=URLOPEN_CONTEXT
             ).read()
             data_downloaded = True
@@ -267,6 +268,8 @@ def get_page(
             except URLError:
                 if not PAGES_SOURCE_LOCATION.startswith('file://'):
                     raise
+            except TimeoutError:
+                continue
 
     return False
 
