@@ -268,8 +268,6 @@ def get_page(
             except URLError:
                 if not PAGES_SOURCE_LOCATION.startswith('file://'):
                     raise
-            except TimeoutError:
-                continue
 
     return False
 
