@@ -160,6 +160,7 @@ def get_page_for_platform(
         try:
             data = urlopen(
                 Request(page_url, headers=REQUEST_HEADERS),
+                timeout=10,
                 context=URLOPEN_CONTEXT
             ).read()
             data_downloaded = True
