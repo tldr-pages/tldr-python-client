@@ -622,7 +622,7 @@ def main() -> None:
                 output(results[0][0], plain=options.markdown)
                 if results[1:]:
                     platform_str = results[1][1]
-                    print(f"There are other versions of this page in the {platform_str} category.")
+                    print(f"There are other versions of this page under the {platform_str} platform.")
         except URLError as e:
             sys.exit("Error fetching from tldr: {}".format(e))
 
