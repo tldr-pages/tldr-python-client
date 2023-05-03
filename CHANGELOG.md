@@ -6,7 +6,7 @@
 
 * Fix forcing color through termcolor
 * Change non-word regex to be POSIX compliant
-* Update page source to use main branch
+* Update pages source to use main branch
 
 ## 3.1.0 (02/16/2022)
 
