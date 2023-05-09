@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.2.0 (05/09/2023)
+
+### Bugfiles
+
+* Fix forcing color through termcolor
+* Change non-word regex to be POSIX compliant
+* Update pages source to use main branch
+
 ## 3.1.0 (02/16/2022)
 
 ### Features
