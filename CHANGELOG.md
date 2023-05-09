@@ -2,7 +2,7 @@
 
 ## 3.2.0 (05/09/2023)
 
-### Bugfiles
+### Bugfixes
 
 * Fix forcing color through termcolor
 * Change non-word regex to be POSIX compliant (thanks [@stevejbrown](https://github.com/stevejbrown))
