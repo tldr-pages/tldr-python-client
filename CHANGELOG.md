@@ -5,8 +5,9 @@
 ### Bugfiles
 
 * Fix forcing color through termcolor
-* Change non-word regex to be POSIX compliant
+* Change non-word regex to be POSIX compliant (thanks [@stevejbrown](https://github.com/stevejbrown))
 * Update pages source to use main branch
+* Add a timeout to the url requests (thanks [@Jaimepas77](https://github.com/Jaimepas77))
 
 ## 3.1.0 (02/16/2022)
 
