@@ -27,6 +27,12 @@ sudo pacman -S tldr
 sudo dnf install tldr
 ```
 
+### from Snap Store
+
+```bash
+sudo snap install tldr
+```
+
 ## Usage
 
 ```
