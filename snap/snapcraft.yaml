@@ -1,0 +1,63 @@
+name: tldr # you probably want to 'snapcraft register <name>'
+base: core22 # the base snap is the execution environment for this snap
+version: '3.2.0' # just for humans, typically '1.2+git' or '1.3.2'
+summary: tldr python client # 79 char long summary
+description: Python command-line client for tldr pages.
+
+grade: stable # must be 'stable' to release into candidate/stable channels
+confinement: strict # use 'strict' once you have the right plugs and slots
+
+parts:
+  tldr:
+    # See 'snapcraft plugins'
+    plugin: python
+    source: https://github.com/tldr-pages/tldr-python-client.git
+    source-tag: $SNAPCRAFT_PROJECT_VERSION
+    build-environment:
+      # WORKAROUND: The python plugin is broken with gnome extension
+      - PATH: ${CRAFT_PART_INSTALL}/bin:${PATH}
+      - PYTHONPATH: ${CRAFT_PART_INSTALL}/lib/python3.10/site-packages
+    override-pull: |
+      craftctl default
+      sed -i "/data_files=\[('share\/man\/man1', \['docs\/man\/tldr\.1'\])\],/d" setup.py
+    override-build: |
+      craftctl default
+      cd $CRAFT_PART_SRC/docs
+      make man
+      mkdir -p $CRAFT_PART_INSTALL/share/man/man1
+      cp -r $CRAFT_PART_SRC/docs/man/tldr.1 $CRAFT_PART_INSTALL/share/man/man1/tldr.1
+    python-packages:
+      - Sphinx
+      - sphinx-argparse
+    prime:
+      - -include
+      - -bin/activate
+      - -bin/activate.csh
+      - -bin/activate.fish
+      - -bin/Activate.ps1
+      - -bin/python
+      - -bin/python3
+      - -bin/python3.10
+      - -lib/*/*/sphinx*
+      - -lib/*/*/setuptools*
+      - -lib/*/*/pip*
+      - -lib/*/*/pkg_resources
+      - -bin/pip
+      - -bin/pip3
+      - -bin/pip3.10
+      - -bin/[a-s, u-z, _]*
+      - -pyvenv.cfg
+      - -lib/*/*/[a-b, d-r, u-z, A-B, D-R, U-Z, _]*
+      - -lib/*/*/certifi*
+      - -lib/*/*/charset*
+      - -lib/*/*/snowballs*
+
+apps:
+  tldr:
+    command: bin/tldr
+    environment:
+      PYTHONPATH: $SNAP/lib/python3.10/site-packages:$PYTHONPATH
+      #LD_LIBRARY_PATH: $SNAP/lib/man-db:$SNAP/lib:$SNAP/lib/$CRAFT_ARCH_TRIPLET
+    plugs:
+      - network
+      - home
