@@ -61,7 +61,7 @@ jobs:
     - uses: snapcore/action-build@v1
       id: snapcraft
       with:
-        path: snap/snapcraft.yaml
+        path: /snap/snapcraft.yaml
     - uses: actions/upload-artifact@v3
       with:
         name: snap
