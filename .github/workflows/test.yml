@@ -58,8 +58,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-     - name: Checkout Git repository
-       uses: actions/checkout@v3
+     - uses: actions/checkout@v3
      - name: Build Snap
        uses: snapcore/action-build@v1
        id: snapcraft-build
