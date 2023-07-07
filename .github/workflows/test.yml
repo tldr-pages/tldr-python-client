@@ -53,3 +53,14 @@ jobs:
       run: |
         python3 -m pip install .
         tldr --version
+
+  build-snap:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: snapcore/action-build@v1
+      id: snapcraft
+    - uses: actions/upload-artifact@v3
+      with:
+        name: snap
+        path: ${{ steps.snapcraft.outputs.snap }}
