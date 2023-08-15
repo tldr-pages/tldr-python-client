@@ -36,7 +36,7 @@ setup(
         'pytest-runner',
     ],
     version=version,
-    python_requires='~=3.6',
+    python_requires='~=3.8',
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
