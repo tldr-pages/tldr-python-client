@@ -380,15 +380,17 @@ def update_cache(language: Optional[List[str]] = None) -> None:
     elif isinstance(language, list):
         language = language[0]
     try:
-        pages_dir = "pages"
+        pages_dir = "pages/"
+        cache_location = DOWNLOAD_CACHE_LOCATION
         if language and language != 'en':
-            pages_dir += "." + language
+            pages_dir = ""
+            cache_location = f"{cache_location[:-4]}-pages.{language}.zip"
         req = urlopen(Request(
-            DOWNLOAD_CACHE_LOCATION,
+            cache_location,
             headers=REQUEST_HEADERS
         ), context=URLOPEN_CONTEXT)
         zipfile = ZipFile(BytesIO(req.read()))
-        pattern = re.compile(r"{}/(.+)/(.+)\.md".format(pages_dir))
+        pattern = re.compile(r"{}(.+)/(.+)\.md".format(pages_dir))
         cached = 0
         for entry in zipfile.namelist():
             match = pattern.match(entry)
@@ -402,7 +404,7 @@ def update_cache(language: Optional[List[str]] = None) -> None:
                 cached += 1
         print("Updated cache for {:d} entries".format(cached))
     except Exception:
-        sys.exit("Error: Unable to update cache from " + DOWNLOAD_CACHE_LOCATION)
+        sys.exit("Error: Unable to update cache from " + cache_location)
 
 
 def create_parser() -> ArgumentParser:
