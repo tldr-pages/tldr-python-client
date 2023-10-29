@@ -301,7 +301,7 @@ COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}*}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
 
-def get_commands(platforms: Optional[List[str]] = None) -> List[str]:
+def get_commands(platforms: Optional[List[str]] = None) -> str:
     if platforms is None:
         platforms = get_platform_list()
 
@@ -312,7 +312,7 @@ def get_commands(platforms: Optional[List[str]] = None) -> List[str]:
             if not os.path.exists(path):
                 continue
             commands += [file[:-3] for file in os.listdir(path) if file.endswith(".md")]
-    return commands
+    return '\n'.join(commands)
 
 
 def colors_of(key: str) -> Tuple[str, str, List[str]]:
