@@ -4,7 +4,7 @@ on: ['push', 'pull_request']
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -46,7 +46,7 @@ jobs:
     - name: Lint codebase
       run: python3 -m flake8
 
-    - name: Run testsuite
+    - name: Run test suite
       run: python3 setup.py pytest
 
     - name: Test tldr cli
