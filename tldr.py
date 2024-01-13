@@ -81,7 +81,7 @@ def get_cache_dir() -> Path:
         return Path(os.environ.get('XDG_CACHE_HOME')) / 'tldr'
     if os.environ.get('HOME', False):
         return Path(os.environ.get('HOME')) / '.cache' / 'tldr'
-    return Path('~').expanduser() / '.cache' / 'tldr'
+    return Path.home() / '.cache' / 'tldr'
 
 
 def get_cache_file_path(command: str, platform: str, language: str) -> Path:
