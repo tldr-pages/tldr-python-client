@@ -1,5 +1,7 @@
 import io
 import os
+from pathlib import Path
+
 import pytest
 import sys
 import tldr
@@ -118,17 +120,17 @@ def test_get_platform(platform, expected):
 
 def test_get_cache_dir_xdg(monkeypatch):
     monkeypatch.setenv("XDG_CACHE_HOME", "/tmp/cache")
-    assert tldr.get_cache_dir() == "/tmp/cache/tldr"
+    assert tldr.get_cache_dir() == Path("/tmp/cache/tldr")
 
 
 def test_get_cache_dir_home(monkeypatch):
     monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
     monkeypatch.setenv("HOME", "/tmp/home")
-    assert tldr.get_cache_dir() == "/tmp/home/.cache/tldr"
+    assert tldr.get_cache_dir() == Path("/tmp/home/.cache/tldr")
 
 
 def test_get_cache_dir_default(monkeypatch):
     monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
     monkeypatch.delenv("HOME", raising=False)
     monkeypatch.setattr(os.path, 'expanduser', lambda _: '/tmp/expanduser')
-    assert tldr.get_cache_dir() == "/tmp/expanduser/.cache/tldr"
+    assert tldr.get_cache_dir() == Path("/tmp/expanduser/.cache/tldr")
