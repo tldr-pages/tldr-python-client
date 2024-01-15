@@ -508,7 +508,7 @@ def main() -> None:
         print(get_commands(options.platform))
     elif options.render:
         for command in options.command:
-            if Path(command).exists:
+            if Path(command).exists():
                 with command.open(encoding='utf-8') as open_file:
                     output(open_file.read().encode('utf-8').splitlines(),
                            plain=options.markdown)
