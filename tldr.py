@@ -504,7 +504,7 @@ def main() -> None:
         parser.print_help(sys.stderr)
         sys.exit(1)
     if options.list:
-        print(get_commands(options.platform))
+        print('\n'.join(get_commands(options.platform)))
     elif options.render:
         for command in options.command:
             if os.path.exists(command):
