@@ -36,7 +36,7 @@ setup(
         'pytest-runner',
     ],
     version=version,
-    python_requires='~=3.6',
+    python_requires='~=3.8',
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
@@ -47,8 +47,6 @@ setup(
         "Operating System :: POSIX :: SunOS/Solaris",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Microsoft :: Windows",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",

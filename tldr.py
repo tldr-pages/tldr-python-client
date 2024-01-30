@@ -17,7 +17,7 @@ from termcolor import colored
 import colorama  # Required for Windows
 import shtab
 
-__version__ = "3.1.0"
+__version__ = "3.2.0"
 __client_specification__ = "1.5"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
@@ -557,7 +557,7 @@ def main() -> None:
         parser.print_help(sys.stderr)
         sys.exit(1)
     if options.list:
-        print(get_commands(options.platform))
+        print('\n'.join(get_commands(options.platform)))
     elif options.render:
         for command in options.command:
             if os.path.exists(command):
