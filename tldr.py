@@ -43,6 +43,9 @@ if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
 OS_DIRECTORIES = {
     "linux": "linux",
     "darwin": "osx",
+    "freebsd": "freebsd",
+    "openbsd": "openbsd",
+    "netbsd": "netbsd",
     "sunos": "sunos",
     "win32": "windows"
 }
