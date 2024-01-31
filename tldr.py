@@ -44,6 +44,9 @@ if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
 OS_DIRECTORIES = {
     "linux": "linux",
     "darwin": "osx",
+    "freebsd": "freebsd",
+    "openbsd": "openbsd",
+    "netbsd": "netbsd",
     "sunos": "sunos",
     "win32": "windows"
 }
@@ -505,7 +508,7 @@ def main() -> None:
         parser.print_help(sys.stderr)
         sys.exit(1)
     if options.list:
-        print(get_commands(options.platform))
+        print('\n'.join(get_commands(options.platform)))
     elif options.render:
         for command in options.command:
             if Path(command).exists():

@@ -9,6 +9,8 @@ Python command-line client for [tldr pages](https://github.com/tldr-pages/tldr).
 
 ## Installation
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/tldr-python-client.svg)](https://repology.org/project/python-tldr-client/versions)
+
 ### from PyPI
 
 ```bash
