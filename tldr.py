@@ -397,9 +397,15 @@ def update_cache(language: Optional[List[str]] = None) -> None:
                         language
                     )
                     cached += 1
-            print("Updated cache for language {}: {:d} entries".format(language, cached))
+            print(
+                "Updated cache for language "
+                f"{language}: {cached} entries"
+            )
         except Exception:
-            print("Error: Unable to update cache for language {} from {}".format(language, cache_location))
+            print(
+                "Error: Unable to update cache for language "
+                f"{language} from {cache_location}"
+            )
 
 
 def create_parser() -> ArgumentParser:
