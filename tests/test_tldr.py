@@ -134,5 +134,5 @@ def test_get_cache_dir_home(monkeypatch):
 def test_get_cache_dir_default(monkeypatch):
     monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
     monkeypatch.delenv("HOME", raising=False)
-    monkeypatch.setattr(os.path, 'expanduser', lambda _: '/tmp/expanduser')
+    monkeypatch.setattr(pathlib.Path, 'home', lambda _: '/tmp/expanduser')
     assert tldr.get_cache_dir() == Path("/tmp/expanduser/.cache/tldr")
