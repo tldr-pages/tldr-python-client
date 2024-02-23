@@ -252,13 +252,14 @@ def get_page_for_every_platform(
                 if platform is None:
                     continue
                 try:
-                    result.append(( get_page_for_platform(
+                    result.append(
+                        (get_page_for_platform(
                                 command,
                                 platform,
                                 remote,
                                 language,
                                 only_use_cache=True,
-                            ), platform)
+                        ), platform)
                     )
                     break   # Don't want to look for the same page in other langs
                 except CacheNotExist:
@@ -272,7 +273,17 @@ def get_page_for_every_platform(
             if platform is None:
                 continue
             try:
-                result.append(( get_page_for_platform(command, platform, remote, language), platform))
+                result.append(
+                    (
+                        get_page_for_platform(
+                            command,
+                            platform,
+                            remote,
+                            language
+                        ),
+                        platform
+                    )
+                )
                 break
             except HTTPError as err:
                 if err.code != 404:
@@ -626,7 +637,11 @@ def main() -> None:
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
                     single = len(platforms_str) == 1
-                    print(f"There {'is' if single else 'are'} other version{'' if single else 's'} of this page under the following platform{'' if single else 's'}: {', '.join(platforms_str)}.")
+                    print(
+                        f"There {'is' if single else 'are'} other version"
+                        "{'' if single else 's'} of this page under the following"
+                        "platform{'' if single else 's'}: {', '.join(platforms_str)}."
+                    )
         except URLError as e:
             sys.exit("Error fetching from tldr: {}".format(e))
 
