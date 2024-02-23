@@ -108,7 +108,9 @@ def test_tldr_language(tldr_language, language, lang, expected, monkeypatch):
     ("win32", "windows"),
     ("darwin", "osx"),
     ("sunos", "sunos"),
-    ("freebsd", "linux"),
+    ("freebsd", "freebsd"),
+    ("openbsd", "openbsd"),
+    ("netbsd", "netbsd"),
     ("aix", "linux"),
 ])
 def test_get_platform(platform, expected):

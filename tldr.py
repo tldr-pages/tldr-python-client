@@ -43,6 +43,9 @@ if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
 OS_DIRECTORIES = {
     "linux": "linux",
     "darwin": "osx",
+    "freebsd": "freebsd",
+    "openbsd": "openbsd",
+    "netbsd": "netbsd",
     "sunos": "sunos",
     "win32": "windows"
 }
@@ -478,7 +481,7 @@ def create_parser() -> ArgumentParser:
                         type=str,
                         help="Search for a specific command from a query")
 
-    parser.add_argument('-u', '--update_cache',
+    parser.add_argument('-u', '--update', '--update_cache',
                         action='store_true',
                         help="Update the local cache of pages and exit")
 
@@ -550,7 +553,7 @@ def main() -> None:
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
 
-    if options.update_cache:
+    if options.update:
         update_cache(language=options.language)
         return
     elif len(sys.argv) == 1:
