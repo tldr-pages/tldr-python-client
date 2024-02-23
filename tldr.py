@@ -17,13 +17,13 @@ from termcolor import colored
 import colorama
 import shtab
 
-__version__ = "3.1.0"
+__version__ = "3.2.0"
 __client_specification__ = "1.5"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
     'TLDR_PAGES_SOURCE_LOCATION',
-    'https://raw.githubusercontent.com/tldr-pages/tldr/master/pages'
+    'https://raw.githubusercontent.com/tldr-pages/tldr/main/pages'
 ).rstrip('/')
 DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'TLDR_DOWNLOAD_CACHE_LOCATION',
@@ -43,6 +43,9 @@ if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
 OS_DIRECTORIES = {
     "linux": "linux",
     "darwin": "osx",
+    "freebsd": "freebsd",
+    "openbsd": "openbsd",
+    "netbsd": "netbsd",
     "sunos": "sunos",
     "win32": "windows"
 }
@@ -160,6 +163,7 @@ def get_page_for_platform(
         try:
             data = urlopen(
                 Request(page_url, headers=REQUEST_HEADERS),
+                timeout=10,
                 context=URLOPEN_CONTEXT
             ).read()
             data_downloaded = True
@@ -424,7 +428,7 @@ def create_parser() -> ArgumentParser:
                         type=str,
                         help="Search for a specific command from a query")
 
-    parser.add_argument('-u', '--update_cache',
+    parser.add_argument('-u', '--update', '--update_cache',
                         action='store_true',
                         help="Update the local cache of pages and exit")
 
@@ -477,10 +481,10 @@ def create_parser() -> ArgumentParser:
 
     shtab.add_argument_to(parser, preamble={
         'bash': r'''shtab_tldr_cmd_list(){{
-          compgen -W "$("{py}" -m tldr --list | sed 's/\W/ /g')" -- "$1"
+          compgen -W "$("{py}" -m tldr --list | sed 's/[^[:alnum:]_]/ /g')" -- "$1"
         }}'''.format(py=sys.executable),
         'zsh': r'''shtab_tldr_cmd_list(){{
-          _describe 'command' "($("{py}" -m tldr --list | sed 's/\W/ /g'))"
+          _describe 'command' "($("{py}" -m tldr --list | sed 's/[^[:alnum:]_]/ /g'))"
         }}'''.format(py=sys.executable)
     })
 
@@ -507,15 +511,17 @@ def main() -> None:
                 kernel32.SetConsoleMode(hConsoleHandle, mode)
 
     colorama.init(strip=options.color, convert=isWindows)
+    if options.color is False:
+        os.environ["FORCE_COLOR"] = "true"
 
-    if options.update_cache:
+    if options.update:
         update_cache(language=options.language)
         return
     elif len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
     if options.list:
-        print(get_commands(options.platform))
+        print('\n'.join(get_commands(options.platform)))
     elif options.render:
         for command in options.command:
             if os.path.exists(command):

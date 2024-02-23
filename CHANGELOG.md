@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.2.0 (05/09/2023)
+
+### Bugfixes
+
+* Fix forcing color through termcolor
+* Change non-word regex to be POSIX compliant (thanks [@stevejbrown](https://github.com/stevejbrown))
+* Update pages source to use the main branch
+* Add a timeout to the URL requests (thanks [@Jaimepas77](https://github.com/Jaimepas77))
+
 ## 3.1.0 (02/16/2022)
 
 ### Features

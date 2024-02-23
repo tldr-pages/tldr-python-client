@@ -12,7 +12,8 @@ page_names = ('gem', 'jq')
 
 
 @pytest.mark.parametrize("page_name", page_names)
-def test_whole_page(page_name):
+def test_whole_page(page_name, monkeypatch):
+    monkeypatch.setenv("FORCE_COLOR", "1")
     with open(f"tests/data/{page_name}.md", "rb") as f_original:
         with open(f"tests/data/{page_name}_rendered", "rb") as f_rendered:
             old_stdout = sys.stdout
@@ -107,7 +108,9 @@ def test_tldr_language(tldr_language, language, lang, expected, monkeypatch):
     ("win32", "windows"),
     ("darwin", "osx"),
     ("sunos", "sunos"),
-    ("freebsd", "linux"),
+    ("freebsd", "freebsd"),
+    ("openbsd", "openbsd"),
+    ("netbsd", "netbsd"),
     ("aix", "linux"),
 ])
 def test_get_platform(platform, expected):
