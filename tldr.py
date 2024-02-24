@@ -378,35 +378,38 @@ def output(page: str, plain: bool = False) -> None:
 
 
 def update_cache(language: Optional[List[str]] = None) -> None:
-    if language is None:
-        tldr_language = os.environ.get("TLDR_LANGUAGE", get_default_language())
-        language = tldr_language if tldr_language else 'en'
-    elif isinstance(language, list):
-        language = language[0]
-    try:
-        pages_dir = "pages"
-        if language and language != 'en':
-            pages_dir += "." + language
-        req = urlopen(Request(
-            DOWNLOAD_CACHE_LOCATION,
-            headers=REQUEST_HEADERS
-        ), context=URLOPEN_CONTEXT)
-        zipfile = ZipFile(BytesIO(req.read()))
-        pattern = re.compile(r"{}/(.+)/(.+)\.md".format(pages_dir))
-        cached = 0
-        for entry in zipfile.namelist():
-            match = pattern.match(entry)
-            if match:
-                store_page_to_cache(
-                    zipfile.read(entry),
-                    match.group(2),
-                    match.group(1),
-                    language
-                )
-                cached += 1
-        print("Updated cache for {:d} entries".format(cached))
-    except Exception:
-        sys.exit("Error: Unable to update cache from " + DOWNLOAD_CACHE_LOCATION)
+    languages = get_language_list()
+    if language and language[0] not in languages:
+        languages.append(language[0])
+    for language in languages:
+        try:
+            cache_location = f"{DOWNLOAD_CACHE_LOCATION[:-4]}-pages.{language}.zip"
+            req = urlopen(Request(
+                cache_location,
+                headers=REQUEST_HEADERS
+            ), context=URLOPEN_CONTEXT)
+            zipfile = ZipFile(BytesIO(req.read()))
+            pattern = re.compile(r"(.+)/(.+)\.md")
+            cached = 0
+            for entry in zipfile.namelist():
+                match = pattern.match(entry)
+                if match:
+                    store_page_to_cache(
+                        zipfile.read(entry),
+                        match.group(2),
+                        match.group(1),
+                        language
+                    )
+                    cached += 1
+            print(
+                "Updated cache for language "
+                f"{language}: {cached} entries"
+            )
+        except Exception:
+            print(
+                "Error: Unable to update cache for language "
+                f"{language} from {cache_location}"
+            )
 
 
 def create_parser() -> ArgumentParser:
@@ -429,7 +432,7 @@ def create_parser() -> ArgumentParser:
                         type=str,
                         help="Search for a specific command from a query")
 
-    parser.add_argument('-u', '--update_cache',
+    parser.add_argument('-u', '--update', '--update_cache',
                         action='store_true',
                         help="Update the local cache of pages and exit")
 
@@ -501,7 +504,7 @@ def main() -> None:
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
 
-    if options.update_cache:
+    if options.update:
         update_cache(language=options.language)
         return
     elif len(sys.argv) == 1:
