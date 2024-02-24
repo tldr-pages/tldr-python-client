@@ -5,6 +5,7 @@ import sys
 import os
 import re
 from argparse import ArgumentParser
+from pathlib import Path
 from zipfile import ZipFile
 from datetime import datetime
 from io import BytesIO
@@ -78,28 +79,28 @@ def get_default_language() -> str:
     return default_lang
 
 
-def get_cache_dir() -> str:
+def get_cache_dir() -> Path:
     if os.environ.get('XDG_CACHE_HOME', False):
-        return os.path.join(os.environ.get('XDG_CACHE_HOME'), 'tldr')
+        return Path(os.environ.get('XDG_CACHE_HOME')) / 'tldr'
     if os.environ.get('HOME', False):
-        return os.path.join(os.environ.get('HOME'), '.cache', 'tldr')
-    return os.path.join(os.path.expanduser("~"), ".cache", "tldr")
+        return Path(os.environ.get('HOME')) / '.cache' / 'tldr'
+    return Path.home() / '.cache' / 'tldr'
 
 
-def get_cache_file_path(command: str, platform: str, language: str) -> str:
+def get_cache_file_path(command: str, platform: str, language: str) -> Path:
     pages_dir = "pages"
     if language and language != 'en':
         pages_dir += "." + language
-    return os.path.join(get_cache_dir(), pages_dir, platform, command) + ".md"
+    return get_cache_dir() / pages_dir / platform / f"{command}.md"
 
 
 def load_page_from_cache(command: str, platform: str, language: str) -> Optional[str]:
     try:
-        with open(get_cache_file_path(
+        with get_cache_file_path(
             command,
             platform,
-            language), 'rb'
-        ) as cache_file:
+            language
+        ).open('rb') as cache_file:
             cache_file_contents = cache_file.read()
         return cache_file_contents
     except Exception:
@@ -114,8 +115,8 @@ def store_page_to_cache(
 ) -> Optional[str]:
     try:
         cache_file_path = get_cache_file_path(command, platform, language)
-        os.makedirs(os.path.dirname(cache_file_path), exist_ok=True)
-        with open(cache_file_path, "wb") as cache_file:
+        cache_file_path.parent.mkdir(exist_ok=True)
+        with cache_file_path.open("wb") as cache_file:
             cache_file.write(page)
     except Exception:
         pass
@@ -124,7 +125,7 @@ def store_page_to_cache(
 def have_recent_cache(command: str, platform: str, language: str) -> bool:
     try:
         cache_file_path = get_cache_file_path(command, platform, language)
-        last_modified = datetime.fromtimestamp(os.path.getmtime(cache_file_path))
+        last_modified = datetime.fromtimestamp(cache_file_path.stat().st_mtime)
         hours_passed = (datetime.now() - last_modified).total_seconds() / 3600
         return hours_passed <= MAX_CACHE_AGE
     except Exception:
@@ -309,12 +310,12 @@ def get_commands(platforms: Optional[List[str]] = None) -> List[str]:
         platforms = get_platform_list()
 
     commands = []
-    if os.path.exists(get_cache_dir()):
+    if get_cache_dir().exists():
         for platform in platforms:
-            path = os.path.join(get_cache_dir(), 'pages', platform)
-            if not os.path.exists(path):
+            path = get_cache_dir() / 'pages' / platform
+            if not path.exists():
                 continue
-            commands += [file[:-3] for file in os.listdir(path) if file.endswith(".md")]
+            commands += [file.stem for file in path.iterdir() if file.suffix == '.md']
     return commands
 
 
@@ -513,8 +514,8 @@ def main() -> None:
         print('\n'.join(get_commands(options.platform)))
     elif options.render:
         for command in options.command:
-            if os.path.exists(command):
-                with open(command, encoding='utf-8') as open_file:
+            if Path(command).exists():
+                with command.open(encoding='utf-8') as open_file:
                     output(open_file.read().encode('utf-8').splitlines(),
                            plain=options.markdown)
     elif options.search:
