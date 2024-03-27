@@ -305,17 +305,27 @@ COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}*}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
 
-def get_commands(platforms: Optional[List[str]] = None) -> List[str]:
+def get_commands(platforms: Optional[List[str]] = None,
+                 language: Optional[str] = None) -> List[str]:
     if platforms is None:
         platforms = get_platform_list()
+
+    if language:
+        languages = [get_language_code(language[0])]
+    else:
+        languages = get_language_list()
 
     commands = []
     if get_cache_dir().exists():
         for platform in platforms:
-            path = get_cache_dir() / 'pages' / platform
-            if not path.exists():
-                continue
-            commands += [file.stem for file in path.iterdir() if file.suffix == '.md']
+            for language in languages:
+                pages_dir = f'pages.{language}' if language != 'en' else 'pages'
+                path = get_cache_dir() / pages_dir / platform
+                if not path.exists():
+                    continue
+                commands += [f"{file.stem} ({language})"
+                             for file in path.iterdir()
+                             if file.suffix == '.md']
     return commands
 
 
@@ -511,7 +521,7 @@ def main() -> None:
         parser.print_help(sys.stderr)
         sys.exit(1)
     if options.list:
-        print('\n'.join(get_commands(options.platform)))
+        print('\n'.join(get_commands(options.platform, options.language)))
     elif options.render:
         for command in options.command:
             if Path(command).exists():
