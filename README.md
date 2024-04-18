@@ -125,6 +125,10 @@ For networks that sit behind a proxy, it may be necessary to disable SSL verific
 
 will disable SSL certificate inspection. This __should be avoided__ unless absolutely necessary.
 
+It is possible to use a different certificate store/bundle by setting:
+
+* `TLDR_CERT=/path/to/certificates.crt`
+
 ### Colors
 
 Values of the `TLDR_COLOR_x` variables may consist of three parts:
