@@ -135,3 +135,24 @@ def test_get_cache_dir_default(monkeypatch):
     monkeypatch.delenv("HOME", raising=False)
     monkeypatch.setattr(Path, 'home', lambda: Path('/tmp/expanduser'))
     assert tldr.get_cache_dir() == Path("/tmp/expanduser/.cache/tldr")
+
+
+def test_get_commands(monkeypatch, tmp_path):
+    cache_default = tmp_path / ".cache" / "tldr" / "pages" / "linux"
+    Path.mkdir(cache_default, parents=True)
+    Path.touch(cache_default / "lspci.md")
+
+    monkeypatch.setenv("HOME", tmp_path)
+
+    result = tldr.get_commands(platforms=["linux"])
+
+    assert isinstance(result, list)
+    assert "lspci (en)" in result
+
+    cache_zh = tmp_path / ".cache" / "tldr" / "pages.zh" / "linux"
+    Path.mkdir(cache_zh, parents=True)
+    Path.touch(cache_zh / "lspci.md")
+
+    result = tldr.get_commands(platforms=["linux"], language=["zh_CN"])
+
+    assert "lspci (zh)" in result
