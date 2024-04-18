@@ -34,12 +34,15 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 USE_NETWORK = int(os.environ.get('TLDR_NETWORK_ENABLED', '1')) > 0
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24*7))
+CAFILE = os.path.expanduser(os.environ.get('TLDR_CERT', None))
 
 URLOPEN_CONTEXT = None
 if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
     URLOPEN_CONTEXT = ssl.create_default_context()
     URLOPEN_CONTEXT.check_hostname = False
     URLOPEN_CONTEXT.verify_mode = ssl.CERT_NONE
+elif CAFILE:
+    URLOPEN_CONTEXT = ssl.create_default_context(cafile=CAFILE)
 
 OS_DIRECTORIES = {
     "linux": "linux",
