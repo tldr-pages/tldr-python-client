@@ -531,23 +531,19 @@ def main() -> None:
     elif options.search:
         search_term = options.search.lower()
         commands = get_commands(options.platform, options.language)
-        print(commands)
         if not commands:
             print("Update cache, no commands to check from.")
             return
         similar_commands = []
         for command in commands:
-            
             if search_term in command.lower():
                 similar_commands.append(command)
-            
         if similar_commands:
             print("Similar commands found:")
             print('\n'.join(similar_commands))
             return
         else:
             print("No commands matched your search term.")
-
     else:
         try:
             command = '-'.join(options.command).lower()
