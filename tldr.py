@@ -630,8 +630,9 @@ def main() -> None:
                     single = len(platforms_str) == 1
                     print(
                         f"There {'is' if single else 'are'} other version"
-                        "{'' if single else 's'} of this page under the following"
-                        "platform{'' if single else 's'}: {', '.join(platforms_str)}."
+                        f"{'s' if not single else ''} of this page under the "
+                        f"following platform{'s' if not single else ''}: "
+                        f"{', '.join(platforms_str)}."
                     )
         except URLError as e:
             sys.exit("Error fetching from tldr: {}".format(e))
