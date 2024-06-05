@@ -5,6 +5,7 @@ import sys
 import os
 import re
 from argparse import ArgumentParser
+from pathlib import Path
 from zipfile import ZipFile
 from datetime import datetime
 from io import BytesIO
@@ -78,28 +79,28 @@ def get_default_language() -> str:
     return default_lang
 
 
-def get_cache_dir() -> str:
+def get_cache_dir() -> Path:
     if os.environ.get('XDG_CACHE_HOME', False):
-        return os.path.join(os.environ.get('XDG_CACHE_HOME'), 'tldr')
+        return Path(os.environ.get('XDG_CACHE_HOME')) / 'tldr'
     if os.environ.get('HOME', False):
-        return os.path.join(os.environ.get('HOME'), '.cache', 'tldr')
-    return os.path.join(os.path.expanduser("~"), ".cache", "tldr")
+        return Path(os.environ.get('HOME')) / '.cache' / 'tldr'
+    return Path.home() / '.cache' / 'tldr'
 
 
-def get_cache_file_path(command: str, platform: str, language: str) -> str:
+def get_cache_file_path(command: str, platform: str, language: str) -> Path:
     pages_dir = "pages"
     if language and language != 'en':
         pages_dir += "." + language
-    return os.path.join(get_cache_dir(), pages_dir, platform, command) + ".md"
+    return get_cache_dir() / pages_dir / platform / f"{command}.md"
 
 
 def load_page_from_cache(command: str, platform: str, language: str) -> Optional[str]:
     try:
-        with open(get_cache_file_path(
+        with get_cache_file_path(
             command,
             platform,
-            language), 'rb'
-        ) as cache_file:
+            language
+        ).open('rb') as cache_file:
             cache_file_contents = cache_file.read()
         return cache_file_contents
     except Exception:
@@ -114,8 +115,8 @@ def store_page_to_cache(
 ) -> Optional[str]:
     try:
         cache_file_path = get_cache_file_path(command, platform, language)
-        os.makedirs(os.path.dirname(cache_file_path), exist_ok=True)
-        with open(cache_file_path, "wb") as cache_file:
+        cache_file_path.parent.mkdir(exist_ok=True)
+        with cache_file_path.open("wb") as cache_file:
             cache_file.write(page)
     except Exception:
         pass
@@ -124,7 +125,7 @@ def store_page_to_cache(
 def have_recent_cache(command: str, platform: str, language: str) -> bool:
     try:
         cache_file_path = get_cache_file_path(command, platform, language)
-        last_modified = datetime.fromtimestamp(os.path.getmtime(cache_file_path))
+        last_modified = datetime.fromtimestamp(cache_file_path.stat().st_mtime)
         hours_passed = (datetime.now() - last_modified).total_seconds() / 3600
         return hours_passed <= MAX_CACHE_AGE
     except Exception:
@@ -368,17 +369,27 @@ COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}*}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
 
-def get_commands(platforms: Optional[List[str]] = None) -> List[str]:
+def get_commands(platforms: Optional[List[str]] = None,
+                 language: Optional[str] = None) -> List[str]:
     if platforms is None:
         platforms = get_platform_list()
 
+    if language:
+        languages = [get_language_code(language[0])]
+    else:
+        languages = get_language_list()
+
     commands = []
-    if os.path.exists(get_cache_dir()):
+    if get_cache_dir().exists():
         for platform in platforms:
-            path = os.path.join(get_cache_dir(), 'pages', platform)
-            if not os.path.exists(path):
-                continue
-            commands += [file[:-3] for file in os.listdir(path) if file.endswith(".md")]
+            for language in languages:
+                pages_dir = f'pages.{language}' if language != 'en' else 'pages'
+                path = get_cache_dir() / pages_dir / platform
+                if not path.exists():
+                    continue
+                commands += [f"{file.stem} ({language})"
+                             for file in path.iterdir()
+                             if file.suffix == '.md']
     return commands
 
 
@@ -441,35 +452,38 @@ def output(page: str, plain: bool = False) -> None:
 
 
 def update_cache(language: Optional[List[str]] = None) -> None:
-    if language is None:
-        tldr_language = os.environ.get("TLDR_LANGUAGE", get_default_language())
-        language = tldr_language if tldr_language else 'en'
-    elif isinstance(language, list):
-        language = language[0]
-    try:
-        pages_dir = "pages"
-        if language and language != 'en':
-            pages_dir += "." + language
-        req = urlopen(Request(
-            DOWNLOAD_CACHE_LOCATION,
-            headers=REQUEST_HEADERS
-        ), context=URLOPEN_CONTEXT)
-        zipfile = ZipFile(BytesIO(req.read()))
-        pattern = re.compile(r"{}/(.+)/(.+)\.md".format(pages_dir))
-        cached = 0
-        for entry in zipfile.namelist():
-            match = pattern.match(entry)
-            if match:
-                store_page_to_cache(
-                    zipfile.read(entry),
-                    match.group(2),
-                    match.group(1),
-                    language
-                )
-                cached += 1
-        print("Updated cache for {:d} entries".format(cached))
-    except Exception:
-        sys.exit("Error: Unable to update cache from " + DOWNLOAD_CACHE_LOCATION)
+    languages = get_language_list()
+    if language and language[0] not in languages:
+        languages.append(language[0])
+    for language in languages:
+        try:
+            cache_location = f"{DOWNLOAD_CACHE_LOCATION[:-4]}-pages.{language}.zip"
+            req = urlopen(Request(
+                cache_location,
+                headers=REQUEST_HEADERS
+            ), context=URLOPEN_CONTEXT)
+            zipfile = ZipFile(BytesIO(req.read()))
+            pattern = re.compile(r"(.+)/(.+)\.md")
+            cached = 0
+            for entry in zipfile.namelist():
+                match = pattern.match(entry)
+                if match:
+                    store_page_to_cache(
+                        zipfile.read(entry),
+                        match.group(2),
+                        match.group(1),
+                        language
+                    )
+                    cached += 1
+            print(
+                "Updated cache for language "
+                f"{language}: {cached} entries"
+            )
+        except Exception:
+            print(
+                "Error: Unable to update cache for language "
+                f"{language} from {cache_location}"
+            )
 
 
 def create_parser() -> ArgumentParser:
@@ -571,52 +585,29 @@ def main() -> None:
         parser.print_help(sys.stderr)
         sys.exit(1)
     if options.list:
-        print('\n'.join(get_commands(options.platform)))
+        print('\n'.join(get_commands(options.platform, options.language)))
     elif options.render:
         for command in options.command:
-            if os.path.exists(command):
-                with open(command, encoding='utf-8') as open_file:
+            if Path(command).exists():
+                with command.open(encoding='utf-8') as open_file:
                     output(open_file.read().encode('utf-8').splitlines(),
                            plain=options.markdown)
     elif options.search:
-        command = '-'.join(options.command)
-        page = None
-        maxprob = 0
-        searchquery = options.search.split(' ')
-
-        platforms = get_platform_list()
-        for i in get_commands(platforms):
-            if i.startswith(command):
-                for p in platforms:
-                    result = load_page_from_cache(i, p, options.language)
-                    if result is not None and have_recent_cache(i, p, options.language):
-                        break
-                if result is None:
-                    raise SystemExit("Please update cache")
-                result = result.decode("utf-8")
-                result = result.split()
-                for word in searchquery:
-                    prob = 0
-                    for line in result:
-                        line = line.lower()
-                        if word in line:
-                            prob += 1
-                            if line.startswith("#"):
-                                prob += 7
-                            elif line.startswith(">"):
-                                prob += 5
-                            elif line.startswith("-"):
-                                prob += 2
-                    if prob > maxprob:
-                        maxprob = prob
-                        page = i
-
-        if page:
-            result = get_page(page, None, options.platform, options.language)
-            output(result, plain=options.markdown)
+        search_term = options.search.lower()
+        commands = get_commands(options.platform, options.language)
+        if not commands:
+            print("Update cache, no commands to check from.")
+            return
+        similar_commands = []
+        for command in commands:
+            if search_term in command.lower():
+                similar_commands.append(command)
+        if similar_commands:
+            print("Similar commands found:")
+            print('\n'.join(similar_commands))
+            return
         else:
-            print("No results found")
-
+            print("No commands matched your search term.")
     else:
         try:
             command = '-'.join(options.command).lower()
