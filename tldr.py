@@ -234,6 +234,70 @@ def get_language_list() -> List[str]:
     return languages
 
 
+def get_page_for_every_platform(
+    command: str,
+    remote: Optional[str] = None,
+    platforms: Optional[List[str]] = None,
+    languages: Optional[List[str]] = None
+) -> Union[List[Tuple[str, str]], bool]:
+    """Gives a list of tuples result-platform ordered by priority."""
+    if platforms is None:
+        platforms = get_platform_list()
+    if languages is None:
+        languages = get_language_list()
+    # only use cache
+    if USE_CACHE:
+        result = list()
+        for platform in platforms:
+            for language in languages:
+                if platform is None:
+                    continue
+                try:
+                    result.append(
+                        (get_page_for_platform(
+                                command,
+                                platform,
+                                remote,
+                                language,
+                                only_use_cache=True,
+                        ), platform)
+                    )
+                    break   # Don't want to look for the same page in other langs
+                except CacheNotExist:
+                    continue
+        if result:  # Return if smth was found
+            return result
+    # Know here that we don't have the info in cache
+    result = list()
+    for platform in platforms:
+        for language in languages:
+            if platform is None:
+                continue
+            try:
+                result.append(
+                    (
+                        get_page_for_platform(
+                            command,
+                            platform,
+                            remote,
+                            language
+                        ),
+                        platform
+                    )
+                )
+                break
+            except HTTPError as err:
+                if err.code != 404:
+                    raise
+            except URLError:
+                if not PAGES_SOURCE_LOCATION.startswith('file://'):
+                    raise
+    if result:  # Return if smth was found
+        return result
+
+    return False
+
+
 def get_page(
     command: str,
     remote: Optional[str] = None,
@@ -547,20 +611,33 @@ def main() -> None:
     else:
         try:
             command = '-'.join(options.command).lower()
-            result = get_page(
+            results = get_page_for_every_platform(
                 command,
                 options.source,
                 options.platform,
                 options.language
             )
-            if not result:
+            if not results:
                 sys.exit((
                     "`{cmd}` documentation is not available.\n"
                     "If you want to contribute it, feel free to"
                     " send a pull request to: https://github.com/tldr-pages/tldr"
                 ).format(cmd=command))
             else:
-                output(result, plain=options.markdown)
+                output(results[0][0], plain=options.markdown)
+                if results[1:]:
+                    platforms_str = [result[1] for result in results[1:]]
+                    are_multiple_platforms = len(platforms_str) > 1
+                    if are_multiple_platforms:
+                        print(
+                            f"Found {len(platforms_str)} pages with the same name"
+                            f" under the platforms: {', '.join(platforms_str)}."
+                        )
+                    else:
+                        print(
+                            f"Found 1 page with the same name"
+                            f" under the platform: {platforms_str[0]}."
+                        )
         except URLError as e:
             sys.exit("Error fetching from tldr: {}".format(e))
 
