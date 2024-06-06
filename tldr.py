@@ -627,13 +627,17 @@ def main() -> None:
                 output(results[0][0], plain=options.markdown)
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
-                    single = len(platforms_str) == 1
-                    print(
-                        f"There {'is' if single else 'are'} other version"
-                        f"{'s' if not single else ''} of this page under the "
-                        f"following platform{'s' if not single else ''}: "
-                        f"{', '.join(platforms_str)}."
-                    )
+                    are_multiple_platforms = len(platforms_str) > 1
+                    if are_multiple_platforms:
+                        print(
+                            f"Found {len(platforms_str)} pages with the same name"
+                            f" under the platforms: {', '.join(platforms_str)}."
+                        )
+                    else:
+                        print(
+                            f"Found 1 page with the same name"
+                            f" under the platform: {platforms_str[0]}."
+                        )
         except URLError as e:
             sys.exit("Error fetching from tldr: {}".format(e))
 
