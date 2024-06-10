@@ -28,7 +28,7 @@ PAGES_SOURCE_LOCATION = os.environ.get(
 ).rstrip('/')
 DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'TLDR_DOWNLOAD_CACHE_LOCATION',
-    'https://tldr.sh/assets/tldr.zip'
+    'https://github.com/tldr-pages/tldr/releases/latest/download/tldr.zip'
 )
 
 USE_NETWORK = int(os.environ.get('TLDR_NETWORK_ENABLED', '1')) > 0
