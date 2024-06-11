@@ -28,7 +28,7 @@ PAGES_SOURCE_LOCATION = os.environ.get(
 ).rstrip('/')
 DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'TLDR_DOWNLOAD_CACHE_LOCATION',
-    'https://tldr-pages.github.io/assets/tldr.zip'
+    'https://github.com/tldr-pages/tldr/releases/latest/download/tldr.zip'
 )
 
 USE_NETWORK = int(os.environ.get('TLDR_NETWORK_ENABLED', '1')) > 0
@@ -115,7 +115,7 @@ def store_page_to_cache(
 ) -> Optional[str]:
     try:
         cache_file_path = get_cache_file_path(command, platform, language)
-        cache_file_path.parent.mkdir(exist_ok=True)
+        cache_file_path.parent.mkdir(parents=True, exist_ok=True)
         with cache_file_path.open("wb") as cache_file:
             cache_file.write(page)
     except Exception:
