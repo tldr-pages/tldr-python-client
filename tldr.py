@@ -41,7 +41,7 @@ if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
     URLOPEN_CONTEXT.check_hostname = False
     URLOPEN_CONTEXT.verify_mode = ssl.CERT_NONE
 
-OS_DIRECTORIES = {
+ = {
     "android": "android",
     "darwin": "osx",
     "freebsd": "freebsd",
@@ -51,7 +51,7 @@ OS_DIRECTORIES = {
     "openbsd": "openbsd",
     "osx": "osx",
     "sunos": "sunos",
-    "win32": "windows"
+    "win32": "windows",
     "windows": "windows"
 }
 
