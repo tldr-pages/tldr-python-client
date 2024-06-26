@@ -46,7 +46,7 @@ OS_DIRECTORIES = {
     "darwin": "osx",
     "freebsd": "freebsd",
     "linux": "linux",
-    "macos": "osx"
+    "macos": "osx",
     "netbsd": "netbsd",
     "openbsd": "openbsd",
     "osx": "osx",
