@@ -522,8 +522,9 @@ def create_parser() -> ArgumentParser:
         choices=['android', 'freebsd', 'linux', 'netbsd', 'openbsd', 'osx', 'sunos',
                  'windows', 'common'],
         metavar='PLATFORM',
-        help="Override the operating system [android, freebsd, linux, netbsd, openbsd,"
-                 " osx, sunos, windows, common]"
+        help="Override the operating system "
+             "[android, freebsd, linux, netbsd, openbsd,"
+             " osx, sunos, windows, common]"
     )
 
     parser.add_argument('-l', '--list',
