@@ -42,13 +42,17 @@ if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
     URLOPEN_CONTEXT.verify_mode = ssl.CERT_NONE
 
 OS_DIRECTORIES = {
-    "linux": "linux",
+    "android": "android",
     "darwin": "osx",
     "freebsd": "freebsd",
-    "openbsd": "openbsd",
+    "linux": "linux",
+    "macos": "osx",
     "netbsd": "netbsd",
+    "openbsd": "openbsd",
+    "osx": "osx",
     "sunos": "sunos",
-    "win32": "windows"
+    "win32": "windows",
+    "windows": "windows"
 }
 
 
@@ -515,9 +519,12 @@ def create_parser() -> ArgumentParser:
         nargs=1,
         default=None,
         type=str,
-        choices=['linux', 'osx', 'sunos', 'windows', 'common'],
+        choices=['android', 'freebsd', 'linux', 'netbsd', 'openbsd', 'osx', 'sunos',
+                 'windows', 'common'],
         metavar='PLATFORM',
-        help="Override the operating system [linux, osx, sunos, windows, common]"
+        help="Override the operating system "
+             "[android, freebsd, linux, netbsd, openbsd,"
+             " osx, sunos, windows, common]"
     )
 
     parser.add_argument('-l', '--list',
