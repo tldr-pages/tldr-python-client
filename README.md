@@ -56,6 +56,8 @@ options:
   --search "KEYWORDS"   Search for a specific command from a query
   -u, --update, --update_cache
                         Update the local cache of pages and exit
+  -k, --clear-cache
+                        Delete the local cache of pages and exit
   -p PLATFORM, --platform PLATFORM
                         Override the operating system [linux, osx, sunos, windows, common]
   -l, --list            List all available commands for operating system
@@ -103,7 +105,10 @@ In order of precedence:
 - `$HOME/.cache/tldr`
 - `~/.cache/tldr`
 
-If you are experiencing issues with *tldr*, consider deleting the cache files before trying other measures.
+If you are experiencing issues with *tldr*, consider deleting the cache files before trying other measures:
+```
+tldr --clear-cache
+```
 
 #### Autocomplete
 
