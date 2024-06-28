@@ -495,18 +495,33 @@ def clear_cache(language: Optional[List[str]] = None) -> None:
     if language and language[0] not in languages:
         languages.append(language[0])
     for language in languages:
-        try:
-            cache_location = f"{DOWNLOAD_CACHE_LOCATION[:-4]}-pages.{language}.zip"
-            os.remove(cache_location)
-            print(
-                "Cleared cache for language "
-                f"{language}"
-            )
-        except Exception:
-            print(
-                "Error: Unable to clear cache for language "
-                f"{language} from {cache_location}"
-            )
+        pages_dir = f'pages.{language}' if language != 'en' else 'pages'
+        cache_dir = get_cache_dir() / pages_dir
+        if cache_dir.exists() and cache_dir.is_dir():
+            # Recursively walk through the directory to delete files and subdirectories
+            for root, dirs, files in os.walk(cache_dir, topdown=False):
+                for name in files:
+                    file_path = Path(root) / name
+                    try:
+                        file_path.unlink()  # Attempt to delete the file
+                    except Exception as e:
+                        print(f"Error: Unable to delete cache file {file_path}: {e}")
+                for name in dirs:
+                    dir_path = Path(root) / name
+                    try:
+                        dir_path.rmdir()  # Attempt to delete the directory
+                    except Exception as e:
+                        print(
+                            f"Error: Unable to delete cache directory {dir_path}: {e}"
+                        )
+            # Attempt to remove the main cache directory after clearing its contents
+            try:
+                cache_dir.rmdir()
+                print(f"Cleared cache for language {language}")
+            except Exception as e:
+                print(f"Error: Unable to delete cache directory {cache_dir}: {e}")
+        else:
+            print(f"No cache directory found for language {language}")
 
 
 def create_parser() -> ArgumentParser:
