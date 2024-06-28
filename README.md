@@ -58,7 +58,7 @@ options:
   -u, --update, --update_cache
                         Update the local cache of pages and exit
   -p PLATFORM, --platform PLATFORM
-                        Override the operating system [linux, osx, sunos, windows, common]
+                        Override the operating system [android, linux, osx, sunos, windows, freebsd, netbsd, openbsd, common]
   -l, --list            List all available commands for operating system
   -s SOURCE, --source SOURCE
                         Override the default page source
