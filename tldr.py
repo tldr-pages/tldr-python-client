@@ -489,6 +489,7 @@ def update_cache(language: Optional[List[str]] = None) -> None:
                 f"{language} from {cache_location}"
             )
 
+
 def clear_cache(language: Optional[List[str]] = None) -> None:
     languages = get_language_list()
     if language and language[0] not in languages:
