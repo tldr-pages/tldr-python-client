@@ -18,8 +18,8 @@ from termcolor import colored
 import colorama  # Required for Windows
 import shtab
 
-__version__ = "3.2.0"
-__client_specification__ = "1.5"
+__version__ = "3.3.0"
+__client_specification__ = "2.2"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
@@ -433,24 +433,35 @@ def output(page: str, plain: bool = False) -> None:
                 colored(
                     line.replace('>', '').replace('<', ''),
                     *colors_of('description')
-            )
+                )
             sys.stdout.buffer.write(line.encode('utf-8'))
         elif line[0] == '-':
             line = '\n' + ' ' * LEADING_SPACES_NUM + \
                 colored(line, *colors_of('example'))
             sys.stdout.buffer.write(line.encode('utf-8'))
         elif line[0] == '`':
-            line = line[1:-1]  # need to actually parse ``
+            line = line[1:-1]  # Remove backticks for parsing
+
+            # Handle escaped placeholders first
+            line = line.replace(r'\{\{', '__ESCAPED_OPEN__')
+            line = line.replace(r'\}\}', '__ESCAPED_CLOSE__')
+
             elements = [' ' * 2 * LEADING_SPACES_NUM]
             for item in COMMAND_SPLIT_REGEX.split(line):
                 item, replaced = PARAM_REGEX.subn(
-                    lambda x: colored(
-                        x.group('param'), *colors_of('parameter')),
+                    lambda x: colored(x.group('param'), *colors_of('parameter')),
                     item)
                 if not replaced:
                     item = colored(item, *colors_of('command'))
                 elements.append(item)
-            sys.stdout.buffer.write(''.join(elements).encode('utf-8'))
+
+            line = ''.join(elements)
+
+            # Restore escaped placeholders
+            line = line.replace('__ESCAPED_OPEN__', '{{')
+            line = line.replace('__ESCAPED_CLOSE__', '}}')
+
+            sys.stdout.buffer.write(line.encode('utf-8'))
         print()
     print()
 
