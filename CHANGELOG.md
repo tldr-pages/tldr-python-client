@@ -21,7 +21,9 @@
 * Add support to show message for other versions of the same page in other platforms (thanks [@Jaimepas77](https://github.com/Jaimepas77))
 * Update `DOWNLOAD_CACHE_LOCATION` to use GitHub Releases (thanks [@vitorhcl](https://github.com/vitorhcl))
 * Add `macos` alias for `osx` directory and update `--platform` option (thanks [@patricedenis](https://github.com/patricedenis))
-* Add support for Python 3.11 and Python 3.12
+* Add support for escaping placeholders for special pages (thanks [@kbdharun](https://github.com/kbdharun))
+* Add support for Python 3.11 and Python 3.12 (thanks [@kbdharun](https://github.com/kbdharun))
+* Add support for [Client Specification v2.2](https://github.com/tldr-pages/tldr/releases/tag/v2.2)
 
 ## 3.2.0 (05/09/2023)
 
