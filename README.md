@@ -6,7 +6,7 @@
 
 Python command-line client for [tldr pages](https://github.com/tldr-pages/tldr).
 
-![tldr pages example](https://raw.github.com/tldr-pages/tldr/main/images/tldr-dark.png)
+![Tldr Python client displaying the tar page](https://raw.github.com/tldr-pages/tldr-python-client/main/images/tldr-dark.png)
 
 ## Installation
 
