@@ -489,6 +489,24 @@ def update_cache(language: Optional[List[str]] = None) -> None:
                 f"{language} from {cache_location}"
             )
 
+def clear_cache(language: Optional[List[str]] = None) -> None:
+    languages = get_language_list()
+    if language and language[0] not in languages:
+        languages.append(language[0])
+    for language in languages:
+        try:
+            cache_location = f"{DOWNLOAD_CACHE_LOCATION[:-4]}-pages.{language}.zip"
+            os.remove(cache_location)
+            print(
+                "Cleared cache for language "
+                f"{language}"
+            )
+        except Exception:
+            print(
+                "Error: Unable to clear cache for language "
+                f"{language} from {cache_location}"
+            )
+
 
 def create_parser() -> ArgumentParser:
     parser = ArgumentParser(
@@ -513,6 +531,10 @@ def create_parser() -> ArgumentParser:
     parser.add_argument('-u', '--update', '--update_cache',
                         action='store_true',
                         help="Update the local cache of pages and exit")
+
+    parser.add_argument('-k', '--clear-cache',
+                        action='store_true',
+                        help="Delete the local cache of pages and exit")
 
     parser.add_argument(
         '-p', '--platform',
@@ -587,6 +609,12 @@ def main() -> None:
 
     if options.update:
         update_cache(language=options.language)
+        return
+    elif len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+    if options.clear:
+        clear_cache()
         return
     elif len(sys.argv) == 1:
         parser.print_help(sys.stderr)
