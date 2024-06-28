@@ -614,7 +614,7 @@ def main() -> None:
     elif len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
-    if options.clear:
+    if options.clear_cache:
         clear_cache(language=options.language)
         return
     elif len(sys.argv) == 1:
