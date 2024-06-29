@@ -501,6 +501,40 @@ def update_cache(language: Optional[List[str]] = None) -> None:
             )
 
 
+def clear_cache(language: Optional[List[str]] = None) -> None:
+    languages = get_language_list()
+    if language and language[0] not in languages:
+        languages.append(language[0])
+    for language in languages:
+        pages_dir = f'pages.{language}' if language != 'en' else 'pages'
+        cache_dir = get_cache_dir() / pages_dir
+        if cache_dir.exists() and cache_dir.is_dir():
+            # Recursively walk through the directory to delete files and subdirectories
+            for root, dirs, files in os.walk(cache_dir, topdown=False):
+                for name in files:
+                    file_path = Path(root) / name
+                    try:
+                        file_path.unlink()  # Attempt to delete the file
+                    except Exception as e:
+                        print(f"Error: Unable to delete cache file {file_path}: {e}")
+                for name in dirs:
+                    dir_path = Path(root) / name
+                    try:
+                        dir_path.rmdir()  # Attempt to delete the directory
+                    except Exception as e:
+                        print(
+                            f"Error: Unable to delete cache directory {dir_path}: {e}"
+                        )
+            # Attempt to remove the main cache directory after clearing its contents
+            try:
+                cache_dir.rmdir()
+                print(f"Cleared cache for language {language}")
+            except Exception as e:
+                print(f"Error: Unable to delete cache directory {cache_dir}: {e}")
+        else:
+            print(f"No cache directory found for language {language}")
+
+
 def create_parser() -> ArgumentParser:
     parser = ArgumentParser(
         prog="tldr",
@@ -524,6 +558,10 @@ def create_parser() -> ArgumentParser:
     parser.add_argument('-u', '--update', '--update_cache',
                         action='store_true',
                         help="Update the local cache of pages and exit")
+
+    parser.add_argument('-k', '--clear-cache',
+                        action='store_true',
+                        help="Delete the local cache of pages and exit")
 
     parser.add_argument(
         '-p', '--platform',
@@ -598,6 +636,12 @@ def main() -> None:
 
     if options.update:
         update_cache(language=options.language)
+        return
+    elif len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+    if options.clear_cache:
+        clear_cache(language=options.language)
         return
     elif len(sys.argv) == 1:
         parser.print_help(sys.stderr)
