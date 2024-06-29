@@ -2,10 +2,11 @@
 
 [![PyPI Release](https://img.shields.io/pypi/v/tldr.svg)](https://pypi.python.org/pypi/tldr)
 [![Build](https://github.com/tldr-pages/tldr-python-client/workflows/Test/badge.svg?branch=main)](https://github.com/tldr-pages/tldr-python-client/actions?query=branch%3Amain)
+[![Snap Release](https://snapcraft.io/tldr/badge.svg)](https://snapcraft.io/tldr)
 
 Python command-line client for [tldr pages](https://github.com/tldr-pages/tldr).
 
-![tldr pages example](https://raw.github.com/tldr-pages/tldr/main/images/tldr-dark.png)
+![Tldr Python client displaying the tar page](https://raw.github.com/tldr-pages/tldr-python-client/main/images/tldr-dark.png)
 
 ## Installation
 
@@ -42,7 +43,7 @@ sudo snap install tldr
 
 ## Usage
 
-```
+```txt
 usage: tldr command [options]
 
 Python command line client for tldr
@@ -57,7 +58,7 @@ options:
   -u, --update, --update_cache
                         Update the local cache of pages and exit
   -p PLATFORM, --platform PLATFORM
-                        Override the operating system [linux, osx, sunos, windows, common]
+                        Override the operating system [android, freebsd, linux, netbsd, openbsd, osx, sunos, windows, common]
   -l, --list            List all available commands for operating system
   -s SOURCE, --source SOURCE
                         Override the default page source
@@ -92,13 +93,14 @@ export TLDR_DOWNLOAD_CACHE_LOCATION="https://tldr-pages.github.io/assets/tldr.zi
 Cache is downloaded from `TLDR_DOWNLOAD_CACHE_LOCATION` (defaults to the one described in [the client specification](https://github.com/tldr-pages/tldr/blob/main/CLIENT-SPECIFICATION.md#caching)), unzipped and extracted into the [local cache directory](#cache-location). Pages are loaded directly from `TLDR_PAGES_SOURCE_LOCATION` if `tldr <command>` is used.
 
 - `TLDR_CACHE_ENABLED` (default is `1`):
-    - If set to `1`, the client will first try to load from cache, and fall back to fetching from the internet if the cache doesn't exist or is too old.
-    - If set to `0`, the client will fetch from the internet, and fall back to the cache if the page cannot be fetched from the internet.
+  - If set to `1`, the client will first try to load from cache, and fall back to fetching from the internet if the cache doesn't exist or is too old.
+  - If set to `0`, the client will fetch from the internet, and fall back to the cache if the page cannot be fetched from the internet.
 - `TLDR_CACHE_MAX_AGE` (default is `168` hours, which is equivalent to a week): maximum age of the cache in hours to be considered as valid when `TLDR_CACHE_ENABLED` is set to `1`.
 
 #### Cache location
 
 In order of precedence:
+
 - `$XDG_CACHE_HOME/tldr`
 - `$HOME/.cache/tldr`
 - `~/.cache/tldr`
@@ -130,7 +132,7 @@ an autocomplete for `tldr` for `fish`.
 
 For networks that sit behind a proxy, it may be necessary to disable SSL verification for the client to function. Setting the following:
 
-- `TLDR_ALLOW_INSECURE=1` 
+- `TLDR_ALLOW_INSECURE=1`
 
 will disable SSL certificate inspection. This __should be avoided__ unless absolutely necessary.
 
