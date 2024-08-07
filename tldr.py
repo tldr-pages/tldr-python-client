@@ -34,7 +34,7 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 USE_NETWORK = int(os.environ.get('TLDR_NETWORK_ENABLED', '1')) > 0
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24*7))
-CAFILE = os.path.expanduser(os.environ.get('TLDR_CERT', None))
+CAFILE = None if os.environ.get('TLDR_CERT', None) is None else Path(os.environ.get('TLDR_CERT')).expanduser()
 
 URLOPEN_CONTEXT = None
 if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
