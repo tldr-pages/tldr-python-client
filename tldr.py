@@ -370,6 +370,8 @@ ACCEPTED_COLOR_ATTRS = [
 
 LEADING_SPACES_NUM = 2
 
+EXAMPLE_SPLIT_REGEX = re.compile(r'(?P<example>`.+?`)')
+EXAMPLE_REGEX = re.compile(r'(?:`)(?P<example>.+?)(?:`)')
 COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}*}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
@@ -415,6 +417,11 @@ def colors_of(key: str) -> Tuple[str, str, List[str]]:
 
 
 def output(page: str, plain: bool = False) -> None:
+    def emphasise_example(x: str) -> str:
+        # Use ANSI escapes to enable italics at the start and disable at the end
+        # Also use the color yellow to differentiate from the default green
+        return "\x1B[3m" + colored(x.group('example'), 'yellow') + "\x1B[23m"
+
     if not plain:
         print()
     for line in page:
@@ -444,16 +451,24 @@ def output(page: str, plain: bool = False) -> None:
 
         # Handle an example description
         elif line[0] == '-':
-            line = '\n' + ' ' * LEADING_SPACES_NUM + \
-                colored(line, *colors_of('example'))
-            # Stylize text within backticks using italics
+
+            # Stylize text within backticks using yellow italics
             if '`' in line:
-                # Backticks should occur in pairs, so str.split results in an odd number of elements
-                *parts, last_part = line.split('`')
-                # Setup an infinite cycle of italic and reset ANSI escape pairs
-                italics_escapes = itertools.cycle(('\x1B[3m', '\x1B[0m'))
-                # Rejoin the original string parts with the matching escape pairs
-                line = "".join(itertools.chain.from_iterable(zip(parts, italics_escapes))) + last_part
+                elements = ['\n', ' ' * LEADING_SPACES_NUM]
+
+                for item in EXAMPLE_SPLIT_REGEX.split(line):
+                    item, replaced = EXAMPLE_REGEX.subn(emphasise_example, item)
+                    if not replaced:
+                        item = colored(item, *colors_of('example'))
+                    elements.append(item)
+
+                line = ''.join(elements)
+
+            # Otherwise, use the same colour for the whole line
+            else:
+                line = '\n' + ' ' * LEADING_SPACES_NUM + \
+                    colored(line, *colors_of('example'))
+
             sys.stdout.buffer.write(line.encode('utf-8'))
 
         # Handle an example command

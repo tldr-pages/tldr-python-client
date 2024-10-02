@@ -10,7 +10,7 @@
   [32m- Output all elements from arrays (or all the values from objects) in a JSON file:[0m
     [31mjq '.[]' [0mfile.json[0m[31m[0m
 
-  [32m- Read JSON objects from a file into an array, and output it (inverse of [3mjq .[][0m):[0m
+  [32m- Read JSON objects from a file into an array, and output it (inverse of [0m[3m[33mjq .[][0m[23m[32m):[0m
     [31mjq --slurp . [0mfile.json[0m[31m[0m
 
   [32m- Output the first element in a JSON file:[0m
@@ -19,7 +19,7 @@
   [32m- Output the value of a given key of each element in a JSON text from stdin:[0m
     [31mcat [0mfile.json[0m[31m | jq 'map(.[0mkey_name[0m[31m)'[0m
 
-  [32m- Output the value of multiple keys as a new JSON object (assuming the input JSON has the keys [3mkey_name[0m and [3mother_key_name[0m):[0m
+  [32m- Output the value of multiple keys as a new JSON object (assuming the input JSON has the keys [0m[3m[33mkey_name[0m[23m[32m and [0m[3m[33mother_key_name[0m[23m[32m):[0m
     [31mcat [0mfile.json[0m[31m | jq '[0m{my_new_key[0m[31m: .[0mkey_name[0m[31m, [0mmy_other_key[0m[31m: .[0mother_key_name[0m}[31m'[0m
 
   [32m- Combine multiple filters:[0m
