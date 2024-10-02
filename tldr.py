@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # PYTHON_ARGCOMPLETE_OK
 
+import itertools
 import sys
 import os
 import re
@@ -422,12 +423,17 @@ def output(page: str, plain: bool = False) -> None:
         if plain:
             print(line)
             continue
+
         elif len(line) == 0:
             continue
+
+        # Handle the command name
         elif line[0] == '#':
             line = ' ' * LEADING_SPACES_NUM + \
                 colored(line.replace('# ', ''), *colors_of('name')) + '\n'
             sys.stdout.buffer.write(line.encode('utf-8'))
+
+        # Handle the command description
         elif line[0] == '>':
             line = ' ' * (LEADING_SPACES_NUM - 1) + \
                 colored(
@@ -435,10 +441,22 @@ def output(page: str, plain: bool = False) -> None:
                     *colors_of('description')
                 )
             sys.stdout.buffer.write(line.encode('utf-8'))
+
+        # Handle an example description
         elif line[0] == '-':
             line = '\n' + ' ' * LEADING_SPACES_NUM + \
                 colored(line, *colors_of('example'))
+            # Stylize text within backticks using italics
+            if '`' in line:
+                # Backticks should occur in pairs, so str.split results in an odd number of elements
+                *parts, last_part = line.split('`')
+                # Setup an infinite cycle of italic and reset ANSI escape pairs
+                italics_escapes = itertools.cycle(('\x1B[3m', '\x1B[0m'))
+                # Rejoin the original string parts with the matching escape pairs
+                line = "".join(itertools.chain.from_iterable(zip(parts, italics_escapes))) + last_part
             sys.stdout.buffer.write(line.encode('utf-8'))
+
+        # Handle an example command
         elif line[0] == '`':
             line = line[1:-1]  # Remove backticks for parsing
 
