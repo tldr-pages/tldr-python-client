@@ -142,7 +142,7 @@ def test_get_commands(monkeypatch, tmp_path):
     Path.mkdir(cache_default, parents=True)
     Path.touch(cache_default / "lspci.md")
 
-    monkeypatch.setenv("HOME", tmp_path)
+    monkeypatch.setenv("HOME", str(tmp_path))
 
     result = tldr.get_commands(platforms=["linux"])
 

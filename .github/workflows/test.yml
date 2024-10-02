@@ -25,7 +25,7 @@ jobs:
 
     - name: Install sphinx dependencies
       run: >-
-        python -m
+        python3 -m
         pip install
         sphinx
         sphinx-argparse
@@ -33,7 +33,7 @@ jobs:
 
     - name: Install tldr dependencies
       run: >-
-        python -m
+        python3 -m
         pip install
         -r
         requirements.txt
