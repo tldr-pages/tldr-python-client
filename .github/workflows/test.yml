@@ -47,7 +47,7 @@ jobs:
       run: python3 -m flake8
 
     - name: Run test suite
-      run: python3 setup.py pytest
+      run: python3 -m pytest tests/
 
     - name: Test tldr cli
       run: |
