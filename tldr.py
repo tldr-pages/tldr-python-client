@@ -638,8 +638,9 @@ def main() -> None:
         print('\n'.join(get_commands(options.platform, options.language)))
     elif options.render:
         for command in options.command:
-            if Path(command).exists():
-                with command.open(encoding='utf-8') as open_file:
+            file_path = Path(command)
+            if file_path.exists():
+                with file_path.open(encoding='utf-8') as open_file:
                     output(open_file.read().encode('utf-8').splitlines(),
                            plain=options.markdown)
     elif options.search:
