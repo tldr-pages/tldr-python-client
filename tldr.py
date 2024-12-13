@@ -415,7 +415,7 @@ def colors_of(key: str) -> Tuple[str, str, List[str]]:
     return (color, on_color, attrs)
 
 
-def output(page: str, plain: bool = False) -> None:
+def output(page: str, plain: bool = False, longform: bool = True, shortform: bool = True) -> None:
     def emphasise_example(x: str) -> str:
         # Use ANSI escapes to enable italics at the start and disable at the end
         # Also use the color yellow to differentiate from the default green
@@ -477,6 +477,11 @@ def output(page: str, plain: bool = False) -> None:
             # Handle escaped placeholders first
             line = line.replace(r'\{\{', '__ESCAPED_OPEN__')
             line = line.replace(r'\}\}', '__ESCAPED_CLOSE__')
+            if not (shortform and longform):
+                if shortform:
+                    line = re.sub(r'{{(-.)\|--.+?}}', r'{{\1}}', line)
+                elif longform:
+                    line = re.sub(r'{{-.\|(--.+?)}}', r'{{\1}}', line)
 
             elements = [' ' * 2 * LEADING_SPACES_NUM]
             for item in COMMAND_SPLIT_REGEX.split(line):
