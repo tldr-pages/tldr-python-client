@@ -477,6 +477,8 @@ def output(page: str, plain: bool = False, longform: bool = True, shortform: boo
             # Handle escaped placeholders first
             line = line.replace(r'\{\{', '__ESCAPED_OPEN__')
             line = line.replace(r'\}\}', '__ESCAPED_CLOSE__')
+
+            # Extract long or short options from placeholders
             if not (shortform and longform):
                 if shortform:
                     line = re.sub(r'{{(-.)\|--.+?}}', r'{{\1}}', line)
