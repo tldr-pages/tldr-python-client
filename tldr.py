@@ -481,9 +481,9 @@ def output(page: str, plain: bool = False, longform: bool = True, shortform: boo
             # Extract long or short options from placeholders
             if not (shortform and longform):
                 if shortform:
-                    line = re.sub(r'{{(-.)\|--[^|]+?}}', r'{{\1}}', line)
+                    line = re.sub(r'{{(-[^|]+)\|--[^|]+?}}', r'{{\1}}', line)
                 elif longform:
-                    line = re.sub(r'{{-.\|(--[^|]+?)}}', r'{{\1}}', line)
+                    line = re.sub(r'{{-[^|]+\|(--[^|]+?)}}', r'{{\1}}', line)
 
             elements = [' ' * 2 * LEADING_SPACES_NUM]
             for item in COMMAND_SPLIT_REGEX.split(line):
