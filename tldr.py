@@ -415,7 +415,7 @@ def colors_of(key: str) -> Tuple[str, str, List[str]]:
     return (color, on_color, attrs)
 
 
-def output(page: str, plain: bool = False, longform: bool = True, shortform: bool = True) -> None:
+def output(page: str, short: bool, long: bool, plain: bool = False) -> None:
     def emphasise_example(x: str) -> str:
         # Use ANSI escapes to enable italics at the start and disable at the end
         # Also use the color yellow to differentiate from the default green
@@ -479,10 +479,10 @@ def output(page: str, plain: bool = False, longform: bool = True, shortform: boo
             line = line.replace(r'\}\}', '__ESCAPED_CLOSE__')
 
             # Extract long or short options from placeholders
-            if not (shortform and longform):
-                if shortform:
+            if not (short and long):
+                if short:
                     line = re.sub(r'{{(-[^|]+)\|--[^|]+?}}', r'{{\1}}', line)
-                elif longform:
+                elif long:
                     line = re.sub(r'{{-[^|]+\|(--[^|]+?)}}', r'{{\1}}', line)
 
             elements = [' ' * 2 * LEADING_SPACES_NUM]
@@ -610,6 +610,18 @@ def create_parser() -> ArgumentParser:
                         action='store_true',
                         help='Just print the plain page file.')
 
+    parser.add_argument('-V', '--longform',
+                        default=False,
+                        action="store_true",
+                        help='Display longform options over shortform',
+    )
+
+    parser.add_argument('-S', '--shortform',
+                        default=False,
+                        action="store_true",
+                        help='Display shortform options over longform',
+    )
+
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
     ).complete = {"bash": "shtab_tldr_cmd_list", "zsh": "shtab_tldr_cmd_list"}
@@ -631,6 +643,8 @@ def main() -> None:
 
     options = parser.parse_args()
 
+    short=options.shortform
+    long=options.longform
     colorama.init(strip=options.color)
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
@@ -682,7 +696,7 @@ def main() -> None:
                     " send a pull request to: https://github.com/tldr-pages/tldr"
                 ).format(cmd=command))
             else:
-                output(results[0][0], plain=options.markdown)
+                output(results[0][0], short, long, plain=options.markdown)
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
                     are_multiple_platforms = len(platforms_str) > 1
