@@ -640,9 +640,15 @@ def main() -> None:
     parser = create_parser()
 
     options = parser.parse_args()
-
-    short = options.shortform
-    long = options.longform
+    short = False
+    long = False
+    if not (options.shortform or options.longform):
+        short = int(os.environ.get('TLDR_SHORTFORM', '0')) > 0
+        long = int(os.environ.get('TLDR_LONGFORM', '0')) > 0
+    elif options.shortform:
+        short = True
+    elif options.longform:
+        long = True
     colorama.init(strip=options.color)
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
