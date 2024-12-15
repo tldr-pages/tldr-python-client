@@ -613,14 +613,12 @@ def create_parser() -> ArgumentParser:
     parser.add_argument('-V', '--longform',
                         default=False,
                         action="store_true",
-                        help='Display longform options over shortform',
-    )
+                        help='Display longform options over shortform')
 
     parser.add_argument('-S', '--shortform',
                         default=False,
                         action="store_true",
-                        help='Display shortform options over longform',
-    )
+                        help='Display shortform options over longform')
 
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
@@ -643,8 +641,8 @@ def main() -> None:
 
     options = parser.parse_args()
 
-    short=options.shortform
-    long=options.longform
+    short = options.shortform
+    long = options.longform
     colorama.init(strip=options.color)
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
@@ -663,6 +661,8 @@ def main() -> None:
             if file_path.exists():
                 with file_path.open(encoding='utf-8') as open_file:
                     output(open_file.read().encode('utf-8').splitlines(),
+                           short,
+                           long,
                            plain=options.markdown)
     elif options.search:
         search_term = options.search.lower()
