@@ -39,7 +39,7 @@ def test_markdown_mode(page_name):
         sys.stdout = io.StringIO()
         sys.stdout.buffer = types.SimpleNamespace()
         sys.stdout.buffer.write = lambda x: sys.stdout.write(x.decode("utf-8"))
-        tldr.output(d_original.splitlines(), True, True plain=True)
+        tldr.output(d_original.splitlines(), True, True, plain=True)
 
         sys.stdout.seek(0)
         tldr_output = sys.stdout.read().encode("utf-8")
