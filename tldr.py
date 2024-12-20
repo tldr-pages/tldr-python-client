@@ -614,7 +614,7 @@ def create_parser() -> ArgumentParser:
                         default=False,
                         action="store_true",
                         help='Display shortform options over longform')
-    
+
     parser.add_argument('-V', '--longform',
                         default=False,
                         action="store_true",
