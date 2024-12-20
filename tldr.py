@@ -610,15 +610,15 @@ def create_parser() -> ArgumentParser:
                         action='store_true',
                         help='Just print the plain page file.')
 
-    parser.add_argument('-V', '--longform',
-                        default=False,
-                        action="store_true",
-                        help='Display longform options over shortform')
-
     parser.add_argument('-S', '--shortform',
                         default=False,
                         action="store_true",
                         help='Display shortform options over longform')
+    
+    parser.add_argument('-V', '--longform',
+                        default=False,
+                        action="store_true",
+                        help='Display longform options over shortform')
 
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
