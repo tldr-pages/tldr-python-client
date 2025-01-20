@@ -205,7 +205,7 @@ def get_platform() -> str:
 
 
 def get_platform_list() -> List[str]:
-    platforms = ['common'] + list(OS_DIRECTORIES.values())
+    platforms = ['common'] + list(set(list(OS_DIRECTORIES.values())))
     current_platform = get_platform()
     platforms.remove(current_platform)
     platforms.insert(0, current_platform)
