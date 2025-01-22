@@ -15,7 +15,6 @@ from urllib.parse import quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from termcolor import colored
-import colorama  # Required for Windows
 import shtab
 
 __version__ = "3.3.0"
@@ -624,7 +623,9 @@ def main() -> None:
 
     options = parser.parse_args()
 
-    colorama.init(strip=options.color)
+    if sys.platform == "win32":
+        import colorama
+        colorama.init(strip=options.color)
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
 
