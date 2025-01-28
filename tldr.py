@@ -644,7 +644,10 @@ def main() -> None:
     long = False
     if not (options.shortform or options.longform):
         short = int(os.environ.get('TLDR_SHORTFORM', '0')) > 0
-        long = int(os.environ.get('TLDR_LONGFORM', '0')) > 0
+        if short:
+            long = int(os.environ.get('TLDR_LONGFORM', '0')) > 0
+        else:
+            long = int(os.environ.get('TLDR_LONGFORM', '1')) > 0
     elif options.shortform:
         short = True
     elif options.longform:
