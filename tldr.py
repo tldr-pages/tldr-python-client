@@ -481,9 +481,10 @@ def output(page: str, short: bool, long: bool, plain: bool = False) -> None:
             # Extract long or short options from placeholders
             if not (short and long):
                 if short:
-                    line = re.sub(r'{{(-[^|]+)\|--[^|]+?}}', r'{{\1}}', line)
+                    line = re.sub(r'{{\[([^|]+)\|[^|]+?\]}}', r'\1', line)
                 elif long:
-                    line = re.sub(r'{{-[^|]+\|(--[^|]+?)}}', r'{{\1}}', line)
+                    line = re.sub(r'{{\[[^|]+\|([^|]+?)\]}}', r'\1', line)
+            line = re.sub(r'{{\[([^|]+\|[^|]+?)\]}}', r'{{\1}}', line)
 
             elements = [' ' * 2 * LEADING_SPACES_NUM]
             for item in COMMAND_SPLIT_REGEX.split(line):
@@ -648,9 +649,9 @@ def main() -> None:
             long = int(os.environ.get('TLDR_LONGFORM', '0')) > 0
         else:
             long = int(os.environ.get('TLDR_LONGFORM', '1')) > 0
-    elif options.shortform:
+    if options.shortform:
         short = True
-    elif options.longform:
+    if options.longform:
         long = True
     colorama.init(strip=options.color)
     if options.color is False:
