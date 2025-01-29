@@ -484,7 +484,6 @@ def output(page: str, short: bool, long: bool, plain: bool = False) -> None:
                     line = re.sub(r'{{\[([^|]+)\|[^|]+?\]}}', r'\1', line)
                 elif long:
                     line = re.sub(r'{{\[[^|]+\|([^|]+?)\]}}', r'\1', line)
-            line = re.sub(r'{{\[([^|]+\|[^|]+?)\]}}', r'{{\1}}', line)
 
             elements = [' ' * 2 * LEADING_SPACES_NUM]
             for item in COMMAND_SPLIT_REGEX.split(line):
