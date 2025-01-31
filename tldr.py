@@ -610,12 +610,12 @@ def create_parser() -> ArgumentParser:
                         action='store_true',
                         help='Just print the plain page file.')
 
-    parser.add_argument('-S', '--shortform',
+    parser.add_argument('-o', '--shortform',
                         default=False,
                         action="store_true",
                         help='Display shortform options over longform')
 
-    parser.add_argument('-V', '--longform',
+    parser.add_argument('-O', '--longform',
                         default=False,
                         action="store_true",
                         help='Display longform options over shortform')
