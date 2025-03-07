@@ -643,11 +643,11 @@ def main() -> None:
     short = False
     long = False
     if not (options.short_options or options.long_options):
-        if TLDR_OPTIONS = short:
+        if os.environ.get('TLDR_OPTIONS') == "short":
             short = True
-        elif TLDR_OPTIONS = long:
+        elif os.environ.get('TLDR_OPTIONS') == "long":
             long = True
-        elif TLDR_OPTION = both:
+        elif os.environ.get('TLDR_OPTIONS') == "both":
             short = True
             long = True
     if options.short_options:
