@@ -86,8 +86,7 @@ export TLDR_CACHE_ENABLED=1
 export TLDR_CACHE_MAX_AGE=720
 export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/main/pages"
 export TLDR_DOWNLOAD_CACHE_LOCATION="https://tldr-pages.github.io/assets/tldr.zip"
-export TLDR_SHORT_OPTIONS=1
-export TLDR_LONG_OPTIONS=1
+export TLDR_OPTIONS=short
 ```
 
 ### Cache
@@ -182,3 +181,7 @@ can either use the `--source` flag when using tldr or by specifying the followin
   - it can also point to a local directory using `file:///path/to/directory`.
 - `TLDR_DOWNLOAD_CACHE_LOCATION` to control where to pull a zip of all pages from.
   - defaults to `https://github.com/tldr-pages/tldr/releases/latest/download/tldr.zip`.
+
+### Command options
+
+Pages might contain `{{[*|*]}}` pattern to let the client decice whether to show shortfrom or longform versions of options. This can be configured with `TLDR_OPTIONS` and it accepts values `short`, `long` and `both`
