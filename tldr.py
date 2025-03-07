@@ -610,12 +610,12 @@ def create_parser() -> ArgumentParser:
                         action='store_true',
                         help='Just print the plain page file.')
 
-    parser.add_argument('-o', '--shortform',
+    parser.add_argument('--short-options',
                         default=False,
                         action="store_true",
                         help='Display shortform options over longform')
 
-    parser.add_argument('-O', '--longform',
+    parser.add_argument('--long-options',
                         default=False,
                         action="store_true",
                         help='Display longform options over shortform')
@@ -642,15 +642,15 @@ def main() -> None:
     options = parser.parse_args()
     short = False
     long = False
-    if not (options.shortform or options.longform):
+    if not (options.short-options or options.long-options):
         short = int(os.environ.get('TLDR_SHORTFORM', '0')) > 0
         if short:
             long = int(os.environ.get('TLDR_LONGFORM', '0')) > 0
         else:
             long = int(os.environ.get('TLDR_LONGFORM', '1')) > 0
-    if options.shortform:
+    if options.short-options:
         short = True
-    if options.longform:
+    if options.long-options:
         long = True
     colorama.init(strip=options.color)
     if options.color is False:
