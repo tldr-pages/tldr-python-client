@@ -86,8 +86,8 @@ export TLDR_CACHE_ENABLED=1
 export TLDR_CACHE_MAX_AGE=720
 export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/main/pages"
 export TLDR_DOWNLOAD_CACHE_LOCATION="https://tldr-pages.github.io/assets/tldr.zip"
-export TLDR_SHORTFORM=1
-export TLDR_LONGFORM=1
+export TLDR_SHORT_OPTIONS=1
+export TLDR_LONG_OPTIONS=1
 ```
 
 ### Cache

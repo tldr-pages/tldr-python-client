@@ -642,15 +642,15 @@ def main() -> None:
     options = parser.parse_args()
     short = False
     long = False
-    if not (options.short-options or options.long-options):
-        short = int(os.environ.get('TLDR_SHORTFORM', '0')) > 0
+    if not (options.short_options or options.long_options):
+        short = int(os.environ.get('TLDR_SHORT_OPTIONS', '0')) > 0
         if short:
-            long = int(os.environ.get('TLDR_LONGFORM', '0')) > 0
+            long = int(os.environ.get('TLDR_LONG_OPTIONS', '0')) > 0
         else:
-            long = int(os.environ.get('TLDR_LONGFORM', '1')) > 0
-    if options.short-options:
+            long = int(os.environ.get('TLDR_LONG_OPTIONS', '1')) > 0
+    if options.short_options:
         short = True
-    if options.long-options:
+    if options.long_options:
         long = True
     colorama.init(strip=options.color)
     if options.color is False:
