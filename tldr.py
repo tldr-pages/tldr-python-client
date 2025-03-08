@@ -641,11 +641,13 @@ def main() -> None:
 
     options = parser.parse_args()
     short = False
-    long = False
+    long = True
     if not (options.short_options or options.long_options):
         if os.environ.get('TLDR_OPTIONS') == "short":
             short = True
+            long = False
         elif os.environ.get('TLDR_OPTIONS') == "long":
+            short = False
             long = True
         elif os.environ.get('TLDR_OPTIONS') == "both":
             short = True
