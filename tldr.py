@@ -654,6 +654,7 @@ def main() -> None:
             long = True
     if options.short_options:
         short = True
+        long = False
     if options.long_options:
         long = True
     colorama.init(strip=options.color)
