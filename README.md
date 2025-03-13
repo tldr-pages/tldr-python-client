@@ -184,4 +184,4 @@ can either use the `--source` flag when using tldr or by specifying the followin
 
 ### Command options
 
-Pages might contain `{{[*|*]}}` pattern to let the client decice whether to show shortfrom or longform versions of options. This can be configured with `TLDR_OPTIONS` and it accepts values `short`, `long` and `both`
+Pages might contain `{{[*|*]}}` patterns to let the client decide whether to show shortform or longform versions of options. This can be configured with `TLDR_OPTIONS`, which accepts values `short`, `long` and `both`
