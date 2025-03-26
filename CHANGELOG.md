@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.4.0 (TBA)
+
+### Features
+
+* Add support for option placeholders
+
 ## 3.3.0 (06/29/2024)
 
 ## Breaking
