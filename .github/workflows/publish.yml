@@ -1,5 +1,6 @@
-# This workflow will upload a Python Package using Twine when a release is created
+# This workflow will upload a Python Package using Trusted Publishers automatically when a release is created
 # For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+# and https://docs.pypi.org/trusted-publishers/using-a-publisher/.
 
 name: Upload Python Package
 
@@ -8,9 +9,17 @@ on:
     types: [created]
 
 jobs:
-  deploy:
-
+  pypi-publish:
     runs-on: ubuntu-latest
+
+    environment: 
+      name: pypi
+      url: https://pypi.org/project/tldr/
+
+    permissions:
+      contents: read
+      id-token: write # Required for accessing OpenID Connect (OIDC) token for PyPI trusted publisher
+
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -57,6 +66,3 @@ jobs:
 
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_PASSWORD }}
