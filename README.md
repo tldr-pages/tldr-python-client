@@ -43,7 +43,7 @@ sudo snap install tldr
 
 ## Usage
 
-```txt
+```bash
 usage: tldr command [options]
 
 Python command line client for tldr
@@ -57,8 +57,7 @@ options:
   --search "KEYWORDS"   Search for a specific command from a query
   -u, --update, --update_cache
                         Update the local cache of pages and exit
-  -k, --clear-cache
-                        Delete the local cache of pages and exit
+  -k, --clear-cache     Delete the local cache of pages and exit
   -p PLATFORM, --platform PLATFORM
                         Override the operating system [android, freebsd, linux, netbsd, openbsd, osx, sunos, windows, common]
   -l, --list            List all available commands for operating system
@@ -69,6 +68,8 @@ options:
   -L LANGUAGE, --language LANGUAGE
                         Override the default language
   -m, --markdown        Just print the plain page file.
+  --short-options       Display shortform options over longform
+  --long-options        Display longform options over shortform
   --print-completion {bash,zsh,tcsh}
                         print shell completion script
 ```
@@ -109,7 +110,8 @@ In order of precedence:
 - `~/.cache/tldr`
 
 If you are experiencing issues with *tldr*, consider deleting the cache files before trying other measures:
-```
+
+```bash
 tldr --clear-cache
 ```
 
@@ -144,7 +146,7 @@ will disable SSL certificate inspection. This __should be avoided__ unless absol
 
 Alternatively, It is possible to use a different certificate store/bundle by setting:
 
-* `TLDR_CERT=/path/to/certificates.crt`
+- `TLDR_CERT=/path/to/certificates.crt`
 
 ### Colors
 

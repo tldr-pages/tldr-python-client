@@ -16,6 +16,7 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from termcolor import colored
 import shtab
+import shutil
 
 __version__ = "3.3.0"
 __client_specification__ = "2.2"
@@ -550,25 +551,8 @@ def clear_cache(language: Optional[List[str]] = None) -> None:
         pages_dir = f'pages.{language}' if language != 'en' else 'pages'
         cache_dir = get_cache_dir() / pages_dir
         if cache_dir.exists() and cache_dir.is_dir():
-            # Recursively walk through the directory to delete files and subdirectories
-            for root, dirs, files in os.walk(cache_dir, topdown=False):
-                for name in files:
-                    file_path = Path(root) / name
-                    try:
-                        file_path.unlink()  # Attempt to delete the file
-                    except Exception as e:
-                        print(f"Error: Unable to delete cache file {file_path}: {e}")
-                for name in dirs:
-                    dir_path = Path(root) / name
-                    try:
-                        dir_path.rmdir()  # Attempt to delete the directory
-                    except Exception as e:
-                        print(
-                            f"Error: Unable to delete cache directory {dir_path}: {e}"
-                        )
-            # Attempt to remove the main cache directory after clearing its contents
             try:
-                cache_dir.rmdir()
+                shutil.rmtree(cache_dir)
                 print(f"Cleared cache for language {language}")
             except Exception as e:
                 print(f"Error: Unable to delete cache directory {cache_dir}: {e}")
