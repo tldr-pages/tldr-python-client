@@ -1,7 +1,8 @@
 # tldr-python-client
 
 [![PyPI Release](https://img.shields.io/pypi/v/tldr.svg)](https://pypi.python.org/pypi/tldr)
-[![Build](https://github.com/tldr-pages/tldr-python-client/workflows/Test/badge.svg?branch=main)](https://github.com/tldr-pages/tldr-python-client/actions?query=branch%3Amain)
+[![Test](https://github.com/tldr-pages/tldr-python-client/actions/workflows/test.yml/badge.svg)](https://github.com/tldr-pages/tldr-python-client/actions/workflows/test.yml)
+[![CodeQL](https://github.com/tldr-pages/tldr-python-client/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/tldr-pages/tldr-python-client/actions/workflows/github-code-scanning/codeql)
 [![Snap Release](https://snapcraft.io/tldr/badge.svg)](https://snapcraft.io/tldr)
 
 Python command-line client for [tldr pages](https://github.com/tldr-pages/tldr).
@@ -43,7 +44,7 @@ sudo snap install tldr
 
 ## Usage
 
-```txt
+```bash
 usage: tldr command [options]
 
 Python command line client for tldr
@@ -57,6 +58,7 @@ options:
   --search "KEYWORDS"   Search for a specific command from a query
   -u, --update, --update_cache
                         Update the local cache of pages and exit
+  -k, --clear-cache     Delete the local cache of pages and exit
   -p PLATFORM, --platform PLATFORM
                         Override the operating system [android, freebsd, linux, netbsd, openbsd, osx, sunos, windows, common]
   -l, --list            List all available commands for operating system
@@ -67,6 +69,8 @@ options:
   -L LANGUAGE, --language LANGUAGE
                         Override the default language
   -m, --markdown        Just print the plain page file.
+  --short-options       Display shortform options over longform
+  --long-options        Display longform options over shortform
   --print-completion {bash,zsh,tcsh}
                         print shell completion script
 ```
@@ -106,7 +110,11 @@ In order of precedence:
 - `$HOME/.cache/tldr`
 - `~/.cache/tldr`
 
-If you are experiencing issues with *tldr*, consider deleting the cache files before trying other measures.
+If you are experiencing issues with *tldr*, consider deleting the cache files before trying other measures:
+
+```bash
+tldr --clear-cache
+```
 
 #### Autocomplete
 
@@ -136,6 +144,10 @@ For networks that sit behind a proxy, it may be necessary to disable SSL verific
 - `TLDR_ALLOW_INSECURE=1`
 
 will disable SSL certificate inspection. This __should be avoided__ unless absolutely necessary.
+
+Alternatively, It is possible to use a different certificate store/bundle by setting:
+
+- `TLDR_CERT=/path/to/certificates.crt`
 
 ### Colors
 

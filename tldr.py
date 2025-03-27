@@ -9,17 +9,17 @@ from pathlib import Path
 from zipfile import ZipFile
 from datetime import datetime
 from io import BytesIO
-import ssl
 from typing import List, Optional, Tuple, Union
 from urllib.parse import quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from termcolor import colored
-import colorama  # Required for Windows
+import ssl
 import shtab
+import shutil
 
 __version__ = "3.4.0"
-__client_specification__ = "2.2"
+__client_specification__ = "2.3"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
@@ -34,12 +34,16 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 USE_NETWORK = int(os.environ.get('TLDR_NETWORK_ENABLED', '1')) > 0
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24*7))
+CAFILE = None if os.environ.get('TLDR_CERT', None) is None else \
+    Path(os.environ.get('TLDR_CERT')).expanduser()
 
 URLOPEN_CONTEXT = None
 if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
     URLOPEN_CONTEXT = ssl.create_default_context()
     URLOPEN_CONTEXT.check_hostname = False
     URLOPEN_CONTEXT.verify_mode = ssl.CERT_NONE
+elif CAFILE:
+    URLOPEN_CONTEXT = ssl.create_default_context(cafile=CAFILE)
 
 OS_DIRECTORIES = {
     "android": "android",
@@ -205,7 +209,7 @@ def get_platform() -> str:
 
 
 def get_platform_list() -> List[str]:
-    platforms = ['common'] + list(OS_DIRECTORIES.values())
+    platforms = ['common'] + list(set(OS_DIRECTORIES.values()))
     current_platform = get_platform()
     platforms.remove(current_platform)
     platforms.insert(0, current_platform)
@@ -539,6 +543,23 @@ def update_cache(language: Optional[List[str]] = None) -> None:
             )
 
 
+def clear_cache(language: Optional[List[str]] = None) -> None:
+    languages = get_language_list()
+    if language and language[0] not in languages:
+        languages.append(language[0])
+    for language in languages:
+        pages_dir = f'pages.{language}' if language != 'en' else 'pages'
+        cache_dir = get_cache_dir() / pages_dir
+        if cache_dir.exists() and cache_dir.is_dir():
+            try:
+                shutil.rmtree(cache_dir)
+                print(f"Cleared cache for language {language}")
+            except Exception as e:
+                print(f"Error: Unable to delete cache directory {cache_dir}: {e}")
+        else:
+            print(f"No cache directory found for language {language}")
+
+
 def create_parser() -> ArgumentParser:
     parser = ArgumentParser(
         prog="tldr",
@@ -562,6 +583,10 @@ def create_parser() -> ArgumentParser:
     parser.add_argument('-u', '--update', '--update_cache',
                         action='store_true',
                         help="Update the local cache of pages and exit")
+
+    parser.add_argument('-k', '--clear-cache',
+                        action='store_true',
+                        help="Delete the local cache of pages and exit")
 
     parser.add_argument(
         '-p', '--platform',
@@ -639,6 +664,7 @@ def main() -> None:
     parser = create_parser()
 
     options = parser.parse_args()
+
     display_option_length = "long"
     if not (options.short_options or options.long_options):
         if os.environ.get('TLDR_OPTIONS') == "short":
@@ -653,12 +679,21 @@ def main() -> None:
         display_option_length = "long"
     if options.short_options and options.long_options:
         display_option_length = "both"
-    colorama.init(strip=options.color)
+    if sys.platform == "win32":
+        import colorama
+        colorama.init(strip=options.color)
+
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
 
     if options.update:
         update_cache(language=options.language)
+        return
+    elif len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+    if options.clear_cache:
+        clear_cache(language=options.language)
         return
     elif len(sys.argv) == 1:
         parser.print_help(sys.stderr)

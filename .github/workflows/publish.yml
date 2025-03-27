@@ -1,62 +1,82 @@
-# This workflow will upload a Python Package using Twine when a release is created
+# This workflow will upload a Python Package using Trusted Publishers automatically when a release is created
 # For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+# and https://docs.pypi.org/trusted-publishers/using-a-publisher/.
 
 name: Upload Python Package
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
-  deploy:
-
+  release-build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      attestations: write # to upload assets attestation of 'dists' for build provenance
+      id-token: write # grant additional permission to attestation action to mint the OIDC token permission
+
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
       with:
-        python-version: '3.8'
+        python-version: '3.9'
 
     - name: Install sphinx toolset
-      run: >-
-        python -m
-        pip install
-        sphinx
-        sphinx-argparse
-        --user
+      run:
+        python -m pip install sphinx sphinx-argparse --user
 
     - name: Install tldr dependencies
-      run: >-
-        python -m
-        pip install
-        -r
-        requirements.txt
-        --user
+      run:
+        python -m pip install -r requirements.txt --user
 
     - name: Generate the manpage
       working-directory: docs
       run: make man
 
-    - name: Install pep517
-      run: >-
-        python -m
-        pip install
-        pep517
-        --user
+    - name: Install build
+      run:
+        python -m pip install build --user
 
     - name: Build a binary wheel and a source tarball
       run: >-
-        python -m
-        pep517.build
-        --source
-        --binary
-        --out-dir dist/
+        python -m build
+        --sdist
+        --wheel
+        --outdir dist/
         .
 
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Attest generated files
+      uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2 # v2.2.3
       with:
-        user: __token__
-        password: ${{ secrets.PYPI_PASSWORD }}
+        subject-path: dist/
+
+    - name: Upload release distributions
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: release-dists
+        path: dist/
+
+  pypi-publish:
+    runs-on: ubuntu-latest
+    if: github.repository == 'tldr-pages/tldr-python-client'
+    needs: ['release-build']
+    
+    environment: 
+      name: pypi
+      url: https://pypi.org/project/tldr/
+    
+    permissions:
+      id-token: write # Required for accessing OpenID Connect (OIDC) token for PyPI trusted publisher
+    
+    steps:
+    - name: Retrieve release distributions
+      uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+      with:
+        name: release-dists
+        path: dist/
+
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
