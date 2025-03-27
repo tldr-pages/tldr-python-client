@@ -1,7 +1,8 @@
 # tldr-python-client
 
 [![PyPI Release](https://img.shields.io/pypi/v/tldr.svg)](https://pypi.python.org/pypi/tldr)
-[![Build](https://github.com/tldr-pages/tldr-python-client/workflows/Test/badge.svg?branch=main)](https://github.com/tldr-pages/tldr-python-client/actions?query=branch%3Amain)
+[![Test](https://github.com/tldr-pages/tldr-python-client/actions/workflows/test.yml/badge.svg)](https://github.com/tldr-pages/tldr-python-client/actions/workflows/test.yml)
+[![CodeQL](https://github.com/tldr-pages/tldr-python-client/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/tldr-pages/tldr-python-client/actions/workflows/github-code-scanning/codeql)
 [![Snap Release](https://snapcraft.io/tldr/badge.svg)](https://snapcraft.io/tldr)
 
 Python command-line client for [tldr pages](https://github.com/tldr-pages/tldr).

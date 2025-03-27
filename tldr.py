@@ -9,17 +9,17 @@ from pathlib import Path
 from zipfile import ZipFile
 from datetime import datetime
 from io import BytesIO
-import ssl
 from typing import List, Optional, Tuple, Union
 from urllib.parse import quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from termcolor import colored
+import ssl
 import shtab
 import shutil
 
 __version__ = "3.3.0"
-__client_specification__ = "2.2"
+__client_specification__ = "2.3"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
