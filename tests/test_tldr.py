@@ -21,7 +21,7 @@ def test_whole_page(page_name, monkeypatch):
             sys.stdout = io.StringIO()
             sys.stdout.buffer = types.SimpleNamespace()
             sys.stdout.buffer.write = lambda x: sys.stdout.write(x.decode("utf-8"))
-            tldr.output(f_original)
+            tldr.output(f_original, "both")
 
             sys.stdout.seek(0)
             tldr_output = sys.stdout.read().encode("utf-8")
@@ -39,7 +39,7 @@ def test_markdown_mode(page_name):
         sys.stdout = io.StringIO()
         sys.stdout.buffer = types.SimpleNamespace()
         sys.stdout.buffer.write = lambda x: sys.stdout.write(x.decode("utf-8"))
-        tldr.output(d_original.splitlines(), plain=True)
+        tldr.output(d_original.splitlines(), "both", plain=True)
 
         sys.stdout.seek(0)
         tldr_output = sys.stdout.read().encode("utf-8")
@@ -135,3 +135,24 @@ def test_get_cache_dir_default(monkeypatch):
     monkeypatch.delenv("HOME", raising=False)
     monkeypatch.setattr(Path, 'home', lambda: Path('/tmp/expanduser'))
     assert tldr.get_cache_dir() == Path("/tmp/expanduser/.cache/tldr")
+
+
+def test_get_commands(monkeypatch, tmp_path):
+    cache_default = tmp_path / ".cache" / "tldr" / "pages" / "linux"
+    Path.mkdir(cache_default, parents=True)
+    Path.touch(cache_default / "lspci.md")
+
+    monkeypatch.setenv("HOME", str(tmp_path))
+
+    result = tldr.get_commands(platforms=["linux"])
+
+    assert isinstance(result, list)
+    assert "lspci (en)" in result
+
+    cache_zh = tmp_path / ".cache" / "tldr" / "pages.zh" / "linux"
+    Path.mkdir(cache_zh, parents=True)
+    Path.touch(cache_zh / "lspci.md")
+
+    result = tldr.get_commands(platforms=["linux"], language=["zh_CN"])
+
+    assert "lspci (zh)" in result

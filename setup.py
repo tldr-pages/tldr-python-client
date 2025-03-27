@@ -16,8 +16,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='tldr',
-    author='Felix Yan',
-    author_email='felixonmars@gmail.com',
+    author='Felix Yan and tldr-pages contributors',
     url='https://github.com/tldr-pages/tldr-python-client',
     description='command line client for tldr',
     long_description=Path(setup_dir, 'README.md').open().read(),
@@ -45,12 +44,16 @@ setup(
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
         "Operating System :: POSIX :: SunOS/Solaris",
+        "Operating System :: POSIX :: BSD :: FreeBSD",
+        "Operating System :: POSIX :: BSD :: NetBSD",
+        "Operating System :: POSIX :: BSD :: OpenBSD",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Utilities",
         "Topic :: System"
     ]

@@ -18,8 +18,8 @@ from termcolor import colored
 import colorama  # Required for Windows
 import shtab
 
-__version__ = "3.2.0"
-__client_specification__ = "1.5"
+__version__ = "3.3.0"
+__client_specification__ = "2.2"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
@@ -28,7 +28,7 @@ PAGES_SOURCE_LOCATION = os.environ.get(
 ).rstrip('/')
 DOWNLOAD_CACHE_LOCATION = os.environ.get(
     'TLDR_DOWNLOAD_CACHE_LOCATION',
-    'https://tldr-pages.github.io/assets/tldr.zip'
+    'https://github.com/tldr-pages/tldr/releases/latest/download/tldr.zip'
 )
 
 USE_NETWORK = int(os.environ.get('TLDR_NETWORK_ENABLED', '1')) > 0
@@ -46,13 +46,17 @@ elif CAFILE:
     URLOPEN_CONTEXT = ssl.create_default_context(cafile=CAFILE)
 
 OS_DIRECTORIES = {
-    "linux": "linux",
+    "android": "android",
     "darwin": "osx",
     "freebsd": "freebsd",
-    "openbsd": "openbsd",
+    "linux": "linux",
+    "macos": "osx",
     "netbsd": "netbsd",
+    "openbsd": "openbsd",
+    "osx": "osx",
     "sunos": "sunos",
-    "win32": "windows"
+    "win32": "windows",
+    "windows": "windows"
 }
 
 
@@ -119,7 +123,7 @@ def store_page_to_cache(
 ) -> Optional[str]:
     try:
         cache_file_path = get_cache_file_path(command, platform, language)
-        cache_file_path.parent.mkdir(exist_ok=True)
+        cache_file_path.parent.mkdir(parents=True, exist_ok=True)
         with cache_file_path.open("wb") as cache_file:
             cache_file.write(page)
     except Exception:
@@ -238,6 +242,70 @@ def get_language_list() -> List[str]:
     return languages
 
 
+def get_page_for_every_platform(
+    command: str,
+    remote: Optional[str] = None,
+    platforms: Optional[List[str]] = None,
+    languages: Optional[List[str]] = None
+) -> Union[List[Tuple[str, str]], bool]:
+    """Gives a list of tuples result-platform ordered by priority."""
+    if platforms is None:
+        platforms = get_platform_list()
+    if languages is None:
+        languages = get_language_list()
+    # only use cache
+    if USE_CACHE:
+        result = list()
+        for platform in platforms:
+            for language in languages:
+                if platform is None:
+                    continue
+                try:
+                    result.append(
+                        (get_page_for_platform(
+                                command,
+                                platform,
+                                remote,
+                                language,
+                                only_use_cache=True,
+                        ), platform)
+                    )
+                    break   # Don't want to look for the same page in other langs
+                except CacheNotExist:
+                    continue
+        if result:  # Return if smth was found
+            return result
+    # Know here that we don't have the info in cache
+    result = list()
+    for platform in platforms:
+        for language in languages:
+            if platform is None:
+                continue
+            try:
+                result.append(
+                    (
+                        get_page_for_platform(
+                            command,
+                            platform,
+                            remote,
+                            language
+                        ),
+                        platform
+                    )
+                )
+                break
+            except HTTPError as err:
+                if err.code != 404:
+                    raise
+            except URLError:
+                if not PAGES_SOURCE_LOCATION.startswith('file://'):
+                    raise
+    if result:  # Return if smth was found
+        return result
+
+    return False
+
+
 def get_page(
     command: str,
     remote: Optional[str] = None,
@@ -305,21 +373,33 @@ ACCEPTED_COLOR_ATTRS = [
 
 LEADING_SPACES_NUM = 2
 
+EXAMPLE_SPLIT_REGEX = re.compile(r'(?P<example>`.+?`)')
+EXAMPLE_REGEX = re.compile(r'(?:`)(?P<example>.+?)(?:`)')
 COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}*}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
 
-def get_commands(platforms: Optional[List[str]] = None) -> List[str]:
+def get_commands(platforms: Optional[List[str]] = None,
+                 language: Optional[str] = None) -> List[str]:
     if platforms is None:
         platforms = get_platform_list()
+
+    if language:
+        languages = [get_language_code(language[0])]
+    else:
+        languages = get_language_list()
 
     commands = []
     if get_cache_dir().exists():
         for platform in platforms:
-            path = get_cache_dir() / 'pages' / platform
-            if not path.exists():
-                continue
-            commands += [file.stem for file in path.iterdir() if file.suffix == '.md']
+            for language in languages:
+                pages_dir = f'pages.{language}' if language != 'en' else 'pages'
+                path = get_cache_dir() / pages_dir / platform
+                if not path.exists():
+                    continue
+                commands += [f"{file.stem} ({language})"
+                             for file in path.iterdir()
+                             if file.suffix == '.md']
     return commands
 
 
@@ -339,7 +419,12 @@ def colors_of(key: str) -> Tuple[str, str, List[str]]:
     return (color, on_color, attrs)
 
 
-def output(page: str, plain: bool = False) -> None:
+def output(page: str, display_option_length: str, plain: bool = False) -> None:
+    def emphasise_example(x: str) -> str:
+        # Use ANSI escapes to enable italics at the start and disable at the end
+        # Also use the color yellow to differentiate from the default green
+        return "\x1B[3m" + colored(x.group('example'), 'yellow') + "\x1B[23m"
+
     if not plain:
         print()
     for line in page:
@@ -348,35 +433,77 @@ def output(page: str, plain: bool = False) -> None:
         if plain:
             print(line)
             continue
+
         elif len(line) == 0:
             continue
+
+        # Handle the command name
         elif line[0] == '#':
             line = ' ' * LEADING_SPACES_NUM + \
                 colored(line.replace('# ', ''), *colors_of('name')) + '\n'
             sys.stdout.buffer.write(line.encode('utf-8'))
+
+        # Handle the command description
         elif line[0] == '>':
             line = ' ' * (LEADING_SPACES_NUM - 1) + \
                 colored(
                     line.replace('>', '').replace('<', ''),
                     *colors_of('description')
-            )
+                )
             sys.stdout.buffer.write(line.encode('utf-8'))
+
+        # Handle an example description
         elif line[0] == '-':
-            line = '\n' + ' ' * LEADING_SPACES_NUM + \
-                colored(line, *colors_of('example'))
+
+            # Stylize text within backticks using yellow italics
+            if '`' in line:
+                elements = ['\n', ' ' * LEADING_SPACES_NUM]
+
+                for item in EXAMPLE_SPLIT_REGEX.split(line):
+                    item, replaced = EXAMPLE_REGEX.subn(emphasise_example, item)
+                    if not replaced:
+                        item = colored(item, *colors_of('example'))
+                    elements.append(item)
+
+                line = ''.join(elements)
+
+            # Otherwise, use the same colour for the whole line
+            else:
+                line = '\n' + ' ' * LEADING_SPACES_NUM + \
+                    colored(line, *colors_of('example'))
+
             sys.stdout.buffer.write(line.encode('utf-8'))
+
+        # Handle an example command
         elif line[0] == '`':
-            line = line[1:-1]  # need to actually parse ``
+            line = line[1:-1]  # Remove backticks for parsing
+
+            # Handle escaped placeholders first
+            line = line.replace(r'\{\{', '__ESCAPED_OPEN__')
+            line = line.replace(r'\}\}', '__ESCAPED_CLOSE__')
+
+            # Extract long or short options from placeholders
+            if display_option_length == "short":
+                line = re.sub(r'{{\[([^|]+)\|[^|]+?\]}}', r'\1', line)
+            elif display_option_length == "long":
+                line = re.sub(r'{{\[[^|]+\|([^|]+?)\]}}', r'\1', line)
+
             elements = [' ' * 2 * LEADING_SPACES_NUM]
             for item in COMMAND_SPLIT_REGEX.split(line):
                 item, replaced = PARAM_REGEX.subn(
-                    lambda x: colored(
-                        x.group('param'), *colors_of('parameter')),
+                    lambda x: colored(x.group('param'), *colors_of('parameter')),
                     item)
                 if not replaced:
                     item = colored(item, *colors_of('command'))
                 elements.append(item)
-            sys.stdout.buffer.write(''.join(elements).encode('utf-8'))
+
+            line = ''.join(elements)
+
+            # Restore escaped placeholders
+            line = line.replace('__ESCAPED_OPEN__', '{{')
+            line = line.replace('__ESCAPED_CLOSE__', '}}')
+
+            sys.stdout.buffer.write(line.encode('utf-8'))
         print()
     print()
 
@@ -445,9 +572,12 @@ def create_parser() -> ArgumentParser:
         nargs=1,
         default=None,
         type=str,
-        choices=['linux', 'osx', 'sunos', 'windows', 'common'],
+        choices=['android', 'freebsd', 'linux', 'netbsd', 'openbsd', 'osx', 'sunos',
+                 'windows', 'common'],
         metavar='PLATFORM',
-        help="Override the operating system [linux, osx, sunos, windows, common]"
+        help="Override the operating system "
+             "[android, freebsd, linux, netbsd, openbsd,"
+             " osx, sunos, windows, common]"
     )
 
     parser.add_argument('-l', '--list',
@@ -483,6 +613,16 @@ def create_parser() -> ArgumentParser:
                         action='store_true',
                         help='Just print the plain page file.')
 
+    parser.add_argument('--short-options',
+                        default=False,
+                        action="store_true",
+                        help='Display shortform options over longform')
+
+    parser.add_argument('--long-options',
+                        default=False,
+                        action="store_true",
+                        help='Display longform options over shortform')
+
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
     ).complete = {"bash": "shtab_tldr_cmd_list", "zsh": "shtab_tldr_cmd_list"}
@@ -503,7 +643,20 @@ def main() -> None:
     parser = create_parser()
 
     options = parser.parse_args()
-
+    display_option_length = "long"
+    if not (options.short_options or options.long_options):
+        if os.environ.get('TLDR_OPTIONS') == "short":
+            display_option_length = "short"
+        elif os.environ.get('TLDR_OPTIONS') == "long":
+            display_option_length = "long"
+        elif os.environ.get('TLDR_OPTIONS') == "both":
+            display_option_length = "both"
+    if options.short_options:
+        display_option_length = "short"
+    if options.long_options:
+        display_option_length = "long"
+    if options.short_options and options.long_options:
+        display_option_length = "both"
     colorama.init(strip=options.color)
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
@@ -515,69 +668,61 @@ def main() -> None:
         parser.print_help(sys.stderr)
         sys.exit(1)
     if options.list:
-        print('\n'.join(get_commands(options.platform)))
+        print('\n'.join(get_commands(options.platform, options.language)))
     elif options.render:
         for command in options.command:
-            if Path(command).exists():
-                with command.open(encoding='utf-8') as open_file:
+            file_path = Path(command)
+            if file_path.exists():
+                with file_path.open(encoding='utf-8') as open_file:
                     output(open_file.read().encode('utf-8').splitlines(),
+                           display_option_length,
                            plain=options.markdown)
     elif options.search:
-        command = '-'.join(options.command)
-        page = None
-        maxprob = 0
-        searchquery = options.search.split(' ')
-
-        platforms = get_platform_list()
-        for i in get_commands(platforms):
-            if i.startswith(command):
-                for p in platforms:
-                    result = load_page_from_cache(i, p, options.language)
-                    if result is not None and have_recent_cache(i, p, options.language):
-                        break
-                if result is None:
-                    raise SystemExit("Please update cache")
-                result = result.decode("utf-8")
-                result = result.split()
-                for word in searchquery:
-                    prob = 0
-                    for line in result:
-                        line = line.lower()
-                        if word in line:
-                            prob += 1
-                            if line.startswith("#"):
-                                prob += 7
-                            elif line.startswith(">"):
-                                prob += 5
-                            elif line.startswith("-"):
-                                prob += 2
-                    if prob > maxprob:
-                        maxprob = prob
-                        page = i
-
-        if page:
-            result = get_page(page, None, options.platform, options.language)
-            output(result, plain=options.markdown)
+        search_term = options.search.lower()
+        commands = get_commands(options.platform, options.language)
+        if not commands:
+            print("Update cache, no commands to check from.")
+            return
+        similar_commands = []
+        for command in commands:
+            if search_term in command.lower():
+                similar_commands.append(command)
+        if similar_commands:
+            print("Similar commands found:")
+            print('\n'.join(similar_commands))
+            return
         else:
-            print("No results found")
-
+            print("No commands matched your search term.")
     else:
         try:
             command = '-'.join(options.command).lower()
-            result = get_page(
+            results = get_page_for_every_platform(
                 command,
                 options.source,
                 options.platform,
                 options.language
             )
-            if not result:
+            if not results:
                 sys.exit((
                     "`{cmd}` documentation is not available.\n"
                     "If you want to contribute it, feel free to"
                     " send a pull request to: https://github.com/tldr-pages/tldr"
                 ).format(cmd=command))
             else:
-                output(result, plain=options.markdown)
+                output(results[0][0], display_option_length, plain=options.markdown)
+                if results[1:]:
+                    platforms_str = [result[1] for result in results[1:]]
+                    are_multiple_platforms = len(platforms_str) > 1
+                    if are_multiple_platforms:
+                        print(
+                            f"Found {len(platforms_str)} pages with the same name"
+                            f" under the platforms: {', '.join(platforms_str)}."
+                        )
+                    else:
+                        print(
+                            f"Found 1 page with the same name"
+                            f" under the platform: {platforms_str[0]}."
+                        )
         except URLError as e:
             sys.exit("Error fetching from tldr: {}".format(e))
 

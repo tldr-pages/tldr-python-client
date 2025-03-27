@@ -17,8 +17,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # -- Project information -----------------------------------------------------
 
 project = 'tldr'
-copyright = '2014, Felix Yan'
-author = 'Felix Yan'
+copyright = '2014, Felix Yan and 2014-present, tldr-pages contributors'
+author = 'Felix Yan and tldr-pages contributors'
 from tldr import __version__  # noqa: E402
 release = __version__
 
