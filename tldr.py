@@ -16,6 +16,7 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from termcolor import colored
 import shtab
+import shutil
 
 __version__ = "3.3.0"
 __client_specification__ = "2.2"
@@ -542,6 +543,23 @@ def update_cache(language: Optional[List[str]] = None) -> None:
             )
 
 
+def clear_cache(language: Optional[List[str]] = None) -> None:
+    languages = get_language_list()
+    if language and language[0] not in languages:
+        languages.append(language[0])
+    for language in languages:
+        pages_dir = f'pages.{language}' if language != 'en' else 'pages'
+        cache_dir = get_cache_dir() / pages_dir
+        if cache_dir.exists() and cache_dir.is_dir():
+            try:
+                shutil.rmtree(cache_dir)
+                print(f"Cleared cache for language {language}")
+            except Exception as e:
+                print(f"Error: Unable to delete cache directory {cache_dir}: {e}")
+        else:
+            print(f"No cache directory found for language {language}")
+
+
 def create_parser() -> ArgumentParser:
     parser = ArgumentParser(
         prog="tldr",
@@ -565,6 +583,10 @@ def create_parser() -> ArgumentParser:
     parser.add_argument('-u', '--update', '--update_cache',
                         action='store_true',
                         help="Update the local cache of pages and exit")
+
+    parser.add_argument('-k', '--clear-cache',
+                        action='store_true',
+                        help="Delete the local cache of pages and exit")
 
     parser.add_argument(
         '-p', '--platform',
@@ -666,6 +688,12 @@ def main() -> None:
 
     if options.update:
         update_cache(language=options.language)
+        return
+    elif len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+    if options.clear_cache:
+        clear_cache(language=options.language)
         return
     elif len(sys.argv) == 1:
         parser.print_help(sys.stderr)
