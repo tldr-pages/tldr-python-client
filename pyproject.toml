@@ -72,7 +72,8 @@ Changelog = "https://github.com/tldr-pages/tldr-python-client/blob/main/CHANGELO
 Funding = "https://liberapay.com/tldr-pages"
 
 [tool.hatch.version]
-path = "tldr/__init__.py"
+path = "tldr.py"
+pattern = '__version__ = ["\'](.*?)[\'\"]'
 
 [tool.hatch.build.targets.wheel.shared-data]
 "docs/man" = "share/man/man1"
