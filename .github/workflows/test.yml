@@ -54,6 +54,7 @@ jobs:
       run: |
         python3 -m pip install .
         tldr --version
+        tldr tldr
 
   build-macos:
     runs-on: macos-latest
@@ -77,8 +78,8 @@ jobs:
 
     - name: Install sphinx dependencies
       run: |
-        brew install sphinx-doc
-        brew link sphinx-doc --force
+        python3 -m pip install sphinx sphinx-argparse
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
 
     - name: Install tldr dependencies
       run: >-
@@ -102,6 +103,7 @@ jobs:
       run: |
         python3 -m pip install .
         tldr --version
+        tldr tldr
 
   build-windows:
     runs-on: windows-latest
@@ -153,6 +155,7 @@ jobs:
       run: |
         python3 -m pip install .
         tldr --version
+        tldr tldr
 
   build-snap:
     runs-on: ${{ matrix.os }}
