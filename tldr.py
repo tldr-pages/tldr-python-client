@@ -33,12 +33,16 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 USE_NETWORK = int(os.environ.get('TLDR_NETWORK_ENABLED', '1')) > 0
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24*7))
+CAFILE = None if os.environ.get('TLDR_CERT', None) is None else \
+    Path(os.environ.get('TLDR_CERT')).expanduser()
 
 URLOPEN_CONTEXT = None
 if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
     URLOPEN_CONTEXT = ssl.create_default_context()
     URLOPEN_CONTEXT.check_hostname = False
     URLOPEN_CONTEXT.verify_mode = ssl.CERT_NONE
+elif CAFILE:
+    URLOPEN_CONTEXT = ssl.create_default_context(cafile=CAFILE)
 
 OS_DIRECTORIES = {
     "android": "android",
@@ -204,7 +208,7 @@ def get_platform() -> str:
 
 
 def get_platform_list() -> List[str]:
-    platforms = ['common'] + list(OS_DIRECTORIES.values())
+    platforms = ['common'] + list(set(OS_DIRECTORIES.values()))
     current_platform = get_platform()
     platforms.remove(current_platform)
     platforms.insert(0, current_platform)
@@ -414,7 +418,7 @@ def colors_of(key: str) -> Tuple[str, str, List[str]]:
     return (color, on_color, attrs)
 
 
-def output(page: str, plain: bool = False) -> None:
+def output(page: str, display_option_length: str, plain: bool = False) -> None:
     def emphasise_example(x: str) -> str:
         # Use ANSI escapes to enable italics at the start and disable at the end
         # Also use the color yellow to differentiate from the default green
@@ -476,6 +480,12 @@ def output(page: str, plain: bool = False) -> None:
             # Handle escaped placeholders first
             line = line.replace(r'\{\{', '__ESCAPED_OPEN__')
             line = line.replace(r'\}\}', '__ESCAPED_CLOSE__')
+
+            # Extract long or short options from placeholders
+            if display_option_length == "short":
+                line = re.sub(r'{{\[([^|]+)\|[^|]+?\]}}', r'\1', line)
+            elif display_option_length == "long":
+                line = re.sub(r'{{\[[^|]+\|([^|]+?)\]}}', r'\1', line)
 
             elements = [' ' * 2 * LEADING_SPACES_NUM]
             for item in COMMAND_SPLIT_REGEX.split(line):
@@ -602,6 +612,16 @@ def create_parser() -> ArgumentParser:
                         action='store_true',
                         help='Just print the plain page file.')
 
+    parser.add_argument('--short-options',
+                        default=False,
+                        action="store_true",
+                        help='Display shortform options over longform')
+
+    parser.add_argument('--long-options',
+                        default=False,
+                        action="store_true",
+                        help='Display longform options over shortform')
+
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
     ).complete = {"bash": "shtab_tldr_cmd_list", "zsh": "shtab_tldr_cmd_list"}
@@ -623,9 +643,25 @@ def main() -> None:
 
     options = parser.parse_args()
 
+    display_option_length = "long"
+    if not (options.short_options or options.long_options):
+        if os.environ.get('TLDR_OPTIONS') == "short":
+            display_option_length = "short"
+        elif os.environ.get('TLDR_OPTIONS') == "long":
+            display_option_length = "long"
+        elif os.environ.get('TLDR_OPTIONS') == "both":
+            display_option_length = "both"
+    if options.short_options:
+        display_option_length = "short"
+    if options.long_options:
+        display_option_length = "long"
+    if options.short_options and options.long_options:
+        display_option_length = "both"
+    
     if sys.platform == "win32":
         import colorama
         colorama.init(strip=options.color)
+
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
 
@@ -643,6 +679,7 @@ def main() -> None:
             if file_path.exists():
                 with file_path.open(encoding='utf-8') as open_file:
                     output(open_file.read().encode('utf-8').splitlines(),
+                           display_option_length,
                            plain=options.markdown)
     elif options.search:
         search_term = options.search.lower()
@@ -676,7 +713,7 @@ def main() -> None:
                     " send a pull request to: https://github.com/tldr-pages/tldr"
                 ).format(cmd=command))
             else:
-                output(results[0][0], plain=options.markdown)
+                output(results[0][0], display_option_length, plain=options.markdown)
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
                     are_multiple_platforms = len(platforms_str) > 1

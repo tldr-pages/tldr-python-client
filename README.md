@@ -85,7 +85,8 @@ export TLDR_LANGUAGE="es"
 export TLDR_CACHE_ENABLED=1
 export TLDR_CACHE_MAX_AGE=720
 export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/main/pages"
-export TLDR_DOWNLOAD_CACHE_LOCATION="https://tldr-pages.github.io/assets/tldr.zip"
+export TLDR_DOWNLOAD_CACHE_LOCATION="https://github.com/tldr-pages/tldr/releases/latest/download/tldr.zip"
+export TLDR_OPTIONS=short
 ```
 
 ### Cache
@@ -136,6 +137,10 @@ For networks that sit behind a proxy, it may be necessary to disable SSL verific
 
 will disable SSL certificate inspection. This __should be avoided__ unless absolutely necessary.
 
+Alternatively, It is possible to use a different certificate store/bundle by setting:
+
+* `TLDR_CERT=/path/to/certificates.crt`
+
 ### Colors
 
 Values of the `TLDR_COLOR_x` variables may consist of three parts:
@@ -180,3 +185,7 @@ can either use the `--source` flag when using tldr or by specifying the followin
   - it can also point to a local directory using `file:///path/to/directory`.
 - `TLDR_DOWNLOAD_CACHE_LOCATION` to control where to pull a zip of all pages from.
   - defaults to `https://github.com/tldr-pages/tldr/releases/latest/download/tldr.zip`.
+
+### Command options
+
+Pages might contain `{{[*|*]}}` patterns to let the client decide whether to show shortform or longform versions of options. This can be configured with `TLDR_OPTIONS`, which accepts values `short`, `long` and `both`
