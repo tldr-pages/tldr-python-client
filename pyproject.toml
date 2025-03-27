@@ -80,5 +80,5 @@ pattern = '__version__ = ["\'](.*?)[\'\"]'
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "/tldr",
+    "tldr.py"
 ]
