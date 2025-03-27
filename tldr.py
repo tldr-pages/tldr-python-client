@@ -657,7 +657,6 @@ def main() -> None:
         display_option_length = "long"
     if options.short_options and options.long_options:
         display_option_length = "both"
-    
     if sys.platform == "win32":
         import colorama
         colorama.init(strip=options.color)
