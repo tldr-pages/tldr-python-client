@@ -139,6 +139,7 @@ jobs:
 
   build-snap:
     runs-on: ${{ matrix.os }}
+    if: github.repository == 'tldr-pages/tldr-python-client' && github.ref == 'refs/heads/main'
     needs: ['build-linux']
 
     strategy:
@@ -152,7 +153,7 @@ jobs:
        id: snapcraft-build
        with:
          snapcraft-args: "-v"
-         path: "/snap/test-snapcraft.yaml"
+         path: "snap/test-snapcraft.yaml"
 
      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
        with:
