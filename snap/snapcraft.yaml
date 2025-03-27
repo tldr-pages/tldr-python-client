@@ -27,8 +27,7 @@ platforms:
 parts:
   tldr:
     plugin: python
-    source: https://github.com/tldr-pages/tldr-python-client.git
-    source-tag: $SNAPCRAFT_PROJECT_VERSION
+    source: .
     build-environment:
       - PATH: ${CRAFT_PART_INSTALL}/bin:${PATH}
       - PYTHONPATH: ${CRAFT_PART_INSTALL}/lib/python3.12/site-packages
