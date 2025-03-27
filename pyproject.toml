@@ -25,7 +25,7 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: End Users/Desktop",
     "Intended Audience :: Developers",
-    "Intended Audience :: Education"
+    "Intended Audience :: Education",
     "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Operating System :: Android",
