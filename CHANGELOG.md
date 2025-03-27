@@ -1,5 +1,30 @@
 # Changelog
 
+## 3.3.0 (06/29/2024)
+
+## Breaking
+
+* Drop support for EOL versions Python 3.6 and Python 3.7.
+
+### Bugfixes
+
+* Return `str` instead of `list` when executing `tldr -l` (thanks [@uunnxx](https://github.com/uunnxx))
+* Use pathlib instead of os.path (thanks [@vitorhcl](https://github.com/vitorhcl))
+* Respect language settings when geting a list of commands (thanks [@frenzymadness](https://github.com/frenzymadness))
+* Fix `--search` option (thanks [@CleanMachine1](https://github.com/CleanMachine1))
+
+### Features
+
+* Add support for BSD platform directories (thanks [@vitorhcl](https://github.com/vitorhcl))
+* Add `--update` long option (thanks [@owenvoke](https://github.com/owenvoke))
+* Add support for fetching individual translation archives for cache (thanks [@SaurabhDRao](https://github.com/SaurabhDRao))
+* Add support to show message for other versions of the same page in other platforms (thanks [@Jaimepas77](https://github.com/Jaimepas77))
+* Update `DOWNLOAD_CACHE_LOCATION` to use GitHub Releases (thanks [@vitorhcl](https://github.com/vitorhcl))
+* Add `macos` alias for `osx` directory and update `--platform` option (thanks [@patricedenis](https://github.com/patricedenis))
+* Add support for escaping placeholders for special pages (thanks [@kbdharun](https://github.com/kbdharun))
+* Add support for Python 3.11 and Python 3.12 (thanks [@kbdharun](https://github.com/kbdharun))
+* Add support for [Client Specification v2.2](https://github.com/tldr-pages/tldr/releases/tag/v2.2)
+
 ## 3.2.0 (05/09/2023)
 
 ### Bugfixes

@@ -15,11 +15,10 @@ from urllib.parse import quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from termcolor import colored
-import colorama  # Required for Windows
 import shtab
 
-__version__ = "3.2.0"
-__client_specification__ = "1.5"
+__version__ = "3.3.0"
+__client_specification__ = "2.2"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
@@ -34,12 +33,16 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 USE_NETWORK = int(os.environ.get('TLDR_NETWORK_ENABLED', '1')) > 0
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
 MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24*7))
+CAFILE = None if os.environ.get('TLDR_CERT', None) is None else \
+    Path(os.environ.get('TLDR_CERT')).expanduser()
 
 URLOPEN_CONTEXT = None
 if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
     URLOPEN_CONTEXT = ssl.create_default_context()
     URLOPEN_CONTEXT.check_hostname = False
     URLOPEN_CONTEXT.verify_mode = ssl.CERT_NONE
+elif CAFILE:
+    URLOPEN_CONTEXT = ssl.create_default_context(cafile=CAFILE)
 
 OS_DIRECTORIES = {
     "android": "android",
@@ -205,7 +208,7 @@ def get_platform() -> str:
 
 
 def get_platform_list() -> List[str]:
-    platforms = ['common'] + list(OS_DIRECTORIES.values())
+    platforms = ['common'] + list(set(OS_DIRECTORIES.values()))
     current_platform = get_platform()
     platforms.remove(current_platform)
     platforms.insert(0, current_platform)
@@ -369,6 +372,8 @@ ACCEPTED_COLOR_ATTRS = [
 
 LEADING_SPACES_NUM = 2
 
+EXAMPLE_SPLIT_REGEX = re.compile(r'(?P<example>`.+?`)')
+EXAMPLE_REGEX = re.compile(r'(?:`)(?P<example>.+?)(?:`)')
 COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}*}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
@@ -413,7 +418,12 @@ def colors_of(key: str) -> Tuple[str, str, List[str]]:
     return (color, on_color, attrs)
 
 
-def output(page: str, plain: bool = False) -> None:
+def output(page: str, display_option_length: str, plain: bool = False) -> None:
+    def emphasise_example(x: str) -> str:
+        # Use ANSI escapes to enable italics at the start and disable at the end
+        # Also use the color yellow to differentiate from the default green
+        return "\x1B[3m" + colored(x.group('example'), 'yellow') + "\x1B[23m"
+
     if not plain:
         print()
     for line in page:
@@ -422,35 +432,77 @@ def output(page: str, plain: bool = False) -> None:
         if plain:
             print(line)
             continue
+
         elif len(line) == 0:
             continue
+
+        # Handle the command name
         elif line[0] == '#':
             line = ' ' * LEADING_SPACES_NUM + \
                 colored(line.replace('# ', ''), *colors_of('name')) + '\n'
             sys.stdout.buffer.write(line.encode('utf-8'))
+
+        # Handle the command description
         elif line[0] == '>':
             line = ' ' * (LEADING_SPACES_NUM - 1) + \
                 colored(
                     line.replace('>', '').replace('<', ''),
                     *colors_of('description')
-            )
+                )
             sys.stdout.buffer.write(line.encode('utf-8'))
+
+        # Handle an example description
         elif line[0] == '-':
-            line = '\n' + ' ' * LEADING_SPACES_NUM + \
-                colored(line, *colors_of('example'))
+
+            # Stylize text within backticks using yellow italics
+            if '`' in line:
+                elements = ['\n', ' ' * LEADING_SPACES_NUM]
+
+                for item in EXAMPLE_SPLIT_REGEX.split(line):
+                    item, replaced = EXAMPLE_REGEX.subn(emphasise_example, item)
+                    if not replaced:
+                        item = colored(item, *colors_of('example'))
+                    elements.append(item)
+
+                line = ''.join(elements)
+
+            # Otherwise, use the same colour for the whole line
+            else:
+                line = '\n' + ' ' * LEADING_SPACES_NUM + \
+                    colored(line, *colors_of('example'))
+
             sys.stdout.buffer.write(line.encode('utf-8'))
+
+        # Handle an example command
         elif line[0] == '`':
-            line = line[1:-1]  # need to actually parse ``
+            line = line[1:-1]  # Remove backticks for parsing
+
+            # Handle escaped placeholders first
+            line = line.replace(r'\{\{', '__ESCAPED_OPEN__')
+            line = line.replace(r'\}\}', '__ESCAPED_CLOSE__')
+
+            # Extract long or short options from placeholders
+            if display_option_length == "short":
+                line = re.sub(r'{{\[([^|]+)\|[^|]+?\]}}', r'\1', line)
+            elif display_option_length == "long":
+                line = re.sub(r'{{\[[^|]+\|([^|]+?)\]}}', r'\1', line)
+
             elements = [' ' * 2 * LEADING_SPACES_NUM]
             for item in COMMAND_SPLIT_REGEX.split(line):
                 item, replaced = PARAM_REGEX.subn(
-                    lambda x: colored(
-                        x.group('param'), *colors_of('parameter')),
+                    lambda x: colored(x.group('param'), *colors_of('parameter')),
                     item)
                 if not replaced:
                     item = colored(item, *colors_of('command'))
                 elements.append(item)
-            sys.stdout.buffer.write(''.join(elements).encode('utf-8'))
+
+            line = ''.join(elements)
+
+            # Restore escaped placeholders
+            line = line.replace('__ESCAPED_OPEN__', '{{')
+            line = line.replace('__ESCAPED_CLOSE__', '}}')
+
+            sys.stdout.buffer.write(line.encode('utf-8'))
         print()
     print()
 
@@ -598,6 +650,16 @@ def create_parser() -> ArgumentParser:
                         action='store_true',
                         help='Just print the plain page file.')
 
+    parser.add_argument('--short-options',
+                        default=False,
+                        action="store_true",
+                        help='Display shortform options over longform')
+
+    parser.add_argument('--long-options',
+                        default=False,
+                        action="store_true",
+                        help='Display longform options over shortform')
+
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
     ).complete = {"bash": "shtab_tldr_cmd_list", "zsh": "shtab_tldr_cmd_list"}
@@ -619,7 +681,24 @@ def main() -> None:
 
     options = parser.parse_args()
 
-    colorama.init(strip=options.color)
+    display_option_length = "long"
+    if not (options.short_options or options.long_options):
+        if os.environ.get('TLDR_OPTIONS') == "short":
+            display_option_length = "short"
+        elif os.environ.get('TLDR_OPTIONS') == "long":
+            display_option_length = "long"
+        elif os.environ.get('TLDR_OPTIONS') == "both":
+            display_option_length = "both"
+    if options.short_options:
+        display_option_length = "short"
+    if options.long_options:
+        display_option_length = "long"
+    if options.short_options and options.long_options:
+        display_option_length = "both"
+    if sys.platform == "win32":
+        import colorama
+        colorama.init(strip=options.color)
+
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
 
@@ -639,9 +718,11 @@ def main() -> None:
         print('\n'.join(get_commands(options.platform, options.language)))
     elif options.render:
         for command in options.command:
-            if Path(command).exists():
-                with command.open(encoding='utf-8') as open_file:
+            file_path = Path(command)
+            if file_path.exists():
+                with file_path.open(encoding='utf-8') as open_file:
                     output(open_file.read().encode('utf-8').splitlines(),
+                           display_option_length,
                            plain=options.markdown)
     elif options.search:
         search_term = options.search.lower()
@@ -675,7 +756,7 @@ def main() -> None:
                     " send a pull request to: https://github.com/tldr-pages/tldr"
                 ).format(cmd=command))
             else:
-                output(results[0][0], plain=options.markdown)
+                output(results[0][0], display_option_length, plain=options.markdown)
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
                     are_multiple_platforms = len(platforms_str) > 1
