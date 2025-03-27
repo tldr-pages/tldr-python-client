@@ -57,6 +57,7 @@ jobs:
 
   build-snap:
     runs-on: ${{ matrix.os }}
+    needs: ['build']
 
     strategy:
       matrix:
