@@ -37,6 +37,8 @@ parts:
       craftctl default
       cd $CRAFT_PART_SRC/docs
       make man
+      mkdir -p $CRAFT_PART_INSTALL/share/man/man1
+      cp -r $CRAFT_PART_SRC/docs/man/tldr.1 $CRAFT_PART_INSTALL/share/man/man1/tldr.1
     python-packages:
       - Sphinx
       - sphinx-argparse
