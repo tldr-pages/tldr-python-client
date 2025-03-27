@@ -84,7 +84,5 @@ include = [
     "README.md",
     "LICENSE.md",
     "CHANGELOG.md",
-    "tests/test_tldr.py",
-    "tests/data/**",
-    "docs/**",
+    "docs/man/tldr.1",
 ]
