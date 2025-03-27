@@ -116,7 +116,6 @@ jobs:
     - name: Install sphinx dependencies
       run: |
          python -m pip install sphinx sphinx-argparse --user
-         echo "$env:USERPROFILE\.local\Scripts" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
     - name: Install tldr dependencies
       run:
