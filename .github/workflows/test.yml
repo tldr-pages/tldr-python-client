@@ -139,7 +139,8 @@ jobs:
 
   build-snap:
     runs-on: ${{ matrix.os }}
-    needs: ['build-linux']
+    # if: github.repository == 'tldr-pages/tldr-python-client' && github.ref == 'refs/heads/main'
+    # needs: ['build-linux']
 
     strategy:
       matrix:
