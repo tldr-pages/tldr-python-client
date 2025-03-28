@@ -5,7 +5,7 @@
 [![CodeQL](https://github.com/tldr-pages/tldr-python-client/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/tldr-pages/tldr-python-client/actions/workflows/github-code-scanning/codeql)
 [![Snap Release](https://snapcraft.io/tldr/badge.svg)](https://snapcraft.io/tldr)
 
-Python command-line client for [tldr pages](https://github.com/tldr-pages/tldr).
+🐍 Official Python command-line client for [tldr pages](https://github.com/tldr-pages/tldr) 📚.
 
 ![Tldr Python client displaying the tar page](https://raw.github.com/tldr-pages/tldr-python-client/main/images/tldr-dark.png)
 
@@ -123,6 +123,7 @@ tldr --clear-cache
 ```bash
 # bash
 tldr --print-completion bash | sudo tee "$BASH_COMPLETION_COMPAT_DIR"/tldr
+
 # zsh (it is recommended to check where zsh/site-functions directory is located)
 ## for macOS:
 tldr --print-completion zsh | sudo tee /usr/local/share/zsh/site-functions/_tldr
@@ -196,4 +197,4 @@ can either use the `--source` flag when using tldr or by specifying the followin
 
 ### Command options
 
-Pages might contain `{{[*|*]}}` patterns to let the client decide whether to show shortform or longform versions of options. This can be configured with `TLDR_OPTIONS`, which accepts values `short`, `long` and `both`
+Pages might contain `{{[*|*]}}` patterns to let the client decide whether to show shortform or longform versions of options. This can be configured with `TLDR_OPTIONS`, which accepts values `short`, `long` and `both`.

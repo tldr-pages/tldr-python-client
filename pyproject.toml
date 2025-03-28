@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "tldr"
 dynamic = ["version"]
-description = "Python command line client for tldr."
+description = "Official Python command line client for tldr."
 readme = "README.md"
 license = "MIT"
 requires-python = "~=3.9"

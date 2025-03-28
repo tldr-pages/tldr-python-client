@@ -17,7 +17,7 @@
 * Add support for displaying pages with long/short option placeholders only using `--long-options`/`--short-options` flag or [TLDR_OPTIONS variable](https://github.com/tldr-pages/tldr-python-client#command-options) (thanks [@Managor](https://github.com/Managor))
 * Add `--clear-cache`/`-k` option to clear tldr's local cache (thanks [@patricedenis](https://github.com/patricedenis) and [@vitorhcl](https://github.com/vitorhcl))
 * Add support to stylize text inside backticks when appearing in example descriptions (thanks [@kyluca](https://github.com/kyluca))
-* Add support for specifying a certificate bundle with TLDR_CERT variable (thanks [@jtcbrule](https://github.com/jtcbrule), [@CleanMachine1](https://github.com/CleanMachine1), and [@vitorhcl](https://github.com/vitorhcl))
+* Add support for specifying a certificate bundle with [TLDR_CERT variable](https://github.com/tldr-pages/tldr-python-client#ssl-inspection) (thanks [@jtcbrule](https://github.com/jtcbrule), [@CleanMachine1](https://github.com/CleanMachine1), and [@vitorhcl](https://github.com/vitorhcl))
 * Package build for the project has been migrated from using `setup.py` (with `setuptools` backend) to `pyproject.toml` (with Hatch backend) (thanks [@kbdharun](https://github.com/kbdharun))
 * Update package metadata in `pyproject.toml` (thanks [@kbdharun](https://github.com/kbdharun))
 * Add trusted publisher support to securely publish `tldr` package to PyPI directly from the repository's confined environment (thanks [@kbdharun](https://github.com/kbdharun))
