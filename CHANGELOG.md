@@ -8,17 +8,18 @@
 
 ### Bugfixes
 
-* Fix duplicate pages information shown in pages like `du`, `cd`, `w` (thanks [@sellisd](https://github.com/sellisd))
-* Only install `colorama` in Windows devices (thanks [@hukkin](https://github.com/hukkin))
 * Fix broken `--render` option (thanks [@acuteenvy](https://github.com/acuteenvy))
+* Fix duplicate platform information shown in pages like `du`, `cd`, `w` (thanks [@sellisd](https://github.com/sellisd))
+* Only install `colorama` dependency in Windows (thanks [@hukkin](https://github.com/hukkin))
 
 ### Features
 
-* Add support for displaying long/short option placeholders using `--short-options`/`--long-options` flag or [TLDR_OPTIONS variable](https://github.com/tldr-pages/tldr-python-client#command-options) (thanks [@Managor](https://github.com/Managor))
+* Add support for displaying long/short option placeholders using `--long-options`/`--short-options` flag or [TLDR_OPTIONS variable](https://github.com/tldr-pages/tldr-python-client#command-options) (thanks [@Managor](https://github.com/Managor))
 * Add `--clear-cache`/`-k` option to clear tldr's local cache (thanks [@patricedenis](https://github.com/patricedenis) and [@vitorhcl](https://github.com/vitorhcl))
-* Add support to stylize text inside backticks when appearing in example description (thanks [@kyluca](https://github.com/kyluca))
-* Add support for specifying a certificate bundle with TLDR_CERT (thanks [@jtcbrule](https://github.com/jtcbrule), [@CleanMachine1](https://github.com/CleanMachine1), and [@vitorhcl](https://github.com/vitorhcl))
-* Package build has been migrated from using `setup.py` to `pyproject.toml` with Hatch backend and updated package metadata (thanks [@kbdharun](https://github.com/kbdharun))
+* Add support to stylize text inside backticks when appearing in example descriptions (thanks [@kyluca](https://github.com/kyluca))
+* Add support for specifying a certificate bundle with TLDR_CERT variable (thanks [@jtcbrule](https://github.com/jtcbrule), [@CleanMachine1](https://github.com/CleanMachine1), and [@vitorhcl](https://github.com/vitorhcl))
+* Package build for the project has been migrated from using `setup.py` (with `setuptools` backend) to `pyproject.toml` (with Hatch backend) (thanks [@kbdharun](https://github.com/kbdharun))
+* Update package metadata in `pyproject.toml` (thanks [@kbdharun](https://github.com/kbdharun))
 * Add trusted publisher support to securely publish `tldr` package to PyPI directly from the repository's confined environment (thanks [@kbdharun](https://github.com/kbdharun))
 
 ## 3.3.0 (06/29/2024)
