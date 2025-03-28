@@ -147,7 +147,7 @@ jobs:
         os: ['ubuntu-latest', 'ubuntu-24.04-arm']
 
     steps:
-     - uses: actions/checkout@v4
+     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
      - uses: canonical/action-build@3bdaa03e1ba6bf59a65f84a751d943d549a54e79 # v1.3.0
        id: snapcraft-build
