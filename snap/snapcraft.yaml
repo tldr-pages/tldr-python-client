@@ -28,13 +28,11 @@ parts:
   tldr:
     plugin: python
     source: https://github.com/tldr-pages/tldr-python-client.git
-    source-tag: $SNAPCRAFT_PROJECT_VERSION
     build-environment:
       - PATH: ${CRAFT_PART_INSTALL}/bin:${PATH}
       - PYTHONPATH: ${CRAFT_PART_INSTALL}/lib/python3.12/site-packages
     override-pull: |
       craftctl default
-      sed -i "/data_files=\[('share\/man\/man1', \['docs\/man\/tldr\.1'\])\],/d" setup.py
     override-build: |
       craftctl default
       cd $CRAFT_PART_SRC/docs
