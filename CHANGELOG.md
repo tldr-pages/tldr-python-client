@@ -21,6 +21,7 @@
 * Package build for the project has been migrated from using `setup.py` (with `setuptools` backend) to `pyproject.toml` (with Hatch backend) (thanks [@kbdharun](https://github.com/kbdharun))
 * Update package metadata in `pyproject.toml` (thanks [@kbdharun](https://github.com/kbdharun))
 * Add trusted publisher support to securely publish `tldr` package to PyPI directly from the repository's confined environment (thanks [@kbdharun](https://github.com/kbdharun))
+* Add support for [Client Specification v2.3](https://github.com/tldr-pages/tldr/releases/tag/v2.3)
 
 ## 3.3.0 (06/29/2024)
 
