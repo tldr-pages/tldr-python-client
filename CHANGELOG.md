@@ -14,7 +14,7 @@
 
 ### Features
 
-* Add support for displaying pages with long/short option placeholders using `--long-options`/`--short-options` flag or [TLDR_OPTIONS variable](https://github.com/tldr-pages/tldr-python-client#command-options) (thanks [@Managor](https://github.com/Managor))
+* Add support for displaying pages with long/short option placeholders using `--long-options`/`--short-options` flags or [TLDR_OPTIONS variable](https://github.com/tldr-pages/tldr-python-client#command-options) (thanks [@Managor](https://github.com/Managor))
 * Add `--clear-cache`/`-k` option to clear tldr's local cache (thanks [@patricedenis](https://github.com/patricedenis) and [@vitorhcl](https://github.com/vitorhcl))
 * Add support to stylize text inside backticks when appearing in example descriptions (thanks [@kyluca](https://github.com/kyluca))
 * Add support for specifying a certificate bundle with [TLDR_CERT variable](https://github.com/tldr-pages/tldr-python-client#ssl-inspection) (thanks [@jtcbrule](https://github.com/jtcbrule), [@CleanMachine1](https://github.com/CleanMachine1), and [@vitorhcl](https://github.com/vitorhcl))
