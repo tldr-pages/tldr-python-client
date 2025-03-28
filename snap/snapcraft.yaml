@@ -2,7 +2,7 @@ name: tldr
 base: core24
 version: '3.4.0'
 summary: tldr python client
-description: Python command-line client for tldr pages.
+description: Official Python command-line client for tldr pages.
 
 grade: stable
 confinement: strict
