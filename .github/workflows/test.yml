@@ -169,18 +169,9 @@ jobs:
           python3 -m pip install -U pip
           python3 -m pip install -U pytest pytest-runner flake8
   
-      - name: Install sphinx dependencies
-        run: |
-           python -m pip install sphinx sphinx-argparse --user
-           $env:SPHINXBUILD = "D:\Python3\Scripts\sphinx-build.exe"
-  
       - name: Install tldr dependencies
         run:
           python3 -m pip install -r requirements.txt --user
-  
-      - name: Generate the manpage
-        working-directory: docs
-        run: make man
   
       - name: Lint codebase
         run: python3 -m flake8
@@ -196,7 +187,7 @@ jobs:
 
   build-snap:
     runs-on: ${{ matrix.os }}
-    # if: github.repository == 'tldr-pages/tldr-python-client' && github.ref == 'refs/heads/main'
+    if: github.repository == 'tldr-pages/tldr-python-client' && github.ref == 'refs/heads/main'
     needs: ['build-linux']
 
     permissions:
