@@ -6,6 +6,9 @@ jobs:
   build-linux:
     runs-on: ${{ matrix.os }}
 
+    permissions:
+      contents: read
+
     strategy:
       matrix:
         os: ['ubuntu-latest', 'ubuntu-24.04-arm']
@@ -50,6 +53,9 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
+
+    permissions:
+      contents: read
 
     strategy:
       matrix:
@@ -96,6 +102,9 @@ jobs:
   build-windows:
     runs-on: windows-latest
 
+    permissions:
+      contents: read
+
     strategy:
       matrix:
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
@@ -139,6 +148,9 @@ jobs:
 
   build-windows-arm:
       runs-on: windows-11-arm
+
+      permissions:
+        contents: read
   
       strategy:
         matrix:
@@ -159,8 +171,8 @@ jobs:
   
       - name: Install sphinx dependencies
         run: |
-           choco install sphinx
-           python -m pip install sphinx-argparse --user
+           python -m pip install sphinx sphinx-argparse --user
+           $env:SPHINXBUILD = "D:\Python3\Scripts\sphinx-build.exe"
   
       - name: Install tldr dependencies
         run:
@@ -184,8 +196,11 @@ jobs:
 
   build-snap:
     runs-on: ${{ matrix.os }}
-    if: github.repository == 'tldr-pages/tldr-python-client' && github.ref == 'refs/heads/main'
+    # if: github.repository == 'tldr-pages/tldr-python-client' && github.ref == 'refs/heads/main'
     needs: ['build-linux']
+
+    permissions:
+      contents: read
 
     strategy:
       matrix:
