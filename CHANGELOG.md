@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.4.1 (04/29/2025)
+
+### Bugfixes
+
+* Fix manpage path in `pyproject.toml` (thanks [@kbdharun](https://github.com/kbdharun))
+
+### Features
+
+* Fallback to `common` if a platform is specified using `-p` flag, but a page doesn't exist for that platform (thanks [@kbdharun](https://github.com/kbdharun))
+
 ## 3.4.0 (03/28/2025)
 
 ### Breaking
