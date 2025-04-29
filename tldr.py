@@ -18,7 +18,7 @@ import ssl
 import shtab
 import shutil
 
-__version__ = "3.4.0"
+__version__ = "3.4.1"
 __client_specification__ = "2.3"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
@@ -251,6 +251,10 @@ def get_page_for_every_platform(
     """Gives a list of tuples result-platform ordered by priority."""
     if platforms is None:
         platforms = get_platform_list()
+    else:
+        # When platform is explicitly specified, ensure 'common' is included as fallback
+        if 'common' not in platforms and len(platforms) > 0:
+            platforms = platforms + ['common']
     if languages is None:
         languages = get_language_list()
     # only use cache
