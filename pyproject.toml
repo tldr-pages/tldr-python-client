@@ -76,7 +76,7 @@ path = "tldr.py"
 attr = "__version__"
 
 [tool.hatch.build.targets.wheel.shared-data]
-"docs/man" = "share/man/man1"
+"docs/man/tldr.1" = "share/man/man1/tldr.1"
 
 [tool.hatch.build.targets.sdist]
 include = [
