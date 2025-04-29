@@ -94,11 +94,10 @@ jobs:
         tldr tldr --markdown
 
   build-windows:
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     strategy:
       matrix:
-        os: ['windows-latest', 'windows-11-arm']
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
 
     steps:
@@ -137,6 +136,50 @@ jobs:
         python3 -m pip install .
         tldr --version
         tldr tldr --markdown
+
+  build-windows-arm:
+      runs-on: windows-11-arm
+  
+      strategy:
+        matrix:
+          python-version: ['3.11', '3.12', '3.13']
+  
+      steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: ${{ matrix.python-version }}
+  
+      - name: Install developer dependencies
+        run: |
+          python3 -m pip install -U pip
+          python3 -m pip install -U pytest pytest-runner flake8
+  
+      - name: Install sphinx dependencies
+        run: |
+           python -m pip install sphinx sphinx-argparse --user
+  
+      - name: Install tldr dependencies
+        run:
+          python3 -m pip install -r requirements.txt --user
+  
+      - name: Generate the manpage
+        working-directory: docs
+        run: make man
+  
+      - name: Lint codebase
+        run: python3 -m flake8
+  
+      - name: Run test suite
+        run: python3 -m pytest tests/
+  
+      - name: Test tldr cli
+        run: |
+          python3 -m pip install .
+          tldr --version
+          tldr tldr --markdown
 
   build-snap:
     runs-on: ${{ matrix.os }}
