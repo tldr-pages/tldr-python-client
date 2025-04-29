@@ -159,7 +159,8 @@ jobs:
   
       - name: Install sphinx dependencies
         run: |
-           python -m pip install sphinx sphinx-argparse --user
+           choco install sphinx
+           python -m pip install sphinx-argparse --user
   
       - name: Install tldr dependencies
         run:
