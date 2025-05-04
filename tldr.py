@@ -670,13 +670,12 @@ def main() -> None:
     options = parser.parse_args()
 
     display_option_length = "long"
-    if not (options.short_options or options.long_options):
-        if os.environ.get('TLDR_OPTIONS') == "short":
-            display_option_length = "short"
-        elif os.environ.get('TLDR_OPTIONS') == "long":
-            display_option_length = "long"
-        elif os.environ.get('TLDR_OPTIONS') == "both":
-            display_option_length = "both"
+    if os.environ.get('TLDR_OPTIONS') == "short":
+        display_option_length = "short"
+    elif os.environ.get('TLDR_OPTIONS') == "long":
+        display_option_length = "long"
+    elif os.environ.get('TLDR_OPTIONS') == "both":
+        display_option_length = "both"
     if options.short_options:
         display_option_length = "short"
     if options.long_options:
