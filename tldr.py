@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # PYTHON_ARGCOMPLETE_OK
-
+import socket
 import sys
 import os
 import re
@@ -10,7 +10,7 @@ from zipfile import ZipFile
 from datetime import datetime
 from io import BytesIO
 from typing import List, Optional, Tuple, Union
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 from urllib.request import urlopen, Request, ProxyHandler, build_opener, install_opener
 from urllib.error import HTTPError, URLError
 from termcolor import colored
@@ -563,13 +563,29 @@ def clear_cache(language: Optional[List[str]] = None) -> None:
         else:
             print(f"No cache directory found for language {language}")
 
+def check_proxy(proxy: str) -> None:
+    if not proxy.startswith("https://") or ":" not in proxy:
+        sys.exit("Error: Invalid proxy format. Expected 'https://host:port'.")
+
+    parsed = urlparse(proxy)
+    host = parsed.hostname
+    port = parsed.port
+
+    if not host or not port:
+        sys.exit(f"Error: Could not extract host/port from proxy URL: {proxy}")
+
+    try:
+        sock = socket.create_connection((host, port), timeout=10)
+        sock.close()
+    except socket.timeout:
+        sys.exit(f"Error: Proxy server {host}:{port} connection timed out after 10 seconds.")
+    except socket.error as e:
+        sys.exit(f"Error: Could not connect to proxy server {host}:{port}. Error: {e}")
+
 def set_proxy(proxy: str) -> None:
-    pattern = re.compile(
-        r"^https:\/\/((?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}|(?:\d{1,3}\.){3}\d{1,3}):(\d{1,5})$")
-    if (not pattern.match(proxy)):
-        sys.exit("Error: Invalid proxy format. Expected 'https://host:port' or 'https://ip_address:port'.")
+    check_proxy(proxy)
     proxyHandler = ProxyHandler({'http': f'{proxy}',
-                          'https': f'{proxy}'})
+                                 'https': f'{proxy}'})
     opener = build_opener(proxyHandler)
     install_opener(opener)
 
