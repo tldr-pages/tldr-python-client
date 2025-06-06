@@ -580,7 +580,7 @@ def check_proxy(proxy: str) -> None:
         sock.close()
     except socket.timeout:
         sys.exit(f"Error: Proxy server {host}:{port} "
-                "connection timed out after 10 seconds.")
+                 "connection timed out after 10 seconds.")
     except socket.error as e:
         sys.exit(f"Error: Could not connect to proxy server {host}:{port}. Error: {e}")
 
