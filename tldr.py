@@ -563,6 +563,15 @@ def clear_cache(language: Optional[List[str]] = None) -> None:
         else:
             print(f"No cache directory found for language {language}")
 
+def set_proxy(proxy: str) -> None:
+    pattern = re.compile(
+        r"^https:\/\/((?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}|(?:\d{1,3}\.){3}\d{1,3}):(\d{1,5})$")
+    if (not pattern.match(proxy)):
+        sys.exit("Error: Invalid proxy format. Expected 'https://host:port' or 'https://ip_address:port'.")
+    proxyHandler = ProxyHandler({'http': f'{proxy}',
+                          'https': f'{proxy}'})
+    opener = build_opener(proxyHandler)
+    install_opener(opener)
 
 def create_parser() -> ArgumentParser:
     parser = ArgumentParser(
@@ -697,10 +706,7 @@ def main() -> None:
         os.environ["FORCE_COLOR"] = "true"
 
     if options.proxy != None:
-        proxy = ProxyHandler({'http': f'{options.proxy}',
-                              'https': f'{options.proxy}'})
-        opener = build_opener(proxy)
-        install_opener(opener)
+        set_proxy(options.proxy)
 
     if options.update:
         update_cache(language=options.language)
