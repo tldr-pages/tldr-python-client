@@ -11,7 +11,7 @@ from datetime import datetime
 from io import BytesIO
 from typing import List, Optional, Tuple, Union
 from urllib.parse import quote
-from urllib.request import urlopen, Request
+from urllib.request import urlopen, Request, ProxyHandler, build_opener, install_opener
 from urllib.error import HTTPError, URLError
 from termcolor import colored
 import ssl
@@ -648,6 +648,11 @@ def create_parser() -> ArgumentParser:
                         action="store_true",
                         help='Display longform options over shortform')
 
+    parser.add_argument('-x', '--proxy',
+                        default=None,
+                        type=str,
+                        help='Proxy')
+
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
     ).complete = {"bash": "shtab_tldr_cmd_list", "zsh": "shtab_tldr_cmd_list"}
@@ -688,6 +693,12 @@ def main() -> None:
 
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
+
+    if options.proxy != None:
+        proxy = ProxyHandler({'http': f'{options.proxy}',
+                              'https': f'{options.proxy}'})
+        opener = build_opener(proxy)
+        install_opener(opener)
 
     if options.update:
         update_cache(language=options.language)
