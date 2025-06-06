@@ -563,6 +563,7 @@ def clear_cache(language: Optional[List[str]] = None) -> None:
         else:
             print(f"No cache directory found for language {language}")
 
+
 def check_proxy(proxy: str) -> None:
     if not proxy.startswith("https://") or ":" not in proxy:
         sys.exit("Error: Invalid proxy format. Expected 'https://host:port'.")
@@ -578,9 +579,11 @@ def check_proxy(proxy: str) -> None:
         sock = socket.create_connection((host, port), timeout=10)
         sock.close()
     except socket.timeout:
-        sys.exit(f"Error: Proxy server {host}:{port} connection timed out after 10 seconds.")
+        sys.exit(f"Error: Proxy server {host}:{port} "
+                "connection timed out after 10 seconds.")
     except socket.error as e:
         sys.exit(f"Error: Could not connect to proxy server {host}:{port}. Error: {e}")
+
 
 def set_proxy(proxy: str) -> None:
     check_proxy(proxy)
@@ -588,6 +591,7 @@ def set_proxy(proxy: str) -> None:
                                  'https': f'{proxy}'})
     opener = build_opener(proxyHandler)
     install_opener(opener)
+
 
 def create_parser() -> ArgumentParser:
     parser = ArgumentParser(
@@ -721,7 +725,7 @@ def main() -> None:
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
 
-    if options.proxy != None:
+    if options.proxy is not None:
         set_proxy(options.proxy)
 
     if options.update:
