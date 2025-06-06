@@ -651,7 +651,9 @@ def create_parser() -> ArgumentParser:
     parser.add_argument('-x', '--proxy',
                         default=None,
                         type=str,
-                        help='Proxy')
+                        help='Specify a proxy server address. When a proxy is used, '
+                             'only HTTPS connections will be routed through it. '
+                             'Example: https://user:pass@host:port.')
 
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
