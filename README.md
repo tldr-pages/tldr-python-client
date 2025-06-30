@@ -91,7 +91,21 @@ export TLDR_CACHE_MAX_AGE=720
 export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/main/pages"
 export TLDR_DOWNLOAD_CACHE_LOCATION="https://github.com/tldr-pages/tldr/releases/latest/download/tldr.zip"
 export TLDR_OPTIONS=short
+export TLDR_PLATFORM=linux
 ```
+
+### Platform
+The platform that tldr will use is determined by the `TLDR_PLATFORM` environment variable.
+If it is not set, the client will try to determine the platform automatically based on the system it is running on.
+The following values are supported:
+- `linux`
+- `windows`
+- `android`
+- `freebsd`
+- `netbsd`
+- `openbsd`
+- `osx`
+- `sunos`
 
 ### Cache
 
