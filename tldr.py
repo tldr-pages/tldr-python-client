@@ -4,7 +4,7 @@
 import sys
 import os
 import re
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from zipfile import ZipFile
 from datetime import datetime
@@ -13,10 +13,13 @@ from typing import List, Optional, Tuple, Union
 from urllib.parse import quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
-from termcolor import colored
 import ssl
-import shtab
 import shutil
+
+# Third party imports
+from termcolor import colored
+import shtab
+
 
 __version__ = "3.4.1"
 __client_specification__ = "2.3"
@@ -571,6 +574,115 @@ def clear_cache(language: Optional[List[str]] = None) -> None:
             print(f"No cache directory found for language {language}")
 
 
+def interactive_mode(options: Namespace) -> None:
+    """Interactive mode for browsing/searching tldr pages."""
+    try:
+        import readline
+    except ImportError:
+        pass
+
+    print(colored("tldr interactive mode. Type 'help' for commands, 'quit' to exit.", 'green', attrs=['bold']))
+
+    # Use the flags/options provided by the user, not just defaults
+    # If options.platform is a list (from argparse), flatten it to a string if needed
+    session_platform = options.platform if options.platform else get_platform_list()
+    if isinstance(session_platform, list) and len(session_platform) == 1:
+        session_platform = session_platform
+
+    session_language = options.language if options.language else get_language_list()
+    if isinstance(session_language, list) and len(session_language) == 1:
+        session_language = session_language
+
+    # If user passed --platform or --language, always use those as the starting values
+    # and allow them to be changed in the session
+    while True:
+        try:
+            user_input = input(colored("tldr> ", 'cyan', attrs=['bold'])).strip()
+            if not user_input:
+                continue
+            parts = user_input.split()
+            cmd = parts[0].lower()
+            args = parts[1:]
+
+            if cmd in ('quit', 'exit', 'q'):
+                print("Exiting interactive mode.")
+                break
+            elif cmd in ('help', 'h'):
+                print(
+                    "Commands:\n"
+                    "  help                Show this help\n"
+                    "  list                List available commands\n"
+                    "  search <term>       Search commands\n"
+                    "  show <command>      Show documentation for a command\n"
+                    "  platform [name]     Show or set platform\n"
+                    "  language [code]     Show or set language\n"
+                    "  update              Update cache\n"
+                    "  clear               Clear cache\n"
+                    "  quit                Exit interactive mode\n"
+                )
+            elif cmd == 'list':
+                cmds = get_commands(session_platform, session_language)
+                if not cmds:
+                    print(colored("No commands found. Try 'update'.", 'red'))
+                else:
+                    unique = sorted(set(c.split(' (')[0] for c in cmds))
+                    print("Available commands:")
+                    print('\n'.join('  ' + cmd for cmd in unique))
+            elif cmd == 'search':
+                if not args:
+                    print("Usage: search <term>")
+                    continue
+                term = ' '.join(args).lower()
+                cmds = get_commands(session_platform, session_language)
+                found = sorted(set(c.split(' (')[0] for c in cmds if term in c.lower()))
+                if found:
+                    print("Matches:")
+                    print('\n'.join('  ' + cmd for cmd in found))
+                else:
+                    print(colored("No matches found.", 'yellow'))
+            elif cmd == 'show':
+                if not args:
+                    print("Usage: show <command>")
+                    continue
+                command = '-'.join(args).lower()
+                results = get_page_for_every_platform(command, None, session_platform, session_language)
+                if not results:
+                    print(colored(f"No documentation for '{command}'.", 'red'))
+                else:
+                    output(results[0][0], "long", plain=False)
+            elif cmd == 'platform':
+                if args:
+                    platform_arg = args[0].lower()
+                    if platform_arg in OS_DIRECTORIES:
+                        session_platform = [platform_arg]
+                        print(f"Platform set to: {platform_arg}")
+                    else:
+                        print(f"Invalid platform: {platform_arg}.")
+                        print(f"Valid platforms are: {', '.join(OS_DIRECTORIES)}")
+                else:
+                    print(f"Current platform: {session_platform[0]}")
+            elif cmd == 'language':
+                if args:
+                    session_language = [args[0]]
+                    print(f"Language set to: {args[0]}")
+                else:
+                    print(f"Current language: {session_language[0]}")
+            elif cmd == 'update':
+                update_cache(language=session_language)
+            elif cmd == 'clear':
+                clear_cache(language=session_language)
+            else:
+                command = '-'.join(user_input.split()).lower()
+                results = get_page_for_every_platform(command, None, session_platform, session_language)
+                if not results:
+                    print(colored(f"No documentation for '{command}'.", 'red'))
+                else:
+                    output(results[0][0], "long", plain=False)
+        except (KeyboardInterrupt, EOFError):
+            print("\nExiting interactive mode.")
+            break
+
+
 def create_parser() -> ArgumentParser:
     parser = ArgumentParser(
         prog="tldr",
@@ -645,6 +757,10 @@ def create_parser() -> ArgumentParser:
                         action='store_true',
                         help='Just print the plain page file.')
 
+    parser.add_argument('-i', '--interactive',
+                        action='store_true',
+                        help='Start tldr in interactive mode')
+
     parser.add_argument('--short-options',
                         default=False,
                         action="store_true",
@@ -673,7 +789,6 @@ def create_parser() -> ArgumentParser:
 
 def main() -> None:
     parser = create_parser()
-
     options = parser.parse_args()
 
     display_option_length = "long"
@@ -695,6 +810,11 @@ def main() -> None:
 
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
+
+    # Call interactive_mode if requested, before any other logic
+    if options.interactive:
+        interactive_mode(options)
+        return
 
     if options.update:
         update_cache(language=options.language)

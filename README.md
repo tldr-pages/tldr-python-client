@@ -69,6 +69,7 @@ options:
   -L LANGUAGE, --language LANGUAGE
                         Override the default language
   -m, --markdown        Just print the plain page file.
+  -i, --interactive     Start tldr in interactive mode
   --short-options       Display shortform options over longform
   --long-options        Display longform options over shortform
   --print-completion {bash,zsh,tcsh}
