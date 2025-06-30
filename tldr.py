@@ -202,6 +202,13 @@ def update_page_for_platform(
 
 
 def get_platform() -> str:
+    if platform := os.environ.get('TLDR_PLATFORM'):
+        platform = platform.lower()
+        if platform in OS_DIRECTORIES:
+            return OS_DIRECTORIES[platform]
+        else:
+            print("Warning: Invalid platform specified in environment variable TLDR_PLATFORM.")
+
     for key in OS_DIRECTORIES:
         if sys.platform.startswith(key):
             return OS_DIRECTORIES[key]
