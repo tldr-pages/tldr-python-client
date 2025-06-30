@@ -100,8 +100,11 @@ If it is not set, the client will try to determine the platform automatically ba
 The following values are supported:
 - `linux`
 - `windows`
+- `win32`
 - `android`
+- `darwin`
 - `freebsd`
+- `macos`
 - `netbsd`
 - `openbsd`
 - `osx`
