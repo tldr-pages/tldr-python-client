@@ -59,6 +59,8 @@ OS_DIRECTORIES = {
     "windows": "windows"
 }
 
+SUPPORTED_PLATFORMS = sorted(set(OS_DIRECTORIES.values()))
+
 
 class CacheNotExist(Exception):
     pass
@@ -202,12 +204,15 @@ def update_page_for_platform(
 
 
 def get_platform() -> str:
-    if platform := os.environ.get('TLDR_PLATFORM'):
-        platform = platform.lower()
-        if platform in OS_DIRECTORIES:
-            return OS_DIRECTORIES[platform]
+    platform_env = os.environ.get('TLDR_PLATFORM', '').strip().lower()
+    if platform_env:
+        if platform_env in SUPPORTED_PLATFORMS:
+            return platform_env
         else:
-            print("Warning: Invalid platform specified in environment variable TLDR_PLATFORM.")
+            print(
+                f"Warning: '{platform_env}' is not a supported TLDR_PLATFORM env value."
+                "\nFalling back to auto-detection."
+            )
 
     for key in OS_DIRECTORIES:
         if sys.platform.startswith(key):
