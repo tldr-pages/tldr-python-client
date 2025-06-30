@@ -1,7 +1,5 @@
-# VsCode IDE
+# IDEs
 .vscode/
-
-# JetBrains IDEs
 .idea/
 
 # Byte-compiled / optimized / DLL files
