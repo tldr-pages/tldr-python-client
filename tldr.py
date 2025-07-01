@@ -60,6 +60,7 @@ OS_DIRECTORIES = {
     "common": "common",
 }
 
+
 class CacheNotExist(Exception):
     pass
 
@@ -665,7 +666,6 @@ def main() -> None:
     parser = create_parser()
 
     options = parser.parse_args()
-
 
     if options.platform is None:
         platform_env = os.environ.get('TLDR_PLATFORM', '').strip().lower()
