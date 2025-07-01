@@ -56,11 +56,9 @@ OS_DIRECTORIES = {
     "osx": "osx",
     "sunos": "sunos",
     "win32": "windows",
-    "windows": "windows"
+    "windows": "windows",
+    "common": "common",
 }
-
-SUPPORTED_PLATFORMS = sorted(set(OS_DIRECTORIES.values()))
-
 
 class CacheNotExist(Exception):
     pass
@@ -204,16 +202,6 @@ def update_page_for_platform(
 
 
 def get_platform() -> str:
-    platform_env = os.environ.get('TLDR_PLATFORM', '').strip().lower()
-    if platform_env:
-        if platform_env in SUPPORTED_PLATFORMS:
-            return platform_env
-        else:
-            print(
-                f"Warning: '{platform_env}' is not a supported TLDR_PLATFORM env value."
-                "\nFalling back to auto-detection."
-            )
-
     for key in OS_DIRECTORIES:
         if sys.platform.startswith(key):
             return OS_DIRECTORIES[key]
@@ -221,7 +209,7 @@ def get_platform() -> str:
 
 
 def get_platform_list() -> List[str]:
-    platforms = ['common'] + list(set(OS_DIRECTORIES.values()))
+    platforms = list(set(OS_DIRECTORIES.values()))
     current_platform = get_platform()
     platforms.remove(current_platform)
     platforms.insert(0, current_platform)
@@ -680,6 +668,17 @@ def main() -> None:
     parser = create_parser()
 
     options = parser.parse_args()
+
+
+    if options.platform is None:
+        platform_env = os.environ.get('TLDR_PLATFORM', '').strip().lower()
+        if platform_env in OS_DIRECTORIES:
+            options.platform = [platform_env]
+        elif platform_env:
+            print(
+                f"Warning: '{platform_env}' is not a supported TLDR_PLATFORM env value."
+                "\nFalling back to auto-detection."
+            )
 
     display_option_length = "long"
     if os.environ.get('TLDR_OPTIONS') == "short":

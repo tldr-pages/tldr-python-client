@@ -95,17 +95,8 @@ export TLDR_PLATFORM=linux
 ```
 
 ### Platform
-The platform that tldr will use is determined by the `TLDR_PLATFORM` environment variable.
-If it is not set, the client will try to determine the platform automatically based on the system it is running on.
-The following values are supported:
-- `linux`
-- `windows`
-- `android`
-- `freebsd`
-- `netbsd`
-- `openbsd`
-- `osx`
-- `sunos`
+Determines the platform that tldr will use based on the `TLDR_PLATFORM` environment variable or system detection.
+For a complete list of supported platform values, refer to the help for the `--platform` option flag.
 
 ### Cache
 
