@@ -597,12 +597,9 @@ def create_parser() -> ArgumentParser:
         nargs=1,
         default=None,
         type=str,
-        choices=['android', 'freebsd', 'linux', 'netbsd', 'openbsd', 'osx', 'sunos',
-                 'windows', 'common'],
+        choices=list(OS_DIRECTORIES),
         metavar='PLATFORM',
-        help="Override the operating system "
-             "[android, freebsd, linux, netbsd, openbsd,"
-             " osx, sunos, windows, common]"
+        help="Override the operating system " + str(list(OS_DIRECTORIES))
     )
 
     parser.add_argument('-l', '--list',
