@@ -593,14 +593,17 @@ def create_parser() -> ArgumentParser:
                         action='store_true',
                         help="Delete the local cache of pages and exit")
 
+    all_platforms = sorted(set(OS_DIRECTORIES.values()))
+    platforms_str = "[" + ", ".join(all_platforms) + "]"
+
     parser.add_argument(
         '-p', '--platform',
         nargs=1,
         default=None,
         type=str,
-        choices=list(OS_DIRECTORIES),
+        choices=all_platforms,
         metavar='PLATFORM',
-        help="Override the operating system " + str(list(OS_DIRECTORIES))
+        help=f"Override the operating system {platforms_str}"
     )
 
     parser.add_argument('-l', '--list',
