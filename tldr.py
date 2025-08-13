@@ -402,9 +402,7 @@ def get_commands(platforms: Optional[List[str]] = None,
                 if not path.exists():
                     continue
                 languagestring = ""
-                if language != 'en':
-                    languagestring = f" ({language})"
-                commands += [f"{file.stem}{languagestring}"
+                commands += [f"{file.stem}"
                              for file in path.iterdir()
                              if file.suffix == '.md']
     return commands
