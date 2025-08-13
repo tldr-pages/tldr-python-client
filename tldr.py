@@ -401,7 +401,7 @@ def get_commands(platforms: Optional[List[str]] = None,
                 path = get_cache_dir() / pages_dir / platform
                 if not path.exists():
                     continue
-                commands += [f"{file.stem} ({language})"
+                commands += [f"{file.stem}"
                              for file in path.iterdir()
                              if file.suffix == '.md']
     return commands
@@ -654,10 +654,10 @@ def create_parser() -> ArgumentParser:
 
     shtab.add_argument_to(parser, preamble={
         'bash': r'''shtab_tldr_cmd_list(){{
-          compgen -W "$("{py}" -m tldr --list | sed 's/[^[:alnum:]_]/ /g')" -- "$1"
+          compgen -W "$("{py}" -m tldr --list)" -- "$1"
         }}'''.format(py=sys.executable),
         'zsh': r'''shtab_tldr_cmd_list(){{
-          _describe 'command' "($("{py}" -m tldr --list | sed 's/[^[:alnum:]_]/ /g'))"
+          _describe 'command' "($("{py}" -m tldr --list))"
         }}'''.format(py=sys.executable)
     })
 
