@@ -401,7 +401,6 @@ def get_commands(platforms: Optional[List[str]] = None,
                 path = get_cache_dir() / pages_dir / platform
                 if not path.exists():
                     continue
-                languagestring = ""
                 commands += [f"{file.stem}"
                              for file in path.iterdir()
                              if file.suffix == '.md']
