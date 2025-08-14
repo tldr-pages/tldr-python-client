@@ -751,7 +751,6 @@ def main() -> None:
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
                     are_multiple_platforms = len(platforms_str) > 1
-
                     if are_multiple_platforms:
                         print(
                             f"Found {len(platforms_str)} pages with the same name"
