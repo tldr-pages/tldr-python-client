@@ -746,7 +746,9 @@ def main() -> None:
                 output(results[0][0], display_option_length, plain=options.markdown)
 
                 if results[0][1] != get_platform() and results[0][1] != "common" and not options.platform:
-                    print(f"warning: showing page from platform '{results[0][1]}', because '{command}' does not exist in '{get_platform()}' and 'common'.")
+                    print(
+                        f"warning: showing page from platform '{results[0][1]}', because"
+                        f" '{command}' does not exist in '{get_platform()}' and 'common'.")
 
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
