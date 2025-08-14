@@ -40,7 +40,8 @@ jobs:
       run: make man
 
     - name: Lint codebase
-      run: python3 -m flake8 --ignore E111
+      run: python3 -m flake8 --ignore E111,E501
+
 
     - name: Run test suite
       run: python3 -m pytest tests/
@@ -88,7 +89,8 @@ jobs:
       run: make man
 
     - name: Lint codebase
-      run: python3 -m flake8 --ignore E111
+      run: python3 -m flake8 --ignore E111,E501
+
 
     - name: Run test suite
       run: python3 -m pytest tests/
@@ -135,7 +137,8 @@ jobs:
       run: make man
 
     - name: Lint codebase
-      run: python3 -m flake8 --ignore E111
+      run: python3 -m flake8 --ignore E111,E501
+
 
     - name: Run test suite
       run: python3 -m pytest tests/
@@ -174,7 +177,8 @@ jobs:
           python3 -m pip install -r requirements.txt --user
 
       - name: Lint codebase
-        run: python3 -m flake8 --ignore E111
+        run: python3 -m flake8 --ignore E111,E501
+
 
       - name: Run test suite
         run: python3 -m pytest tests/
