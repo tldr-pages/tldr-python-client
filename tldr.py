@@ -747,7 +747,7 @@ def main() -> None:
 
                 if (results[0][1] != get_platform()
                     and results[0][1] != "common"
-                    and not options.platform):
+                        and not options.platform):
                     print(
                         f"warning: showing page from platform"
                         f" '{results[0][1]}', because '{command}' does"
