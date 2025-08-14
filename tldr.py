@@ -751,7 +751,8 @@ def main() -> None:
                     print(
                         f"warning: showing page from platform"
                         f" '{results[0][1]}', because '{command}' does"
-                        f" not exist in '{get_platform()}' and 'common'.")
+                        f" not exist in '{get_platform()}' and 'common'."
+                    )
 
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
