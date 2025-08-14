@@ -682,9 +682,8 @@ def main() -> None:
         display_option_length = "long"
     if options.short_options and options.long_options:
         display_option_length = "both"
-    if sys.platform == "win32":
-        import colorama
-        colorama.init(strip=options.color)
+    import colorama
+    colorama.init(strip=options.color)
 
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
@@ -749,7 +748,7 @@ def main() -> None:
                     and results[0][1] != "common"
                         and not options.platform):
                     print(
-                        f"warning: showing page from platform"
+                        f"{colorama.Fore.YELLOW}warning{colorama.Fore.RESET}: showing page from platform"
                         f" '{results[0][1]}', because '{command}' does"
                         f" not exist in '{get_platform()}' and 'common'."
                     )
