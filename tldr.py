@@ -744,9 +744,14 @@ def main() -> None:
                 ).format(cmd=command))
             else:
                 output(results[0][0], display_option_length, plain=options.markdown)
+
+                if results[0][1] != get_platform() and results[0][1] != "common" and not options.platform:
+                    print(f"warning: showing page from platform '{results[0][1]}', because '{command}' does not exist in '{get_platform()}' and 'common'.")
+
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
                     are_multiple_platforms = len(platforms_str) > 1
+
                     if are_multiple_platforms:
                         print(
                             f"Found {len(platforms_str)} pages with the same name"
