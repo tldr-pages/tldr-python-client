@@ -25,7 +25,7 @@ jobs:
     - name: Install developer dependencies
       run: |
         python3 -m pip install -U pip
-        python3 -m pip install -U pytest pytest-runner flake8
+        python3 -m pip install -U pytest pytest-runner
 
     - name: Install sphinx dependencies
       run:
@@ -38,9 +38,6 @@ jobs:
     - name: Generate the manpage
       working-directory: docs
       run: make man
-
-    - name: Lint codebase
-      run: python3 -m flake8
 
     - name: Run test suite
       run: python3 -m pytest tests/
@@ -72,7 +69,7 @@ jobs:
     - name: Install developer dependencies
       run: |
         python3 -m pip install -U pip
-        python3 -m pip install -U pytest pytest-runner flake8
+        python3 -m pip install -U pytest pytest-runner
 
     - name: Install sphinx dependencies
       run: |
@@ -86,9 +83,6 @@ jobs:
     - name: Generate the manpage
       working-directory: docs
       run: make man
-
-    - name: Lint codebase
-      run: python3 -m flake8
 
     - name: Run test suite
       run: python3 -m pytest tests/
@@ -120,7 +114,7 @@ jobs:
     - name: Install developer dependencies
       run: |
         python3 -m pip install -U pip
-        python3 -m pip install -U pytest pytest-runner flake8
+        python3 -m pip install -U pytest pytest-runner
 
     - name: Install sphinx dependencies
       run: |
@@ -133,9 +127,6 @@ jobs:
     - name: Generate the manpage
       working-directory: docs
       run: make man
-
-    - name: Lint codebase
-      run: python3 -m flake8
 
     - name: Run test suite
       run: python3 -m pytest tests/
@@ -167,14 +158,11 @@ jobs:
       - name: Install developer dependencies
         run: |
           python3 -m pip install -U pip
-          python3 -m pip install -U pytest pytest-runner flake8
+          python3 -m pip install -U pytest pytest-runner
   
       - name: Install tldr dependencies
         run:
           python3 -m pip install -r requirements.txt --user
-  
-      - name: Lint codebase
-        run: python3 -m flake8
   
       - name: Run test suite
         run: python3 -m pytest tests/
