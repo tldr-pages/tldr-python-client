@@ -91,7 +91,12 @@ export TLDR_CACHE_MAX_AGE=720
 export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/main/pages"
 export TLDR_DOWNLOAD_CACHE_LOCATION="https://github.com/tldr-pages/tldr/releases/latest/download/tldr.zip"
 export TLDR_OPTIONS=short
+export TLDR_PLATFORM=linux
 ```
+
+### Platform
+Determines the platform that tldr will use based on the `TLDR_PLATFORM` environment variable or system detection.
+For a complete list of supported platform values, refer to the help for the `--platform` option flag.
 
 ### Cache
 

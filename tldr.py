@@ -56,7 +56,8 @@ OS_DIRECTORIES = {
     "osx": "osx",
     "sunos": "sunos",
     "win32": "windows",
-    "windows": "windows"
+    "windows": "windows",
+    "common": "common",
 }
 
 
@@ -209,7 +210,7 @@ def get_platform() -> str:
 
 
 def get_platform_list() -> List[str]:
-    platforms = ['common'] + list(set(OS_DIRECTORIES.values()))
+    platforms = list(set(OS_DIRECTORIES.values()))
     current_platform = get_platform()
     platforms.remove(current_platform)
     platforms.insert(0, current_platform)
@@ -592,17 +593,17 @@ def create_parser() -> ArgumentParser:
                         action='store_true',
                         help="Delete the local cache of pages and exit")
 
+    all_platforms = sorted(set(OS_DIRECTORIES.values()))
+    platforms_str = "[" + ", ".join(all_platforms) + "]"
+
     parser.add_argument(
         '-p', '--platform',
         nargs=1,
         default=None,
         type=str,
-        choices=['android', 'freebsd', 'linux', 'netbsd', 'openbsd', 'osx', 'sunos',
-                 'windows', 'common'],
+        choices=all_platforms,
         metavar='PLATFORM',
-        help="Override the operating system "
-             "[android, freebsd, linux, netbsd, openbsd,"
-             " osx, sunos, windows, common]"
+        help=f"Override the operating system {platforms_str}"
     )
 
     parser.add_argument('-l', '--list',
@@ -668,6 +669,16 @@ def main() -> None:
     parser = create_parser()
 
     options = parser.parse_args()
+
+    if options.platform is None:
+        platform_env = os.environ.get('TLDR_PLATFORM', '').strip().lower()
+        if platform_env in OS_DIRECTORIES:
+            options.platform = [platform_env]
+        elif platform_env:
+            print(
+                f"Warning: '{platform_env}' is not a supported TLDR_PLATFORM env value."
+                "\nFalling back to auto-detection."
+            )
 
     display_option_length = "long"
     if os.environ.get('TLDR_OPTIONS') == "short":
