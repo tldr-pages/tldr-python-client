@@ -17,6 +17,7 @@ from termcolor import colored
 import ssl
 import shtab
 import shutil
+import colorama
 
 __version__ = "3.4.1"
 __client_specification__ = "2.3"
@@ -682,7 +683,7 @@ def main() -> None:
         display_option_length = "long"
     if options.short_options and options.long_options:
         display_option_length = "both"
-    import colorama
+
     colorama.init(strip=options.color)
 
     if options.color is False:
