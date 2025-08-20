@@ -17,6 +17,7 @@ from termcolor import colored
 import ssl
 import shtab
 import shutil
+import colorama
 
 __version__ = "3.4.1"
 __client_specification__ = "2.3"
@@ -682,9 +683,8 @@ def main() -> None:
         display_option_length = "long"
     if options.short_options and options.long_options:
         display_option_length = "both"
-    if sys.platform == "win32":
-        import colorama
-        colorama.init(strip=options.color)
+
+    colorama.init(strip=options.color)
 
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
@@ -744,6 +744,16 @@ def main() -> None:
                 ).format(cmd=command))
             else:
                 output(results[0][0], display_option_length, plain=options.markdown)
+
+                if (results[0][1] != get_platform()
+                    and results[0][1] != "common"
+                        and not options.platform):
+                    print(
+                        f"{colorama.Fore.YELLOW}warning{colorama.Fore.RESET}: showing page from platform"
+                        f" '{results[0][1]}', because '{command}' does"
+                        f" not exist in '{get_platform()}' and 'common'."
+                    )
+
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
                     are_multiple_platforms = len(platforms_str) > 1
