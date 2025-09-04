@@ -682,6 +682,7 @@ def main() -> None:
         display_option_length = "long"
     if options.short_options and options.long_options:
         display_option_length = "both"
+
     if sys.platform == "win32":
         import colorama
         colorama.init(strip=options.color)
@@ -744,6 +745,17 @@ def main() -> None:
                 ).format(cmd=command))
             else:
                 output(results[0][0], display_option_length, plain=options.markdown)
+
+                if results[0][1] not in (get_platform(), "common") and not options.platform:
+                    warning_suffix = (
+                        f": showing page from platform '{results[0][1]}', "
+                        f"because '{command}' does not exist in '{get_platform()}' and 'common'."
+                    )
+                    if options.markdown:
+                        print(f"warning{warning_suffix}")
+                    else:
+                        print(f"{colored('warning', 'yellow')}{warning_suffix}")
+
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
                     are_multiple_platforms = len(platforms_str) > 1
