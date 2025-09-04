@@ -402,7 +402,7 @@ def get_commands(platforms: Optional[List[str]] = None,
                 path = get_cache_dir() / pages_dir / platform
                 if not path.exists():
                     continue
-                commands += [f"{file.stem} ({language})"
+                commands += [f"{file.stem}"
                              for file in path.iterdir()
                              if file.suffix == '.md']
     return commands
@@ -655,10 +655,10 @@ def create_parser() -> ArgumentParser:
 
     shtab.add_argument_to(parser, preamble={
         'bash': r'''shtab_tldr_cmd_list(){{
-          compgen -W "$("{py}" -m tldr --list | sed 's/[^[:alnum:]_]/ /g')" -- "$1"
+          compgen -W "$("{py}" -m tldr --list)" -- "$1"
         }}'''.format(py=sys.executable),
         'zsh': r'''shtab_tldr_cmd_list(){{
-          _describe 'command' "($("{py}" -m tldr --list | sed 's/[^[:alnum:]_]/ /g'))"
+          _describe 'command' "($("{py}" -m tldr --list))"
         }}'''.format(py=sys.executable)
     })
 
@@ -693,6 +693,7 @@ def main() -> None:
         display_option_length = "long"
     if options.short_options and options.long_options:
         display_option_length = "both"
+
     if sys.platform == "win32":
         import colorama
         colorama.init(strip=options.color)
@@ -755,6 +756,17 @@ def main() -> None:
                 ).format(cmd=command))
             else:
                 output(results[0][0], display_option_length, plain=options.markdown)
+
+                if results[0][1] not in (get_platform(), "common") and not options.platform:
+                    warning_suffix = (
+                        f": showing page from platform '{results[0][1]}', "
+                        f"because '{command}' does not exist in '{get_platform()}' and 'common'."
+                    )
+                    if options.markdown:
+                        print(f"warning{warning_suffix}")
+                    else:
+                        print(f"{colored('warning', 'yellow')}{warning_suffix}")
+
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
                     are_multiple_platforms = len(platforms_str) > 1
