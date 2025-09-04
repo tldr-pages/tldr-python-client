@@ -17,7 +17,6 @@ from termcolor import colored
 import ssl
 import shtab
 import shutil
-import colorama
 
 __version__ = "3.4.1"
 __client_specification__ = "2.3"
@@ -684,7 +683,9 @@ def main() -> None:
     if options.short_options and options.long_options:
         display_option_length = "both"
 
-    colorama.init(strip=options.color)
+    if sys.platform == "win32":
+        import colorama
+        colorama.init(strip=options.color)
 
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
@@ -745,14 +746,15 @@ def main() -> None:
             else:
                 output(results[0][0], display_option_length, plain=options.markdown)
 
-                if (results[0][1] != get_platform()
-                    and results[0][1] != "common"
-                        and not options.platform):
-                    print(
-                        f"{colorama.Fore.YELLOW}warning{colorama.Fore.RESET}: showing page from platform"
-                        f" '{results[0][1]}', because '{command}' does"
-                        f" not exist in '{get_platform()}' and 'common'."
+                if results[0][1] not in (get_platform(), "common") and not options.platform:
+                    warning_suffix = (
+                        f": showing page from platform '{results[0][1]}', "
+                        f"because '{command}' does not exist in '{get_platform()}' and 'common'."
                     )
+                    if options.markdown:
+                        print(f"warning{warning_suffix}")
+                    else:
+                        print(f"{colored('warning', 'yellow')}{warning_suffix}")
 
                 if results[1:]:
                     platforms_str = [result[1] for result in results[1:]]
