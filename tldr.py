@@ -670,15 +670,20 @@ def main() -> None:
 
     options = parser.parse_args()
 
+    if sys.platform == "win32":
+        import colorama
+        colorama.init(strip=options.color)
+
     if options.platform is None:
         platform_env = os.environ.get('TLDR_PLATFORM', '').strip().lower()
         if platform_env in OS_DIRECTORIES:
             options.platform = [platform_env]
         elif platform_env:
-            print(
-                f"Warning: '{platform_env}' is not a supported TLDR_PLATFORM env value."
+            warning_msg = (
+                f"Warning: '{platform_env}' is not a supported TLDR_PLATFORM environment value."
                 "\nFalling back to auto-detection."
             )
+            print(colored(warning_msg, 'yellow'))
 
     display_option_length = "long"
     if os.environ.get('TLDR_OPTIONS') == "short":
@@ -693,10 +698,6 @@ def main() -> None:
         display_option_length = "long"
     if options.short_options and options.long_options:
         display_option_length = "both"
-
-    if sys.platform == "win32":
-        import colorama
-        colorama.init(strip=options.color)
 
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
