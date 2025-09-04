@@ -24,6 +24,12 @@
 pip install tldr
 ```
 
+Install the Python Client in an isolated environment using [`pipx`](https://pipx.pypa.io/stable/):
+
+```bash
+pipx install tldr
+```
+
 ### from Arch Linux repository
 
 ```bash
@@ -91,7 +97,14 @@ export TLDR_CACHE_MAX_AGE=720
 export TLDR_PAGES_SOURCE_LOCATION="https://raw.githubusercontent.com/tldr-pages/tldr/main/pages"
 export TLDR_DOWNLOAD_CACHE_LOCATION="https://github.com/tldr-pages/tldr/releases/latest/download/tldr.zip"
 export TLDR_OPTIONS=short
+export TLDR_PLATFORM=linux
 ```
+
+### Platform
+
+Determines the platform that tldr will use based on the custom `TLDR_PLATFORM` environment variable or automatically via system platform detection.
+
+For a complete list of supported platform values for the `--platform` option flag, refer to the [help page](#usage).
 
 ### Cache
 
