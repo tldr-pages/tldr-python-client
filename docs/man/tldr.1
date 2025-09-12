@@ -27,9 +27,9 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "TLDR" "1" "Apr 29, 2025" "" "tldr"
+.TH "TLDR" "1" "Sep 12, 2025" "" "tldr"
 .SH NAME
-tldr \- tldr 3.4.1
+tldr \- tldr 3.4.2
 .sp
 Python command line client for tldr
 
@@ -59,27 +59,27 @@ Search for a specific command from a query
 .B \-u, \-\-update, \-\-update_cache
 Update the local cache of pages and exit
 .sp
-Default: \fBFalse\fP
+Default: False
 .TP
 .B \-k, \-\-clear\-cache
 Delete the local cache of pages and exit
 .sp
-Default: \fBFalse\fP
+Default: False
 .TP
 .B \-p, \-\-platform
-Possible choices: android, freebsd, linux, netbsd, openbsd, osx, sunos, windows, common
+Possible choices: android, common, freebsd, linux, netbsd, openbsd, osx, sunos, windows
 .sp
-Override the operating system [android, freebsd, linux, netbsd, openbsd, osx, sunos, windows, common]
+Override the operating system [android, common, freebsd, linux, netbsd, openbsd, osx, sunos, windows]
 .TP
 .B \-l, \-\-list
 List all available commands for operating system
 .sp
-Default: \fBFalse\fP
+Default: False
 .TP
 .B \-s, \-\-source
 Override the default page source
 .sp
-Default: \fB\(aqhttps://raw.githubusercontent.com/tldr\-pages/tldr/main/pages\(aq\fP
+Default: \(dq\X'tty: link https://raw.githubusercontent.com/tldr-pages/tldr/main/pages'\fI\%https://raw.githubusercontent.com/tldr\-pages/tldr/main/pages\fP\X'tty: link'\(dq
 .TP
 .B \-c, \-\-color
 Override color stripping
@@ -87,7 +87,7 @@ Override color stripping
 .B \-r, \-\-render
 Render local markdown files
 .sp
-Default: \fBFalse\fP
+Default: False
 .TP
 .B \-L, \-\-language
 Override the default language
@@ -95,17 +95,17 @@ Override the default language
 .B \-m, \-\-markdown
 Just print the plain page file.
 .sp
-Default: \fBFalse\fP
+Default: False
 .TP
 .B \-\-short\-options
 Display shortform options over longform
 .sp
-Default: \fBFalse\fP
+Default: False
 .TP
 .B \-\-long\-options
 Display longform options over shortform
 .sp
-Default: \fBFalse\fP
+Default: False
 .TP
 .B \-\-print\-completion
 Possible choices: bash, zsh, tcsh
