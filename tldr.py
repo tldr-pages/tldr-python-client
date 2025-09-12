@@ -18,7 +18,7 @@ import ssl
 import shtab
 import shutil
 
-__version__ = "3.4.1"
+__version__ = "3.4.2"
 __client_specification__ = "2.3"
 
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
