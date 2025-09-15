@@ -56,8 +56,7 @@ OS_DIRECTORIES = {
     "osx": "osx",
     "sunos": "sunos",
     "win32": "windows",
-    "windows": "windows",
-    "common": "common",
+    "windows": "windows"
 }
 
 
@@ -210,7 +209,7 @@ def get_platform() -> str:
 
 
 def get_platform_list() -> List[str]:
-    platforms = list(set(OS_DIRECTORIES.values()))
+    platforms = ['common'] + list(set(OS_DIRECTORIES.values()))
     current_platform = get_platform()
     platforms.remove(current_platform)
     platforms.insert(0, current_platform)
@@ -593,7 +592,7 @@ def create_parser() -> ArgumentParser:
                         action='store_true',
                         help="Delete the local cache of pages and exit")
 
-    all_platforms = sorted(set(OS_DIRECTORIES.values()))
+    all_platforms = sorted(set(OS_DIRECTORIES.values())) + ['common']
     platforms_str = "[" + ", ".join(all_platforms) + "]"
 
     parser.add_argument(
