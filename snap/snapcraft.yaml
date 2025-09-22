@@ -1,6 +1,6 @@
 name: tldr
 base: core24
-version: '3.4.2'
+version: '3.4.3'
 summary: tldr python client
 description: Official Python command-line client for tldr pages.
 
