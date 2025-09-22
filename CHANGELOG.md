@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.4.3 (09/22/2025)
+
+### Bugfixes
+
+* Fixed unpredictable platform selection when displaying pages (thanks [@Managor](https://github.com/Managor)).
+
 ## 3.4.2 (09/12/2025)
 
 ### Bugfixes
