@@ -382,9 +382,21 @@ EXAMPLE_REGEX = re.compile(r'(?:`)(?P<example>.+?)(?:`)')
 COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}*}})')
 PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
 
+def get_exclusive_commands(platforms: List[str], language: Optional[List[str]] = None) -> List[str]:
+
+    common_commands = set(get_commands(['common'], language))
+    exclusive_commands = set()
+
+    for platform in platforms:
+        platform_commands = set(get_commands([platform], language))
+        exclusive_commands.update(platform_commands - common_commands)
+
+    return sorted(exclusive_commands)
+
 
 def get_commands(platforms: Optional[List[str]] = None,
-                 language: Optional[str] = None) -> List[str]:
+                 language: Optional[str] = None,
+                 exclusive: bool = False) -> List[str]:
     if platforms is None:
         platforms = get_platform_list()
 
@@ -394,6 +406,10 @@ def get_commands(platforms: Optional[List[str]] = None,
         languages = get_language_list()
 
     commands = []
+
+    if exclusive:
+        return get_exclusive_commands(platforms, language);
+    
     if get_cache_dir().exists():
         for platform in platforms:
             for language in languages:
@@ -610,6 +626,11 @@ def create_parser() -> ArgumentParser:
                         action='store_true',
                         help="List all available commands for operating system")
 
+    parser.add_argument('-x', '--exclusive',
+                        default=False,
+                        action='store_true',
+                        help="Use with --list and -p to list commands exclusive to the specfied platform")
+    
     parser.add_argument('-s', '--source',
                         default=PAGES_SOURCE_LOCATION,
                         type=str,
@@ -714,7 +735,8 @@ def main() -> None:
         parser.print_help(sys.stderr)
         sys.exit(1)
     if options.list:
-        print('\n'.join(get_commands(options.platform, options.language)))
+        print('\n'.join(get_commands(options.platform, options.language, options.exclusive)))
+    
     elif options.render:
         for command in options.command:
             file_path = Path(command)
