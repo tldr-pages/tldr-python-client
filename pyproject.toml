@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Official Python command line client for tldr pages."
 readme = "README.md"
 license = "MIT"
-requires-python = "~=3.9"
+requires-python = ">=3.9"
 authors = [
     { name = "Felix Yan and tldr-pages contributors" },
 ]
