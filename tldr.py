@@ -281,6 +281,7 @@ def get_page_for_every_platform(
             return result
     # Know here that we don't have the info in cache
     result = list()
+    error = None
     for platform in platforms:
         for language in languages:
             if platform is None:
@@ -300,13 +301,22 @@ def get_page_for_every_platform(
                 break
             except HTTPError as err:
                 if err.code != 404:
-                    raise
-            except URLError:
+                    # Store error for later, only raise if we find no results at all
+                    error = err
+            except URLError as err:
                 if not PAGES_SOURCE_LOCATION.startswith('file://'):
-                    raise
+                    # Store error for later, only raise if we find no results at all
+                    error = err
+
     if result:  # Return if smth was found
         return result
 
+    # Reraise the error if we couldn't get the pages for any platform
+    if error is not None:
+        # Note that only the most recent error will be stored and raised
+        raise error
+
+    # Otherwise, we got no results nor errors, implies the documentation doesn't exist
     return False
 
 
