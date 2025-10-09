@@ -19,33 +19,24 @@ jobs:
     steps:
     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-    - name: Set up Python
-      uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
-      with:
-        python-version: '3.9'
-
-    - name: Install sphinx toolset
+    - name: Install uv
       run:
-        python -m pip install sphinx sphinx-argparse --user
+        curl -LsSf https://astral.sh/uv/0.8.24/install.sh | sh
 
-    - name: Install tldr dependencies
+    - name: Install dependencies
       run:
-        python -m pip install -r requirements.txt --user
+        uv sync --frozen --group=ci
 
     - name: Generate the manpage
       working-directory: docs
       run: make man
 
-    - name: Install build
-      run:
-        python -m pip install build --user
-
     - name: Build a binary wheel and a source tarball
       run: >-
-        python -m build
+        uv build
         --sdist
         --wheel
-        --outdir dist/
+        --out-dir dist/
         .
 
     - name: Attest generated files

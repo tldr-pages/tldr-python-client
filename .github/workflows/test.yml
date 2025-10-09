@@ -17,38 +17,31 @@ jobs:
     steps:
     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
+    - name: Install uv
+      run:
+        curl -LsSf https://astral.sh/uv/0.8.24/install.sh | sh
+
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
-      with:
-        python-version: ${{ matrix.python-version }}
+      run:
+        uv venv --python ${{ matrix.python-version }}
 
-    - name: Install developer dependencies
+    - name: Install dependencies
       run: |
-        python3 -m pip install -U pip
-        python3 -m pip install -U pytest pytest-runner flake8
-
-    - name: Install sphinx dependencies
-      run:
-        python3 -m pip install sphinx sphinx-argparse --user
-
-    - name: Install tldr dependencies
-      run:
-        python3 -m pip install -r requirements.txt --user
+        uv sync --frozen --group=optional
 
     - name: Generate the manpage
       working-directory: docs
       run: make man
 
     - name: Lint codebase
-      run: python3 -m flake8
+      run: uv run flake8
 
     - name: Run test suite
-      run: python3 -m pytest tests/
+      run: uv run pytest tests/
 
     - name: Test tldr cli
       run: |
-        python3 -m pip install .
-        tldr --version
+        uv run tldr --version
 
   build-macos:
     runs-on: macos-latest
@@ -64,39 +57,31 @@ jobs:
     steps:
     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Install developer dependencies
-      run: |
-        python3 -m pip install -U pip
-        python3 -m pip install -U pytest pytest-runner flake8
-
-    - name: Install sphinx dependencies
-      run: |
-        python3 -m pip install sphinx sphinx-argparse
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-    - name: Install tldr dependencies
+    - name: Install uv
       run:
-        python3 -m pip install -r requirements.txt --user
+        curl -LsSf https://astral.sh/uv/0.8.24/install.sh | sh
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run:
+        uv venv --python ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        uv sync --frozen --group=optional
 
     - name: Generate the manpage
       working-directory: docs
       run: make man
 
     - name: Lint codebase
-      run: python3 -m flake8
+      run: uv run flake8
 
     - name: Run test suite
-      run: python3 -m pytest tests/
+      run: uv run pytest tests/
 
     - name: Test tldr cli
       run: |
-        python3 -m pip install .
-        tldr --version
+        uv run tldr --version
 
   build-windows:
     runs-on: windows-latest
@@ -112,77 +97,71 @@ jobs:
     steps:
     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Install developer dependencies
-      run: |
-        python3 -m pip install -U pip
-        python3 -m pip install -U pytest pytest-runner flake8
-
-    - name: Install sphinx dependencies
-      run: |
-         python -m pip install sphinx sphinx-argparse --user
-
-    - name: Install tldr dependencies
+    - name: Install uv
       run:
-        python3 -m pip install -r requirements.txt --user
+        curl -LsSf https://astral.sh/uv/0.8.24/install.sh | sh
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run:
+        uv venv --python ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        uv sync --frozen --group=optional
 
     - name: Generate the manpage
       working-directory: docs
       run: make man
 
     - name: Lint codebase
-      run: python3 -m flake8
+      run: uv run flake8
 
     - name: Run test suite
-      run: python3 -m pytest tests/
+      run: uv run pytest tests/
 
     - name: Test tldr cli
       run: |
-        python3 -m pip install .
-        tldr --version
+        uv run tldr --version
 
   build-windows-arm:
-      runs-on: windows-11-arm
-      needs: ['build-windows']
+    runs-on: windows-11-arm
+    needs: ['build-windows']
 
-      permissions:
-        contents: read
+    permissions:
+      contents: read
   
-      strategy:
-        matrix:
-          python-version: ['3.11', '3.12', '3.13']
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
   
-      steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+    steps:
+    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
   
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
-        with:
-          python-version: ${{ matrix.python-version }}
-  
-      - name: Install developer dependencies
-        run: |
-          python3 -m pip install -U pip
-          python3 -m pip install -U pytest pytest-runner flake8
-  
-      - name: Install tldr dependencies
-        run:
-          python3 -m pip install -r requirements.txt --user
-  
-      - name: Lint codebase
-        run: python3 -m flake8
-  
-      - name: Run test suite
-        run: python3 -m pytest tests/
-  
-      - name: Test tldr cli
-        run: |
-          python3 -m pip install .
-          tldr --version
+    - name: Install uv
+      run:
+        curl -LsSf https://astral.sh/uv/0.8.24/install.sh | sh
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run:
+        uv venv --python ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        uv sync --frozen --group=optional
+
+    - name: Generate the manpage
+      working-directory: docs
+      run: make man
+
+    - name: Lint codebase
+      run: uv run flake8
+
+    - name: Run test suite
+      run: uv run pytest tests/
+
+    - name: Test tldr cli
+      run: |
+        uv run tldr --version
 
   build-snap:
     runs-on: ${{ matrix.os }}
