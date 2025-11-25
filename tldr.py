@@ -749,6 +749,7 @@ def main() -> None:
             return
         else:
             print("No commands matched your search term.")
+            sys.exit(1)
     else:
         try:
             command = '-'.join(options.command).lower()
