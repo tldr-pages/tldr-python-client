@@ -63,14 +63,14 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'tldr-pages/tldr-python-client'
     needs: ['release-build']
-    
-    environment: 
+
+    environment:
       name: pypi
       url: https://pypi.org/project/tldr/
-    
+
     permissions:
       id-token: write # Required for accessing OpenID Connect (OIDC) token for PyPI trusted publisher
-    
+
     steps:
     - name: Retrieve release distributions
       uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0

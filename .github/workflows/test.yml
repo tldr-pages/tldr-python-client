@@ -151,34 +151,34 @@ jobs:
 
       permissions:
         contents: read
-  
+
       strategy:
         matrix:
           python-version: ['3.11', '3.12', '3.13']
-  
+
       steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
-  
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
           python-version: ${{ matrix.python-version }}
-  
+
       - name: Install developer dependencies
         run: |
           python3 -m pip install -U pip
           python3 -m pip install -U pytest pytest-runner flake8
-  
+
       - name: Install tldr dependencies
         run:
           python3 -m pip install -r requirements.txt --user
-  
+
       - name: Lint codebase
         run: python3 -m flake8
-  
+
       - name: Run test suite
         run: python3 -m pytest tests/
-  
+
       - name: Test tldr cli
         run: |
           python3 -m pip install .
