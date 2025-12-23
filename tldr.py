@@ -629,7 +629,7 @@ def create_parser() -> ArgumentParser:
     parser.add_argument('-x', '--exclusive',
                         default=False,
                         action='store_true',
-                        help="Use with --list and -p to list commands exclusive to the specfied platform")
+                        help="Use with --list and --platform to list commands exclusive to the specfied platform")
     
     parser.add_argument('-s', '--source',
                         default=PAGES_SOURCE_LOCATION,
