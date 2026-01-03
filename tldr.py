@@ -285,7 +285,7 @@ def get_page_for_every_platform(
                     continue
         if result:  # Return if smth was found
             return result
-# Cache miss, search system cache.
+        # Cache miss, search system cache.
         result = list()
         for platform in platforms:
             for language in languages:
