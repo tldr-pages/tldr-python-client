@@ -713,7 +713,6 @@ def main() -> None:
 
     if options.update:
         update_cache(language=options.language)
-        return
     elif len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
@@ -750,7 +749,7 @@ def main() -> None:
         else:
             print("No commands matched your search term.")
             sys.exit(1)
-    else:
+    elif not options.command == []:
         try:
             command = '-'.join(options.command).lower()
             results = get_page_for_every_platform(
