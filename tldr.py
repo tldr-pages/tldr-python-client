@@ -95,12 +95,20 @@ def get_cache_dir() -> Path:
     return Path.home() / '.cache' / 'tldr'
 
 
+def get_system_cache_dir() -> Path:
+    result: Path
+    for entry in os.environ.get('XDG_DATA_DIRS').split(':'):
+        if (Path(entry) / 'tldr').is_dir():
+            return Path(entry) / 'tldr'
+    return Path('/usr/share/tldr')
+
+
 def get_cache_file_path(command: str, platform: str, language: str, system_cache: bool = False) -> Path:
     pages_dir = "pages"
     if language and language != 'en':
         pages_dir += "." + language
     if system_cache:
-        return Path('/usr/share/tldr') / pages_dir / platform / f"{command}.md"
+        return get_system_cache_dir() / pages_dir / platform / f"{command}.md"
     return get_cache_dir() / pages_dir / platform / f"{command}.md"
 
 
