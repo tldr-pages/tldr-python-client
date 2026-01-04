@@ -108,7 +108,7 @@ For a complete list of supported platform values for the `--platform` option fla
 
 ### Cache
 
-Cache is downloaded from `TLDR_DOWNLOAD_CACHE_LOCATION` (defaults to the one described in [the client specification](https://github.com/tldr-pages/tldr/blob/main/CLIENT-SPECIFICATION.md#caching)), unzipped and extracted into the [local cache directory](#cache-location). Pages are loaded directly from `TLDR_PAGES_SOURCE_LOCATION` if `tldr <command>` is used. System cache in `$XDG_DATA_DIRS` is also supported, which will get queried on user cache miss.
+Cache is downloaded from `TLDR_DOWNLOAD_CACHE_LOCATION` (defaults to the one described in [the client specification](https://github.com/tldr-pages/tldr/blob/main/CLIENT-SPECIFICATION.md#caching)), unzipped and extracted into the [local cache directory](#cache-location). Pages are loaded directly from `TLDR_PAGES_SOURCE_LOCATION` if `tldr <command>` is used. System cache in `$XDG_DATA_DIRS/tldr` is also supported, which will get queried on user cache miss.
 
 - `TLDR_CACHE_ENABLED` (default is `1`):
   - If set to `1`, the client will first try to load from cache, and fall back to fetching from the internet if the cache doesn't exist or is too old.
