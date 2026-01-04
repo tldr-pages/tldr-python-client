@@ -96,10 +96,12 @@ def get_cache_dir() -> Path:
 
 
 def get_system_cache_dir() -> Path:
-    if os.environ.get('XDG_DATA_DIRS', False):
-        for entry in os.environ.get('XDG_DATA_DIRS').split(':'):
-            if (Path(entry) / 'tldr').is_dir():
-                return Path(entry) / 'tldr'
+    for entry in os.environ.get('XDG_DATA_DIRS', '').split(':'):
+        if not entry:
+            continue
+        candidate = Path(entry) / 'tldr'
+        if candidate.is_dir():
+            return candidate
     return Path('/usr/share/tldr')
 
 
