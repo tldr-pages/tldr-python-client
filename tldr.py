@@ -95,19 +95,32 @@ def get_cache_dir() -> Path:
     return Path.home() / '.cache' / 'tldr'
 
 
-def get_cache_file_path(command: str, platform: str, language: str) -> Path:
+def get_system_cache_dir() -> Path:
+    for entry in os.environ.get('XDG_DATA_DIRS', '').split(':'):
+        if not entry:
+            continue
+        candidate = Path(entry) / 'tldr'
+        if candidate.is_dir():
+            return candidate
+    return Path('/usr/share/tldr')
+
+
+def get_cache_file_path(command: str, platform: str, language: str, system_cache: bool = False) -> Path:
     pages_dir = "pages"
     if language and language != 'en':
         pages_dir += "." + language
+    if system_cache:
+        return get_system_cache_dir() / pages_dir / platform / f"{command}.md"
     return get_cache_dir() / pages_dir / platform / f"{command}.md"
 
 
-def load_page_from_cache(command: str, platform: str, language: str) -> Optional[str]:
+def load_page_from_cache(command: str, platform: str, language: str, system_cache: bool = False) -> Optional[str]:
     try:
         with get_cache_file_path(
             command,
             platform,
-            language
+            language,
+            system_cache
         ).open('rb') as cache_file:
             cache_file_contents = cache_file.read()
         return cache_file_contents
@@ -157,10 +170,13 @@ def get_page_for_platform(
     platform: str,
     remote: str,
     language: str,
-    only_use_cache: bool = False
+    only_use_cache: bool = False,
+    system_cache: bool = False
 ) -> str:
     data_downloaded = False
-    if USE_CACHE and have_recent_cache(command, platform, language):
+    if USE_CACHE and system_cache and get_cache_file_path(command, platform, language, system_cache).is_file():
+        data = load_page_from_cache(command, platform, language, system_cache)
+    elif USE_CACHE and have_recent_cache(command, platform, language):
         data = load_page_from_cache(command, platform, language)
     elif only_use_cache:
         raise CacheNotExist("Cache for {} in {} not Found".format(
@@ -272,6 +288,28 @@ def get_page_for_every_platform(
                                 remote,
                                 language,
                                 only_use_cache=True,
+                        ), platform)
+                    )
+                    break   # Don't want to look for the same page in other langs
+                except CacheNotExist:
+                    continue
+        if result:  # Return if smth was found
+            return result
+        # Cache miss, search system cache.
+        result = list()
+        for platform in platforms:
+            for language in languages:
+                if platform is None:
+                    continue
+                try:
+                    result.append(
+                        (get_page_for_platform(
+                                command,
+                                platform,
+                                remote,
+                                language,
+                                only_use_cache=True,
+                                system_cache=True
                         ), platform)
                     )
                     break   # Don't want to look for the same page in other langs
