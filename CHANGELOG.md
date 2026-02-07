@@ -1,5 +1,22 @@
 # Changelog
 
+## 3.4.4 (02/07/2026)
+
+### Breaking
+
+* Drop support for EOL Python 3.9 version (thanks [@kyluca](https://github.com/kyluca)).
+
+## Bugfixes
+
+* Fixed unexpected behavior by only raising URLError or HTTPError when there are no results at all (thanks [@kyluca](https://github.com/kyluca)).
+* Return exit code 1 when search finds no results (thanks [@gowtham1412-p](https://github.com/gowtham1412-p)).
+
+## Features
+
+* Added support for Python 3.14 (thanks [@kyluca](https://github.com/kyluca), [@kbdharun](https://github.com/kbdharun), [@sebastiaanspeck](https://github.com/sebastiaanspeck)).
+* Allow cache updating and command displaying on the same command (thanks [@Managor](https://github.com/Managor)).
+* Check `$XDG_DATA_DIRS/tldr` for a cache when user cache misses (thanks [@Managor](https://github.com/Managor)).
+
 ## 3.4.3 (09/22/2025)
 
 ### Bugfixes
