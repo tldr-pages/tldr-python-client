@@ -68,6 +68,7 @@ options:
   -p PLATFORM, --platform PLATFORM
                         Override the operating system [android, freebsd, linux, netbsd, openbsd, osx, sunos, windows, common]
   -l, --list            List all available commands for operating system
+  -x, --exclusive      Use with --list and --platform to list commands exclusive to the specfied platform
   -s SOURCE, --source SOURCE
                         Override the default page source
   -c, --color           Override color stripping
