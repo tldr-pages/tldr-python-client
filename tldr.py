@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # PYTHON_ARGCOMPLETE_OK
-
+import socket
 import sys
 import os
 import re
@@ -10,8 +10,8 @@ from zipfile import ZipFile
 from datetime import datetime
 from io import BytesIO
 from typing import List, Optional, Tuple, Union
-from urllib.parse import quote
-from urllib.request import urlopen, Request
+from urllib.parse import quote, urlparse
+from urllib.request import urlopen, Request, ProxyHandler, build_opener, install_opener
 from urllib.error import HTTPError, URLError
 from termcolor import colored
 import ssl
@@ -612,6 +612,35 @@ def clear_cache(language: Optional[List[str]] = None) -> None:
             print(f"No cache directory found for language {language}")
 
 
+def check_proxy(proxy: str) -> None:
+    if not proxy.startswith("https://") or ":" not in proxy:
+        sys.exit("Error: Invalid proxy format. Expected 'https://host:port'.")
+
+    parsed = urlparse(proxy)
+    host = parsed.hostname
+    port = parsed.port
+
+    if not host or not port:
+        sys.exit(f"Error: Could not extract host/port from proxy URL: {proxy}")
+
+    try:
+        sock = socket.create_connection((host, port), timeout=10)
+        sock.close()
+    except socket.timeout:
+        sys.exit(f"Error: Proxy server {host}:{port} "
+                 "connection timed out after 10 seconds.")
+    except socket.error as e:
+        sys.exit(f"Error: Could not connect to proxy server {host}:{port}. Error: {e}")
+
+
+def set_proxy(proxy: str) -> None:
+    check_proxy(proxy)
+    proxyHandler = ProxyHandler({'http': f'{proxy}',
+                                 'https': f'{proxy}'})
+    opener = build_opener(proxyHandler)
+    install_opener(opener)
+
+
 def create_parser() -> ArgumentParser:
     parser = ArgumentParser(
         prog="tldr",
@@ -696,6 +725,13 @@ def create_parser() -> ArgumentParser:
                         action="store_true",
                         help='Display longform options over shortform')
 
+    parser.add_argument('-x', '--proxy',
+                        default=None,
+                        type=str,
+                        help='Specify a proxy server address. When a proxy is used, '
+                             'only HTTPS connections will be routed through it. '
+                             'Example: https://host:port.')
+
     parser.add_argument(
         'command', type=str, nargs='*', help="command to lookup", metavar='command'
     ).complete = {"bash": "shtab_tldr_cmd_list", "zsh": "shtab_tldr_cmd_list"}
@@ -748,6 +784,9 @@ def main() -> None:
 
     if options.color is False:
         os.environ["FORCE_COLOR"] = "true"
+
+    if options.proxy is not None:
+        set_proxy(options.proxy)
 
     if options.update:
         update_cache(language=options.language)
