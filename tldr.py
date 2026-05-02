@@ -33,7 +33,7 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 
 USE_NETWORK = int(os.environ.get('TLDR_NETWORK_ENABLED', '1')) > 0
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
-MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24*7))
+MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', -1))
 CAFILE = None if os.environ.get('TLDR_CERT', None) is None else \
     Path(os.environ.get('TLDR_CERT')).expanduser()
 
@@ -146,6 +146,8 @@ def store_page_to_cache(
 def have_recent_cache(command: str, platform: str, language: str) -> bool:
     try:
         cache_file_path = get_cache_file_path(command, platform, language)
+        if MAX_CACHE_AGE == -1:
+            return cache_file_path.is_file()
         last_modified = datetime.fromtimestamp(cache_file_path.stat().st_mtime)
         hours_passed = (datetime.now() - last_modified).total_seconds() / 3600
         return hours_passed <= MAX_CACHE_AGE
@@ -318,6 +320,8 @@ def get_page_for_every_platform(
         if result:  # Return if smth was found
             return result
     # Know here that we don't have the info in cache
+    # Improve ux in case there's a long wait
+    print(f"Page {command} not found locally; attempting to fetch from the internet.")
     result = list()
     error = None
     for platform in platforms:
@@ -828,6 +832,8 @@ def main() -> None:
                             f"Found 1 page with the same name"
                             f" under the platform: {platforms_str[0]}."
                         )
+                print("Updating cached pages.  This may take a few seconds.")
+                update_cache(language=options.language)
         except URLError as e:
             sys.exit("Error fetching from tldr: {}".format(e))
 
