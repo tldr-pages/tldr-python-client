@@ -33,7 +33,9 @@ DOWNLOAD_CACHE_LOCATION = os.environ.get(
 
 USE_NETWORK = int(os.environ.get('TLDR_NETWORK_ENABLED', '1')) > 0
 USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
-MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24*7))
+# MAX_CACHE_AGE and CACHE_UPDATE_FREQ in units of hours
+MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', -1))    # -1 means no maximum
+CACHE_UPDATE_FREQ = int(os.environ.get('TLDR_CACHE_UPDATE_FREQ', 24*30))  # default update cache every 30 days
 CAFILE = None if os.environ.get('TLDR_CERT', None) is None else \
     Path(os.environ.get('TLDR_CERT')).expanduser()
 
@@ -94,6 +96,11 @@ def get_cache_dir() -> Path:
         return Path(os.environ.get('HOME')) / '.cache' / 'tldr'
     return Path.home() / '.cache' / 'tldr'
 
+def get_cache_pages_dir(language: str) -> Path:
+    pages_dir = "pages"
+    if language and language != 'en':
+        pages_dir += "." + language
+    return get_cache_dir() / pages_dir
 
 def get_system_cache_dir() -> Path:
     for entry in os.environ.get('XDG_DATA_DIRS', '').split(':'):
@@ -146,6 +153,8 @@ def store_page_to_cache(
 def have_recent_cache(command: str, platform: str, language: str) -> bool:
     try:
         cache_file_path = get_cache_file_path(command, platform, language)
+        if MAX_CACHE_AGE == -1:
+            return cache_file_path.is_file()
         last_modified = datetime.fromtimestamp(cache_file_path.stat().st_mtime)
         hours_passed = (datetime.now() - last_modified).total_seconds() / 3600
         return hours_passed <= MAX_CACHE_AGE
@@ -318,6 +327,8 @@ def get_page_for_every_platform(
         if result:  # Return if smth was found
             return result
     # Know here that we don't have the info in cache
+    # Improve ux in case there's a long wait
+    print(f"Page {command} not found locally; attempting to fetch from the internet.")
     result = list()
     error = None
     for platform in platforms:
@@ -594,6 +605,30 @@ def update_cache(language: Optional[List[str]] = None) -> None:
                 f"{language} from {cache_location}"
             )
 
+def update_cache_if_old(language: Optional[List[str]] = None) -> None:
+    languages = get_language_list()
+    if language and language[0] not in languages:
+        languages.append(language[0])
+    for language in languages:
+        try:
+            pages_dir = get_cache_pages_dir(language)
+            update_timestamp_path = pages_dir / "_updated"
+            if update_timestamp_path.is_file():
+                last_modified = datetime.fromtimestamp(update_timestamp_path.stat().st_mtime)
+                hours_passed = (datetime.now() - last_modified).total_seconds() / 3600
+                if hours_passed > CACHE_UPDATE_FREQ:
+                    print(f"Updating cached pages for {language}.  This may take a few seconds.")
+                    update_cache([language])
+                    Path(update_timestamp_path).touch()
+            else:
+                print(f"Updating cached pages for {language}.  This may take a few seconds.")
+                update_cache([language])
+                Path(update_timestamp_path).touch()
+        except Exception:
+            print(
+                "Error: Unable to update cache for language "
+                f"{language} from {cache_location}"
+            )
 
 def clear_cache(language: Optional[List[str]] = None) -> None:
     languages = get_language_list()
@@ -828,6 +863,7 @@ def main() -> None:
                             f"Found 1 page with the same name"
                             f" under the platform: {platforms_str[0]}."
                         )
+                update_cache_if_old(language=options.language)
         except URLError as e:
             sys.exit("Error fetching from tldr: {}".format(e))
 
