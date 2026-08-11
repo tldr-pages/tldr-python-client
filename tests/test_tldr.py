@@ -156,3 +156,23 @@ def test_get_commands(monkeypatch, tmp_path):
     result = tldr.get_commands(platforms=["linux"], language=["zh_CN"])
 
     assert "lspci" in result
+
+def test_debug_respects_verbose_flag(capsys, monkeypatch):
+    monkeypatch.setattr(tldr, "VERBOSE", False)
+    tldr.debug("hidden")
+    assert capsys.readouterr().err == ""
+
+    monkeypatch.setattr(tldr, "VERBOSE", True)
+    tldr.debug("visible")
+    assert capsys.readouterr().err == "[tldr-debug] visible\n"
+
+
+def test_verbose_flag_outputs_debug_info(monkeypatch, capsys):
+    monkeypatch.setattr(tldr, "VERBOSE", False)
+
+    with mock.patch("sys.argv", ["tldr", "--verbose", "--list"]):
+        tldr.main()
+
+    captured = capsys.readouterr()
+    assert "[tldr-debug] Verbose output enabled" in captured.err
+    assert "[tldr-debug] cache_dir=" in captured.err
