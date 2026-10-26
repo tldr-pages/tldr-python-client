@@ -65,19 +65,19 @@ options:
   -u, --update, --update_cache
                         Update the local cache of pages and exit
   -k, --clear-cache     Delete the local cache of pages and exit
-  -p PLATFORM, --platform PLATFORM
-                        Override the operating system [android, freebsd, linux, netbsd, openbsd, osx, sunos, windows, common]
+  -p, --platform PLATFORM
+                        Override the operating system [android, common, freebsd, linux, netbsd,
+                        openbsd, osx, sunos, windows, ...]
   -l, --list            List all available commands for operating system
-  -s SOURCE, --source SOURCE
-                        Override the default page source
+  -s, --source SOURCE   Read pages from this URL or local `pages` directory instead of the cache
   -c, --color           Override color stripping
   -r, --render          Render local markdown files
-  -L LANGUAGE, --language LANGUAGE
+  -L, --language LANGUAGE
                         Override the default language
   -m, --markdown        Just print the plain page file.
-  --short-options       Display shortform options over longform
-  --long-options        Display longform options over shortform
-  --print-completion {bash,zsh,tcsh}
+  -S, --short-options   Display shortform options over longform
+  -E, --long-options    Display longform options over shortform
+  --print-completion {bash,zsh,tcsh,fish,powershell}
                         print shell completion script
 ```
 
@@ -108,12 +108,13 @@ For a complete list of supported platform values for the `--platform` option fla
 
 ### Cache
 
-Cache is downloaded from `TLDR_DOWNLOAD_CACHE_LOCATION` (defaults to the one described in [the client specification](https://github.com/tldr-pages/tldr/blob/main/CLIENT-SPECIFICATION.md#caching)), unzipped and extracted into the [local cache directory](#cache-location). Pages are loaded directly from `TLDR_PAGES_SOURCE_LOCATION` if `tldr <command>` is used. System cache in `$XDG_DATA_DIRS/tldr` is also supported, which will get queried on user cache miss.
+Pages are read from a local cache. The cache is downloaded from `TLDR_DOWNLOAD_CACHE_LOCATION` (defaults to the one described in [the client specification](https://github.com/tldr-pages/tldr/blob/main/CLIENT-SPECIFICATION.md#caching)) on first use, one archive per preferred language plus English (the `tldr-pages.<language>.zip` files next to it), and extracted into the [local cache directory](#cache-location). Pages installed system-wide in `$XDG_DATA_DIRS/tldr` (default `/usr/local/share:/usr/share`) are also consulted, after the user cache. If there are no local pages at all, single pages are fetched from `TLDR_PAGES_SOURCE_LOCATION`.
 
 - `TLDR_CACHE_ENABLED` (default is `1`):
-  - If set to `1`, the client will first try to load from cache, and fall back to fetching from the internet if the cache doesn't exist or is too old.
-  - If set to `0`, the client will fetch from the internet, and fall back to the cache if the page cannot be fetched from the internet.
-- `TLDR_CACHE_MAX_AGE` (default is `168` hours, which is equivalent to a week): maximum age of the cache in hours to be considered as valid when `TLDR_CACHE_ENABLED` is set to `1`.
+  - If set to `1`, pages are read from the cache, which is downloaded automatically when it is missing, too old, or lacks one of your languages. If a refresh fails, the existing cache is used.
+  - If set to `0`, every page is fetched from `TLDR_PAGES_SOURCE_LOCATION` instead, falling back to the cache if that fails.
+- `TLDR_CACHE_MAX_AGE` (default is `168` hours, which is equivalent to a week): age in hours after which the cache is refreshed.
+- `TLDR_NETWORK_ENABLED` (default is `1`): set to `0` to never download anything automatically.
 
 #### Cache location
 
@@ -167,11 +168,15 @@ Alternatively, It is possible to use a different certificate store/bundle by set
 
 Values of the `TLDR_COLOR_x` variables may consist of three parts:
 
-- Font color: `blue, green, yellow, cyan, magenta, white, grey, red`
+- Font color: `blue, green, yellow, cyan, magenta, white, grey, red` (and the other [termcolor](https://pypi.org/project/termcolor/) colors, e.g. `light_blue`)
 - Background color: `on_blue, on_cyan, on_magenta, on_white, on_grey, on_yellow, on_red, on_green`
-- Additional effects, which depend on the platform: `reverse, blink, dark, concealed, underline, bold`
+- Additional effects, which depend on the platform: `reverse, blink, dark, concealed, underline, bold, italic`
 
 You may specify as many additional effects as you want, while only one of font and background color.
+
+Besides `NAME`, `DESCRIPTION`, `EXAMPLE`, `COMMAND` and `PARAMETER`, `TLDR_COLOR_CODE` styles `inline code` in example descriptions (default `yellow italic`).
+
+Colors are only used when writing to a terminal. Set `NO_COLOR` to disable them, or `FORCE_COLOR` (or `--color`) to always use them.
 
 Any of the values above may be omitted. For example, you can do similar things as the following:
 
@@ -202,10 +207,10 @@ with the special exceptions of `C` and `POSIX` which are ignored.
 If you wish to use your own instance of the tldr pages instead of the default repository, you
 can either use the `--source` flag when using tldr or by specifying the following environment variables:
 
-- `TLDR_PAGES_SOURCE_LOCATION` to control where to get individual pages from.
+- `TLDR_PAGES_SOURCE_LOCATION` to read pages from somewhere other than the cache. Translations are expected next to it, as `pages.<language>`.
   - defaults to `https://raw.githubusercontent.com/tldr-pages/tldr/main/pages`.
-  - it can also point to a local directory using `file:///path/to/directory`.
-- `TLDR_DOWNLOAD_CACHE_LOCATION` to control where to pull a zip of all pages from.
+  - it can also point to a local directory, e.g. `/path/to/tldr/pages` or `file:///path/to/tldr/pages`.
+- `TLDR_DOWNLOAD_CACHE_LOCATION` to control where the cache is downloaded from. For `.../tldr.zip`, the per-language archives `.../tldr-pages.<language>.zip` are used.
   - defaults to `https://github.com/tldr-pages/tldr/releases/latest/download/tldr.zip`.
 
 ### Command options

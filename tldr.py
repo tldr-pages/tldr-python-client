@@ -1,49 +1,31 @@
 #!/usr/bin/env python3
 # PYTHON_ARGCOMPLETE_OK
+"""Python command-line client for tldr pages (client specification 2.3)."""
 
-import sys
 import os
 import re
-from argparse import ArgumentParser
-from pathlib import Path
-from zipfile import ZipFile
-from datetime import datetime
-from io import BytesIO
-from typing import List, Optional, Tuple, Union
-from urllib.parse import quote
-from urllib.request import urlopen, Request
-from urllib.error import HTTPError, URLError
-from termcolor import colored
-import ssl
-import shtab
 import shutil
+import ssl
+import sys
+import time
+from argparse import ArgumentParser
+from io import BytesIO
+from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote, urlparse
+from urllib.request import Request, url2pathname, urlopen
+from zipfile import BadZipFile, ZipFile
 
-__version__ = "3.4.4"
+import shtab
+from termcolor import ATTRIBUTES, COLORS, HIGHLIGHTS, colored
+
+__version__ = "4.0.0.dev0"
 __client_specification__ = "2.3"
 
-REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
-PAGES_SOURCE_LOCATION = os.environ.get(
-    'TLDR_PAGES_SOURCE_LOCATION',
-    'https://raw.githubusercontent.com/tldr-pages/tldr/main/pages'
-).rstrip('/')
-DOWNLOAD_CACHE_LOCATION = os.environ.get(
-    'TLDR_DOWNLOAD_CACHE_LOCATION',
-    'https://github.com/tldr-pages/tldr/releases/latest/download/tldr.zip'
-)
-
-USE_NETWORK = int(os.environ.get('TLDR_NETWORK_ENABLED', '1')) > 0
-USE_CACHE = int(os.environ.get('TLDR_CACHE_ENABLED', '1')) > 0
-MAX_CACHE_AGE = int(os.environ.get('TLDR_CACHE_MAX_AGE', 24*7))
-CAFILE = None if os.environ.get('TLDR_CERT', None) is None else \
-    Path(os.environ.get('TLDR_CERT')).expanduser()
-
-URLOPEN_CONTEXT = None
-if int(os.environ.get('TLDR_ALLOW_INSECURE', '0')) == 1:
-    URLOPEN_CONTEXT = ssl.create_default_context()
-    URLOPEN_CONTEXT.check_hostname = False
-    URLOPEN_CONTEXT.verify_mode = ssl.CERT_NONE
-elif CAFILE:
-    URLOPEN_CONTEXT = ssl.create_default_context(cafile=CAFILE)
+DEFAULT_PAGES_SOURCE = 'https://raw.githubusercontent.com/tldr-pages/tldr/main/pages'
+DEFAULT_DOWNLOAD_LOCATION = 'https://github.com/tldr-pages/tldr/releases/latest/download/tldr.zip'
+ISSUE_URL = 'https://github.com/tldr-pages/tldr/issues/new?title=page%20request:%20{}'
+USER_AGENT = f'tldr-python-client/{__version__}'
 
 OS_DIRECTORIES = {
     "android": "android",
@@ -59,558 +41,452 @@ OS_DIRECTORIES = {
     "windows": "windows"
 }
 
+# Platforms known before any page is on disk. New ones (e.g. `dos`, `cisco-ios`)
+# are picked up from the pages directories, as the spec recommends.
+KNOWN_PLATFORMS = sorted(set(OS_DIRECTORIES.values()) | {'common'})
 
-class CacheNotExist(Exception):
-    pass
+# Written after every successful cache update: its mtime is the cache age and it
+# lists the languages fetched (including those without an archive, like `eo`).
+CACHE_STAMP = '.last-update'
+
+# Archive entries look like `linux/ls.md`. Anything else (LICENSE, index
+# files, paths trying to escape the cache directory) is skipped.
+ARCHIVE_ENTRY = re.compile(r'[a-z0-9][a-z0-9-]*/[^/\\]+\.md')
+
+# A page source is either a local directory that contains `pages`, `pages.it`, ...
+# or the URL of a remote `pages` directory (translations at `<url>.it`, ...).
+Source = Path | str
 
 
-def get_language_code(language: str) -> str:
-    language = language.split('.')[0]
-    if language in ['pt_PT', 'pt_BR', 'zh_TW']:
+def eprint(message: str) -> None:
+    print(message, file=sys.stderr)
+
+
+def env_flag(name: str, default: bool) -> bool:
+    value = os.environ.get(name, '').strip().lower()
+    if not value:
+        return default
+    return value not in ('0', 'false', 'no', 'off')
+
+
+def env_number(name: str, default: float) -> float:
+    try:
+        return float(os.environ[name])
+    except (KeyError, ValueError):
+        return default
+
+
+# --- Languages ---------------------------------------------------------------
+
+def get_language_code(language: str) -> str | None:
+    """`it_IT.UTF-8` -> `it`. Keeps the regional variants that tldr has pages for.
+
+    Returns None for empty values and for `C`/`POSIX`, which the spec ignores.
+    """
+    language = language.split('.')[0].split('@')[0].strip()
+    if language in ('', 'C', 'POSIX'):
+        return None
+    if language in ('pt_PT', 'pt_BR', 'zh_TW'):
         return language
-    elif language == "pt":
-        return "pt_PT"
+    if language == 'pt':
+        return 'pt_PT'
     return language.split('_')[0]
 
 
-def get_default_language() -> str:
-    default_lang = get_language_code(
-        os.environ.get(
-            'LANG',
-            'C'
-        )
-    )
+def get_language_list() -> list[str]:
+    """Languages to look pages up in, most preferred first. Always ends with `en`.
 
-    if default_lang == 'C' or default_lang == 'POSIX':
-        default_lang = None
+    `TLDR_LANGUAGE` goes first. Then the spec algorithm: `LANGUAGE` is only
+    honoured when `LANG` is set, and `LANG` comes after it.
+    """
+    candidates = [os.environ.get('TLDR_LANGUAGE', '')]
+    if get_language_code(os.environ.get('LANG', '')):
+        candidates += os.environ.get('LANGUAGE', '').split(':')
+        candidates.append(os.environ['LANG'])
+    candidates.append('en')
 
-    return default_lang
-
-
-def get_cache_dir() -> Path:
-    if os.environ.get('XDG_CACHE_HOME', False):
-        return Path(os.environ.get('XDG_CACHE_HOME')) / 'tldr'
-    if os.environ.get('HOME', False):
-        return Path(os.environ.get('HOME')) / '.cache' / 'tldr'
-    return Path.home() / '.cache' / 'tldr'
-
-
-def get_system_cache_dir() -> Path:
-    for entry in os.environ.get('XDG_DATA_DIRS', '').split(':'):
-        if not entry:
-            continue
-        candidate = Path(entry) / 'tldr'
-        if candidate.is_dir():
-            return candidate
-    return Path('/usr/share/tldr')
-
-
-def get_cache_file_path(command: str, platform: str, language: str, system_cache: bool = False) -> Path:
-    pages_dir = "pages"
-    if language and language != 'en':
-        pages_dir += "." + language
-    if system_cache:
-        return get_system_cache_dir() / pages_dir / platform / f"{command}.md"
-    return get_cache_dir() / pages_dir / platform / f"{command}.md"
-
-
-def load_page_from_cache(command: str, platform: str, language: str, system_cache: bool = False) -> Optional[str]:
-    try:
-        with get_cache_file_path(
-            command,
-            platform,
-            language,
-            system_cache
-        ).open('rb') as cache_file:
-            cache_file_contents = cache_file.read()
-        return cache_file_contents
-    except Exception:
-        pass
-
-
-def store_page_to_cache(
-    page: str,
-    command: str,
-    platform: str,
-    language: str
-) -> Optional[str]:
-    try:
-        cache_file_path = get_cache_file_path(command, platform, language)
-        cache_file_path.parent.mkdir(parents=True, exist_ok=True)
-        with cache_file_path.open("wb") as cache_file:
-            cache_file.write(page)
-    except Exception:
-        pass
-
-
-def have_recent_cache(command: str, platform: str, language: str) -> bool:
-    try:
-        cache_file_path = get_cache_file_path(command, platform, language)
-        last_modified = datetime.fromtimestamp(cache_file_path.stat().st_mtime)
-        hours_passed = (datetime.now() - last_modified).total_seconds() / 3600
-        return hours_passed <= MAX_CACHE_AGE
-    except Exception:
-        return False
-
-
-def get_page_url(command: str, platform: str, remote: str, language: str) -> str:
-    if remote is None:
-        remote = PAGES_SOURCE_LOCATION
-
-    if language is None or language == 'en':
-        language = ''
-    else:
-        language = '.' + language
-
-    return remote + language + "/" + platform + "/" + quote(command) + ".md"
-
-
-def get_page_for_platform(
-    command: str,
-    platform: str,
-    remote: str,
-    language: str,
-    only_use_cache: bool = False,
-    system_cache: bool = False
-) -> str:
-    data_downloaded = False
-    if USE_CACHE and system_cache and get_cache_file_path(command, platform, language, system_cache).is_file():
-        data = load_page_from_cache(command, platform, language, system_cache)
-    elif USE_CACHE and have_recent_cache(command, platform, language):
-        data = load_page_from_cache(command, platform, language)
-    elif only_use_cache:
-        raise CacheNotExist("Cache for {} in {} not Found".format(
-            command,
-            platform,
-        ))
-    else:
-        page_url = get_page_url(command, platform, remote, language)
-        try:
-            data = urlopen(
-                Request(page_url, headers=REQUEST_HEADERS),
-                timeout=10,
-                context=URLOPEN_CONTEXT
-            ).read()
-            data_downloaded = True
-        except Exception:
-            if not USE_CACHE:
-                raise
-            data = load_page_from_cache(command, platform, language)
-            if data is None:
-                raise
-    if data_downloaded and USE_CACHE:
-        store_page_to_cache(data, command, platform, language)
-    return data.splitlines()
-
-
-def update_page_for_platform(
-    command: str,
-    platform: str,
-    remote: str,
-    language: str
-) -> None:
-    page_url = get_page_url(platform, command, remote, language)
-    data = urlopen(
-        Request(page_url, headers=REQUEST_HEADERS),
-        context=URLOPEN_CONTEXT
-    ).read()
-    store_page_to_cache(data, command, platform, language)
-
-
-def get_platform() -> str:
-    for key in OS_DIRECTORIES:
-        if sys.platform.startswith(key):
-            return OS_DIRECTORIES[key]
-    return 'linux'
-
-
-def get_platform_list() -> List[str]:
-    platforms = ['common'] + list(set(OS_DIRECTORIES.values()))
-    current_platform = get_platform()
-    platforms.remove(current_platform)
-    platforms.insert(0, current_platform)
-    return platforms
-
-
-def get_language_list() -> List[str]:
-    tldr_language = get_language_code(os.environ.get('TLDR_LANGUAGE', ''))
-    languages = os.environ.get('LANGUAGE', '').split(':')
-    languages = list(map(
-        get_language_code,
-        filter(lambda x: not (x == 'C' or x == 'POSIX' or x == ''), languages)
-    ))
-
-    default_lang = get_default_language()
-
-    if default_lang is None:
-        languages = []
-    elif default_lang not in languages:
-        languages.append(default_lang)
-    if tldr_language:
-        # remove tldr_language if it already exists to avoid double entry
-        try:
-            languages.remove(tldr_language)
-        except ValueError:
-            pass
-        languages.insert(0, tldr_language)
-    if 'en' not in languages:
-        languages.append('en')
+    languages = []
+    for candidate in candidates:
+        code = get_language_code(candidate)
+        if code and code not in languages:
+            languages.append(code)
     return languages
 
 
-def get_page_for_every_platform(
-    command: str,
-    remote: Optional[str] = None,
-    platforms: Optional[List[str]] = None,
-    languages: Optional[List[str]] = None
-) -> Union[List[Tuple[str, str]], bool]:
-    """Gives a list of tuples result-platform ordered by priority."""
-    if platforms is None:
-        platforms = get_platform_list()
-    else:
-        # When platform is explicitly specified, ensure 'common' is included as fallback
-        if 'common' not in platforms and len(platforms) > 0:
-            platforms = platforms + ['common']
-    if languages is None:
-        languages = get_language_list()
-    # only use cache
-    if USE_CACHE:
-        result = list()
-        for platform in platforms:
-            for language in languages:
-                if platform is None:
-                    continue
-                try:
-                    result.append(
-                        (get_page_for_platform(
-                                command,
-                                platform,
-                                remote,
-                                language,
-                                only_use_cache=True,
-                        ), platform)
-                    )
-                    break   # Don't want to look for the same page in other langs
-                except CacheNotExist:
-                    continue
-        if result:  # Return if smth was found
-            return result
-        # Cache miss, search system cache.
-        result = list()
-        for platform in platforms:
-            for language in languages:
-                if platform is None:
-                    continue
-                try:
-                    result.append(
-                        (get_page_for_platform(
-                                command,
-                                platform,
-                                remote,
-                                language,
-                                only_use_cache=True,
-                                system_cache=True
-                        ), platform)
-                    )
-                    break   # Don't want to look for the same page in other langs
-                except CacheNotExist:
-                    continue
-        if result:  # Return if smth was found
-            return result
-    # Know here that we don't have the info in cache
-    result = list()
-    error = None
+def pages_dir_name(language: str) -> str:
+    return 'pages' if language == 'en' else f'pages.{language}'
+
+
+# --- Platforms ---------------------------------------------------------------
+
+def get_platform() -> str:
+    for key, platform in OS_DIRECTORIES.items():
+        if sys.platform.startswith(key):
+            return platform
+    return 'linux'
+
+
+def get_all_platforms(sources: list[Source]) -> list[str]:
+    platforms = set(KNOWN_PLATFORMS)
+    for source in sources:
+        if isinstance(source, Path) and (source / 'pages').is_dir():
+            platforms |= {entry.name for entry in (source / 'pages').iterdir() if entry.is_dir()}
+    return sorted(platforms)
+
+
+def get_platform_list(first: str, all_platforms: list[str]) -> list[str]:
+    """`first`, then `common`, then every other platform: the spec's lookup order."""
+    order = [first] if first == 'common' else [first, 'common']
+    return order + [platform for platform in all_platforms if platform not in order]
+
+
+# --- Where pages live ----------------------------------------------------------
+
+def get_cache_dir() -> Path:
+    if os.environ.get('XDG_CACHE_HOME'):
+        return Path(os.environ['XDG_CACHE_HOME']) / 'tldr'
+    if os.environ.get('HOME'):
+        return Path(os.environ['HOME']) / '.cache' / 'tldr'
+    return Path.home() / '.cache' / 'tldr'
+
+
+def get_system_cache_dirs() -> list[Path]:
+    """Pages installed by distribution packages, e.g. `/usr/share/tldr`."""
+    data_dirs = os.environ.get('XDG_DATA_DIRS') or '/usr/local/share:/usr/share'
+    return [Path(entry) / 'tldr' for entry in data_dirs.split(':') if entry]
+
+
+def get_local_sources() -> list[Path]:
+    """The user cache, then system pages: every local directory that has pages."""
+    return [path for path in [get_cache_dir(), *get_system_cache_dirs()] if (path / 'pages').is_dir()]
+
+
+def parse_source(value: str) -> Source:
+    """`-s`/`TLDR_PAGES_SOURCE_LOCATION`: a URL, a `file://` URL, or a local path.
+
+    A local path may be a tldr checkout or its `pages` directory.
+    """
+    url = urlparse(value)
+    if url.scheme in ('http', 'https'):
+        return value.rstrip('/')
+    path = Path(url2pathname(url.path) if url.scheme == 'file' else value).expanduser()
+    return path if (path / 'pages').is_dir() else path.parent
+
+
+def download(url: str) -> bytes:
+    context = None
+    if env_flag('TLDR_ALLOW_INSECURE', False):
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+    elif os.environ.get('TLDR_CERT'):
+        context = ssl.create_default_context(cafile=Path(os.environ['TLDR_CERT']).expanduser())
+    request = Request(url, headers={'User-Agent': USER_AGENT})
+    with urlopen(request, timeout=10, context=context) as response:
+        return response.read()
+
+
+def read_page(source: Source, name: str, platform: str, language: str) -> str | None:
+    """One page from one source, or None if it isn't there. Network errors propagate."""
+    if isinstance(source, Path):
+        path = source / pages_dir_name(language) / platform / f'{name}.md'
+        try:
+            return path.read_text(encoding='utf-8')
+        except (FileNotFoundError, NotADirectoryError):
+            return None
+
+    base = source if language == 'en' else f'{source}.{language}'
+    try:
+        return download(f'{base}/{quote(platform)}/{quote(name)}.md').decode('utf-8')
+    except HTTPError as error:
+        if error.code == 404:
+            return None
+        raise
+
+
+def find_page(
+    name: str,
+    sources: list[Source],
+    platforms: list[str],
+    languages: list[str]
+) -> tuple[str, str] | None:
+    """Return `(markdown, platform)` for the best match, or None.
+
+    Platform takes precedence over language (spec "Page resolution"), and
+    for each platform/language pair the sources are tried in order.
+    """
     for platform in platforms:
         for language in languages:
-            if platform is None:
-                continue
-            try:
-                result.append(
-                    (
-                        get_page_for_platform(
-                            command,
-                            platform,
-                            remote,
-                            language
-                        ),
-                        platform
-                    )
-                )
-                break
-            except HTTPError as err:
-                if err.code != 404:
-                    # Store error for later, only raise if we find no results at all
-                    error = err
-            except URLError as err:
-                if not PAGES_SOURCE_LOCATION.startswith('file://'):
-                    # Store error for later, only raise if we find no results at all
-                    error = err
-
-    if result:  # Return if smth was found
-        return result
-
-    # Reraise the error if we couldn't get the pages for any platform
-    if error is not None:
-        # Note that only the most recent error will be stored and raised
-        raise error
-
-    # Otherwise, we got no results nor errors, implies the documentation doesn't exist
-    return False
+            for source in sources:
+                page = read_page(source, name, platform, language)
+                if page is not None:
+                    return page, platform
+    return None
 
 
-def get_page(
-    command: str,
-    remote: Optional[str] = None,
-    platforms: Optional[List[str]] = None,
-    languages: Optional[List[str]] = None
-) -> Union[str, bool]:
-    if platforms is None:
-        platforms = get_platform_list()
-    if languages is None:
-        languages = get_language_list()
-    # only use cache
-    if USE_CACHE:
+def get_commands(sources: list[Source], platforms: list[str], languages: list[str]) -> list[str]:
+    commands = set()
+    for source in sources:
+        if not isinstance(source, Path):
+            continue
         for platform in platforms:
             for language in languages:
-                if platform is None:
-                    continue
-                try:
-                    return get_page_for_platform(
-                        command,
-                        platform,
-                        remote,
-                        language,
-                        only_use_cache=True,
-                    )
-                except CacheNotExist:
-                    continue
-    for platform in platforms:
-        for language in languages:
-            if platform is None:
-                continue
-            try:
-                return get_page_for_platform(command, platform, remote, language)
-            except HTTPError as err:
-                if err.code != 404:
-                    raise
-            except URLError:
-                if not PAGES_SOURCE_LOCATION.startswith('file://'):
-                    raise
+                directory = source / pages_dir_name(language) / platform
+                if directory.is_dir():
+                    commands |= {page.stem for page in directory.glob('*.md')}
+    return sorted(commands)
 
-    return False
 
+# --- Cache -------------------------------------------------------------------
+
+def cache_is_stale(languages: list[str]) -> bool:
+    """True if the cache is older than `TLDR_CACHE_MAX_AGE` or lacks one of `languages`."""
+    stamp = get_cache_dir() / CACHE_STAMP
+    try:
+        age_hours = (time.time() - stamp.stat().st_mtime) / 3600
+        cached = set(stamp.read_text().split())
+    except FileNotFoundError:
+        return True
+    return age_hours > env_number('TLDR_CACHE_MAX_AGE', 24 * 7) or not cached.issuperset(languages)
+
+
+def update_cache(languages: list[str], verbose: bool = True) -> bool:
+    """Download one archive per language and swap it into the cache.
+
+    Each language is extracted next to the cache and renamed into place, so
+    pages deleted upstream disappear and an interrupted download never
+    leaves a half-written cache. Returns True if any language was updated.
+    """
+    location = os.environ.get('TLDR_DOWNLOAD_CACHE_LOCATION', DEFAULT_DOWNLOAD_LOCATION)
+    cache_dir = get_cache_dir()
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    updated = False
+    handled = []
+    for language in languages:
+        url = f"{location.removesuffix('.zip')}-pages.{language}.zip"
+        try:
+            archive = ZipFile(BytesIO(download(url)))
+        except HTTPError as error:
+            # Locales without translations (e.g. `eo`) have no archive; that's fine.
+            if error.code == 404:
+                handled.append(language)
+            elif verbose:
+                eprint(f"Error: Unable to update cache for language {language} from {url}: {error}")
+            continue
+        except (URLError, OSError, BadZipFile) as error:
+            if verbose:
+                eprint(f"Error: Unable to update cache for language {language} from {url}: {error}")
+            continue
+
+        target = cache_dir / pages_dir_name(language)
+        staging = cache_dir / f'{target.name}.new'
+        retired = cache_dir / f'{target.name}.old'
+        shutil.rmtree(staging, ignore_errors=True)
+
+        count = 0
+        with archive:
+            for entry in archive.namelist():
+                if ARCHIVE_ENTRY.fullmatch(entry):
+                    destination = staging / entry
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    destination.write_bytes(archive.read(entry))
+                    count += 1
+        if count == 0:
+            shutil.rmtree(staging, ignore_errors=True)
+            if verbose:
+                eprint(f"Error: The archive for language {language} contained no pages: {url}")
+            continue
+
+        shutil.rmtree(retired, ignore_errors=True)
+        if target.exists():
+            target.rename(retired)
+        staging.rename(target)
+        shutil.rmtree(retired, ignore_errors=True)
+        updated = True
+        handled.append(language)
+        if verbose:
+            eprint(f"Updated cache for language {language}: {count} entries")
+
+    if updated:
+        stamp = cache_dir / CACHE_STAMP
+        previous = stamp.read_text().split() if stamp.exists() else []
+        stamp.write_text('\n'.join(dict.fromkeys(previous + handled)) + '\n')
+    return updated
+
+
+def clear_cache() -> None:
+    cache_dir = get_cache_dir()
+    if not cache_dir.exists():
+        eprint(f"No cache directory found at {cache_dir}")
+        return
+    shutil.rmtree(cache_dir)
+    eprint(f"Cleared cache at {cache_dir}")
+
+
+# --- Rendering ---------------------------------------------------------------
+
+LEADING_SPACES = '  '
 
 DEFAULT_COLORS = {
     'name': 'bold',
     'description': '',
     'example': 'green',
     'command': 'red',
-    'parameter': ''
+    'parameter': '',
+    'code': 'yellow italic',  # `inline code` in example descriptions
 }
 
-# See more details in the README:
-# https://github.com/tldr-pages/tldr-python-client#colors
-ACCEPTED_COLORS = [
-    'blue', 'green', 'yellow', 'cyan', 'magenta', 'white', 'grey', 'red'
-]
-
-ACCEPTED_COLOR_BACKGROUNDS = [
-    'on_blue', 'on_cyan', 'on_magenta', 'on_white',
-    'on_grey', 'on_yellow', 'on_red', 'on_green'
-]
-
-ACCEPTED_COLOR_ATTRS = [
-    'reverse', 'blink', 'dark', 'concealed', 'underline', 'bold'
-]
-
-LEADING_SPACES_NUM = 2
-
-EXAMPLE_SPLIT_REGEX = re.compile(r'(?P<example>`.+?`)')
-EXAMPLE_REGEX = re.compile(r'(?:`)(?P<example>.+?)(?:`)')
-COMMAND_SPLIT_REGEX = re.compile(r'(?P<param>{{.+?}*}})')
-PARAM_REGEX = re.compile(r'(?:{{)(?P<param>.+?)(?:}})')
+INLINE_CODE = re.compile(r'`([^`]+)`')
+AUTOLINK = re.compile(r'<([a-z][a-z0-9+.-]*:[^<>\s]+)>', re.IGNORECASE)
+OPTION_PLACEHOLDER = re.compile(r'\[(?P<short>[^|\]]+)\|(?P<long>[^\]]+)\]')
 
 
-def get_commands(platforms: Optional[List[str]] = None,
-                 language: Optional[str] = None) -> List[str]:
-    if platforms is None:
-        platforms = get_platform_list()
-
-    if language:
-        languages = [get_language_code(language[0])]
-    else:
-        languages = get_language_list()
-
-    commands = []
-    if get_cache_dir().exists():
-        for platform in platforms:
-            for language in languages:
-                pages_dir = f'pages.{language}' if language != 'en' else 'pages'
-                path = get_cache_dir() / pages_dir / platform
-                if not path.exists():
-                    continue
-                commands += [f"{file.stem}"
-                             for file in path.iterdir()
-                             if file.suffix == '.md']
-    return commands
-
-
-def colors_of(key: str) -> Tuple[str, str, List[str]]:
-    env_key = 'TLDR_COLOR_%s' % key.upper()
-    values = os.environ.get(env_key, DEFAULT_COLORS[key]).strip().split()
+def colors_of(key: str) -> tuple[str | None, str | None, list[str]]:
+    """Parse `TLDR_COLOR_<KEY>`, e.g. `red on_yellow underline`. Unknown words are ignored."""
+    values = os.environ.get(f'TLDR_COLOR_{key.upper()}', DEFAULT_COLORS[key]).split()
     color = None
     on_color = None
     attrs = []
     for value in values:
-        if value in ACCEPTED_COLORS:
+        if value in COLORS:
             color = value
-        elif value in ACCEPTED_COLOR_BACKGROUNDS:
+        elif value in HIGHLIGHTS:
             on_color = value
-        elif value in ACCEPTED_COLOR_ATTRS:
+        elif value in ATTRIBUTES:
             attrs.append(value)
-    return (color, on_color, attrs)
+    return color, on_color, attrs
 
 
-def output(page: str, display_option_length: str, plain: bool = False) -> None:
-    def emphasise_example(x: str) -> str:
-        # Use ANSI escapes to enable italics at the start and disable at the end
-        # Also use the color yellow to differentiate from the default green
-        return "\x1B[3m" + colored(x.group('example'), 'yellow') + "\x1B[23m"
+def split_placeholders(command: str, option_style: str = 'long') -> list[tuple[str, bool]]:
+    """Split an example command into `(text, is_placeholder)` parts.
 
-    if not plain:
-        print()
-    for line in page:
-        line = line.rstrip().decode('utf-8')
-
-        if plain:
-            print(line)
-            continue
-
-        elif len(line) == 0:
-            continue
-
-        # Handle the command name
-        elif line[0] == '#':
-            line = ' ' * LEADING_SPACES_NUM + \
-                colored(line.replace('# ', ''), *colors_of('name')) + '\n'
-            sys.stdout.buffer.write(line.encode('utf-8'))
-
-        # Handle the command description
-        elif line[0] == '>':
-            line = ' ' * (LEADING_SPACES_NUM - 1) + \
-                colored(
-                    line.replace('>', '').replace('<', ''),
-                    *colors_of('description')
-                )
-            sys.stdout.buffer.write(line.encode('utf-8'))
-
-        # Handle an example description
-        elif line[0] == '-':
-
-            # Stylize text within backticks using yellow italics
-            if '`' in line:
-                elements = ['\n', ' ' * LEADING_SPACES_NUM]
-
-                for item in EXAMPLE_SPLIT_REGEX.split(line):
-                    item, replaced = EXAMPLE_REGEX.subn(emphasise_example, item)
-                    if not replaced:
-                        item = colored(item, *colors_of('example'))
-                    elements.append(item)
-
-                line = ''.join(elements)
-
-            # Otherwise, use the same colour for the whole line
+    - `{{x}}` is a placeholder; balanced braces inside it are kept (`{{stash@{0}}}`).
+    - `\\{\\{` and `\\}\\}` are literal double braces, also inside a placeholder.
+    - `{{{x}}` is a literal `{` followed by a placeholder, unless the braces
+      balance as one placeholder (`{{{"a": {"b": 1\\}\\}}}`).
+    - `{{[-A|--all]}}` becomes plain `-A` or `--all` for the short/long style,
+      and stays a placeholder for `both`.
+    """
+    parts: list[tuple[str, bool]] = []
+    text = ''
+    i = 0
+    while i < len(command):
+        if command.startswith(('\\{\\{', '\\}\\}'), i):
+            text += command[i + 1] * 2
+            i += 4
+        elif command.startswith('{{', i):
+            end = placeholder_end(command, i + 2)
+            if end is None and command.startswith('{{{', i):
+                text += '{'
+                i += 1
+                continue
+            if end is None:
+                end = command.find('}}', i + 2)
+            if end == -1:
+                # Never closed: show it as written.
+                text += command[i:]
+                break
+            content = command[i + 2:end].replace('\\{\\{', '{{').replace('\\}\\}', '}}')
+            option = OPTION_PLACEHOLDER.fullmatch(content)
+            if option and option_style in ('short', 'long'):
+                text += option[option_style]
             else:
-                line = '\n' + ' ' * LEADING_SPACES_NUM + \
-                    colored(line, *colors_of('example'))
-
-            sys.stdout.buffer.write(line.encode('utf-8'))
-
-        # Handle an example command
-        elif line[0] == '`':
-            line = line[1:-1]  # Remove backticks for parsing
-
-            # Handle escaped placeholders first
-            line = line.replace(r'\{\{', '__ESCAPED_OPEN__')
-            line = line.replace(r'\}\}', '__ESCAPED_CLOSE__')
-
-            # Extract long or short options from placeholders
-            if display_option_length == "short":
-                line = re.sub(r'{{\[([^|]+)\|[^|]+?\]}}', r'\1', line)
-            elif display_option_length == "long":
-                line = re.sub(r'{{\[[^|]+\|([^|]+?)\]}}', r'\1', line)
-
-            elements = [' ' * 2 * LEADING_SPACES_NUM]
-            for item in COMMAND_SPLIT_REGEX.split(line):
-                item, replaced = PARAM_REGEX.subn(
-                    lambda x: colored(x.group('param'), *colors_of('parameter')),
-                    item)
-                if not replaced:
-                    item = colored(item, *colors_of('command'))
-                elements.append(item)
-
-            line = ''.join(elements)
-
-            # Restore escaped placeholders
-            line = line.replace('__ESCAPED_OPEN__', '{{')
-            line = line.replace('__ESCAPED_CLOSE__', '}}')
-
-            sys.stdout.buffer.write(line.encode('utf-8'))
-        print()
-    print()
-
-
-def update_cache(language: Optional[List[str]] = None) -> None:
-    languages = get_language_list()
-    if language and language[0] not in languages:
-        languages.append(language[0])
-    for language in languages:
-        try:
-            cache_location = f"{DOWNLOAD_CACHE_LOCATION[:-4]}-pages.{language}.zip"
-            req = urlopen(Request(
-                cache_location,
-                headers=REQUEST_HEADERS
-            ), context=URLOPEN_CONTEXT)
-            zipfile = ZipFile(BytesIO(req.read()))
-            pattern = re.compile(r"(.+)/(.+)\.md")
-            cached = 0
-            for entry in zipfile.namelist():
-                match = pattern.match(entry)
-                if match:
-                    store_page_to_cache(
-                        zipfile.read(entry),
-                        match.group(2),
-                        match.group(1),
-                        language
-                    )
-                    cached += 1
-            print(
-                "Updated cache for language "
-                f"{language}: {cached} entries"
-            )
-        except Exception:
-            print(
-                "Error: Unable to update cache for language "
-                f"{language} from {cache_location}"
-            )
-
-
-def clear_cache(language: Optional[List[str]] = None) -> None:
-    languages = get_language_list()
-    if language and language[0] not in languages:
-        languages.append(language[0])
-    for language in languages:
-        pages_dir = f'pages.{language}' if language != 'en' else 'pages'
-        cache_dir = get_cache_dir() / pages_dir
-        if cache_dir.exists() and cache_dir.is_dir():
-            try:
-                shutil.rmtree(cache_dir)
-                print(f"Cleared cache for language {language}")
-            except Exception as e:
-                print(f"Error: Unable to delete cache directory {cache_dir}: {e}")
+                if text:
+                    parts.append((text, False))
+                    text = ''
+                parts.append((content, True))
+            i = end + 2
         else:
-            print(f"No cache directory found for language {language}")
+            text += command[i]
+            i += 1
+    if text:
+        parts.append((text, False))
+    return parts
 
+
+def placeholder_end(command: str, start: int) -> int | None:
+    """Index of the `}}` closing a placeholder whose content starts at `start`.
+
+    Braces inside must balance (escaped pairs count as two). None if they don't.
+    """
+    depth = 0
+    i = start
+    while i < len(command):
+        if command.startswith('\\{\\{', i):
+            depth += 2
+            i += 4
+        elif command.startswith('\\}\\}', i):
+            depth -= 2
+            i += 4
+        elif command[i] == '{':
+            depth += 1
+            i += 1
+        elif command[i] == '}':
+            if depth == 0 and command.startswith('}}', i):
+                return i
+            depth -= 1
+            i += 1
+        else:
+            i += 1
+        if depth < 0:
+            return None
+    return None
+
+
+def render_page(markdown: str, option_style: str = 'long', color: bool = False) -> str:
+    styles = {key: colors_of(key) for key in DEFAULT_COLORS} if color else {}
+
+    def paint(key: str, text: str) -> str:
+        if not color or not text:
+            return text
+        return colored(text, *styles[key], force_color=True)
+
+    lines = ['']
+    for line in markdown.splitlines():
+        line = line.rstrip()
+        if not line:
+            continue
+
+        if line.startswith('# '):
+            lines += [LEADING_SPACES + paint('name', line[2:].strip()), '']
+
+        elif line.startswith('>'):
+            # Only autolink brackets go: `a -> b` must stay intact.
+            description = AUTOLINK.sub(r'\1', line[1:].strip())
+            lines.append(LEADING_SPACES + paint('description', description))
+
+        elif line.startswith('- '):
+            # re.split with one group alternates: text, code, text, code, ...
+            parts = INLINE_CODE.split(line)
+            lines += ['', LEADING_SPACES + ''.join(
+                paint('code' if index % 2 else 'example', part) for index, part in enumerate(parts)
+            )]
+
+        elif len(line) > 1 and line.startswith('`') and line.endswith('`'):
+            lines.append(LEADING_SPACES * 2 + ''.join(
+                paint('parameter' if is_placeholder else 'command', text)
+                for text, is_placeholder in split_placeholders(line[1:-1], option_style)
+            ))
+
+        else:
+            # Anything else valid in CommonMark: show it rather than drop it.
+            lines.append(LEADING_SPACES + line)
+    lines.append('')
+    return '\n'.join(lines) + '\n'
+
+
+def use_color(forced: bool) -> bool:
+    if forced:
+        return True
+    if os.environ.get('NO_COLOR'):
+        return False
+    if os.environ.get('FORCE_COLOR'):
+        return True
+    return sys.stdout.isatty()
+
+
+# --- Command line ------------------------------------------------------------
 
 def create_parser() -> ArgumentParser:
     parser = ArgumentParser(
@@ -621,222 +497,202 @@ def create_parser() -> ArgumentParser:
     parser.add_argument(
         '-v', '--version',
         action='version',
-        version='%(prog)s {} (Client Specification {})'.format(
-            __version__,
-            __client_specification__
-        )
+        version=f'%(prog)s {__version__} (Client Specification {__client_specification__})'
     )
-
-    parser.add_argument("--search",
-                        metavar='"KEYWORDS"',
-                        type=str,
+    parser.add_argument('--search', metavar='"KEYWORDS"',
                         help="Search for a specific command from a query")
-
-    parser.add_argument('-u', '--update', '--update_cache',
-                        action='store_true',
+    parser.add_argument('-u', '--update', '--update_cache', action='store_true',
                         help="Update the local cache of pages and exit")
-
-    parser.add_argument('-k', '--clear-cache',
-                        action='store_true',
+    parser.add_argument('-k', '--clear-cache', action='store_true',
                         help="Delete the local cache of pages and exit")
-
-    all_platforms = sorted(set(OS_DIRECTORIES.values())) + ['common']
-    platforms_str = "[" + ", ".join(all_platforms) + "]"
-
-    parser.add_argument(
-        '-p', '--platform',
-        nargs=1,
-        default=None,
-        type=str,
-        choices=all_platforms,
-        metavar='PLATFORM',
-        help=f"Override the operating system {platforms_str}"
-    )
-
-    parser.add_argument('-l', '--list',
-                        default=False,
-                        action='store_true',
+    parser.add_argument('-p', '--platform', metavar='PLATFORM',
+                        help=f"Override the operating system [{', '.join(KNOWN_PLATFORMS)}, ...]")
+    parser.add_argument('-l', '--list', action='store_true',
                         help="List all available commands for operating system")
-
     parser.add_argument('-s', '--source',
-                        default=PAGES_SOURCE_LOCATION,
-                        type=str,
-                        help="Override the default page source")
-
-    parser.add_argument('-c', '--color',
-                        default=None,
-                        action='store_const',
-                        const=False,
+                        help="Read pages from this URL or local `pages` directory instead of the cache")
+    parser.add_argument('-c', '--color', action='store_true',
                         help="Override color stripping")
-
-    parser.add_argument('-r', '--render',
-                        default=False,
-                        action='store_true',
-                        help='Render local markdown files'
-                        )
-
+    parser.add_argument('-r', '--render', action='store_true',
+                        help='Render local markdown files')
     parser.add_argument('-L', '--language',
-                        nargs=1,
-                        default=None,
-                        type=str,
                         help='Override the default language')
-
-    parser.add_argument('-m', '--markdown',
-                        default=False,
-                        action='store_true',
+    parser.add_argument('-m', '--markdown', action='store_true',
                         help='Just print the plain page file.')
-
-    parser.add_argument('--short-options',
-                        default=False,
-                        action="store_true",
+    parser.add_argument('-S', '--short-options', action='store_true',
                         help='Display shortform options over longform')
-
-    parser.add_argument('--long-options',
-                        default=False,
-                        action="store_true",
+    parser.add_argument('-E', '--long-options', action='store_true',
                         help='Display longform options over shortform')
-
     parser.add_argument(
-        'command', type=str, nargs='*', help="command to lookup", metavar='command'
+        'command', nargs='*', help="command to lookup", metavar='command'
     ).complete = {"bash": "shtab_tldr_cmd_list", "zsh": "shtab_tldr_cmd_list"}
 
     shtab.add_argument_to(parser, preamble={
-        'bash': r'''shtab_tldr_cmd_list(){{
-          compgen -W "$("{py}" -m tldr --list)" -- "$1"
-        }}'''.format(py=sys.executable),
-        'zsh': r'''shtab_tldr_cmd_list(){{
-          _describe 'command' "($("{py}" -m tldr --list))"
-        }}'''.format(py=sys.executable)
+        'bash': rf'''shtab_tldr_cmd_list(){{
+          compgen -W "$("{sys.executable}" -m tldr --list)" -- "$1"
+        }}''',
+        'zsh': rf'''shtab_tldr_cmd_list(){{
+          _describe 'command' "($("{sys.executable}" -m tldr --list))"
+        }}'''
     })
-
     return parser
 
 
-def main() -> None:
+def get_sources(source: str | None, languages: list[str]) -> list[Source]:
+    """Where to read pages from, refreshing the cache first if it is stale."""
+    if source:
+        return [parse_source(source)]
+
+    remote = parse_source(os.environ.get('TLDR_PAGES_SOURCE_LOCATION', DEFAULT_PAGES_SOURCE))
+    if not env_flag('TLDR_CACHE_ENABLED', True):
+        return [remote]
+
+    network = env_flag('TLDR_NETWORK_ENABLED', True)
+    wanted = list(dict.fromkeys(get_language_list() + languages))
+    if network and cache_is_stale(wanted):
+        first_download = not (get_cache_dir() / 'pages').is_dir()
+        if first_download:
+            eprint(f"Downloading tldr pages to {get_cache_dir()} ...")
+        if not update_cache(wanted, verbose=first_download) and not first_download:
+            eprint("Warning: Could not refresh the cache, using the existing pages.")
+
+    # Without any local pages (e.g. GitHub releases are blocked), fetch single pages.
+    return get_local_sources() or ([remote] if network else [])
+
+
+def main(argv: list[str] | None = None) -> int:
     parser = create_parser()
+    options = parser.parse_args(argv)
 
-    options = parser.parse_args()
+    if options.language:
+        languages = [get_language_code(options.language) or 'en']
+    else:
+        languages = get_language_list()
 
-    if sys.platform == "win32":
-        import colorama
-        colorama.init(strip=options.color)
-
-    if options.platform is None:
-        platform_env = os.environ.get('TLDR_PLATFORM', '').strip().lower()
-        if platform_env in OS_DIRECTORIES:
-            options.platform = [platform_env]
-        elif platform_env:
-            warning_msg = (
-                f"Warning: '{platform_env}' is not a supported TLDR_PLATFORM environment value."
-                "\nFalling back to auto-detection."
-            )
-            print(colored(warning_msg, 'yellow'))
-
-    display_option_length = "long"
-    if os.environ.get('TLDR_OPTIONS') == "short":
-        display_option_length = "short"
-    elif os.environ.get('TLDR_OPTIONS') == "long":
-        display_option_length = "long"
-    elif os.environ.get('TLDR_OPTIONS') == "both":
-        display_option_length = "both"
-    if options.short_options:
-        display_option_length = "short"
-    if options.long_options:
-        display_option_length = "long"
-    if options.short_options and options.long_options:
-        display_option_length = "both"
-
-    if options.color is False:
-        os.environ["FORCE_COLOR"] = "true"
-
-    if options.update:
-        update_cache(language=options.language)
-    elif len(sys.argv) == 1:
-        parser.print_help(sys.stderr)
-        sys.exit(1)
     if options.clear_cache:
-        clear_cache(language=options.language)
-        return
-    elif len(sys.argv) == 1:
+        clear_cache()
+        return 0
+    if options.update:
+        updated = update_cache(list(dict.fromkeys(get_language_list() + languages)))
+        if not (options.command or options.list or options.search):
+            return 0 if updated else 1
+    if not (options.command or options.list or options.search):
         parser.print_help(sys.stderr)
-        sys.exit(1)
-    if options.list:
-        print('\n'.join(get_commands(options.platform, options.language)))
-    elif options.render:
-        for command in options.command:
-            file_path = Path(command)
-            if file_path.exists():
-                with file_path.open(encoding='utf-8') as open_file:
-                    output(open_file.read().encode('utf-8').splitlines(),
-                           display_option_length,
-                           plain=options.markdown)
-    elif options.search:
-        search_term = options.search.lower()
-        commands = get_commands(options.platform, options.language)
-        if not commands:
-            print("Update cache, no commands to check from.")
-            return
-        similar_commands = []
-        for command in commands:
-            if search_term in command.lower():
-                similar_commands.append(command)
-        if similar_commands:
-            print("Similar commands found:")
-            print('\n'.join(similar_commands))
-            return
+        return 1
+
+    option_style = os.environ.get('TLDR_OPTIONS', 'long').strip().lower()
+    if option_style not in ('short', 'long', 'both'):
+        option_style = 'long'
+    if options.short_options and options.long_options:
+        option_style = 'both'
+    elif options.short_options:
+        option_style = 'short'
+    elif options.long_options:
+        option_style = 'long'
+
+    color = use_color(options.color)
+
+    if options.render:
+        status = 0
+        for path in options.command:
+            try:
+                markdown = Path(path).read_text(encoding='utf-8')
+            except OSError as error:
+                eprint(f"Error: {path}: {error.strerror}")
+                status = 1
+                continue
+            sys.stdout.write(markdown if options.markdown else render_page(markdown, option_style, color))
+        return status
+
+    sources = get_sources(options.source, languages)
+    if not sources:
+        eprint("Error: No pages available offline. Connect to the internet and run `tldr --update`.")
+        return 1
+    if isinstance(sources[0], Path) and not (sources[0] / 'pages').is_dir():
+        eprint(f"Error: {options.source} is not a tldr pages directory.")
+        return 1
+
+    all_platforms = get_all_platforms(sources)
+    platform = get_platform()
+    requested = (options.platform or os.environ.get('TLDR_PLATFORM', '')).strip().lower()
+    if requested:
+        requested = OS_DIRECTORIES.get(requested, requested)
+        if requested in all_platforms:
+            platform = requested
+        elif options.platform:
+            eprint(f"Error: Unknown platform '{options.platform}'. Choose from: {', '.join(all_platforms)}")
+            return 1
         else:
-            print("No commands matched your search term.")
-            sys.exit(1)
-    elif not options.command == []:
-        try:
-            command = '-'.join(options.command).lower()
-            results = get_page_for_every_platform(
-                command,
-                options.source,
-                options.platform,
-                options.language
-            )
-            if not results:
-                sys.exit((
-                    "`{cmd}` documentation is not available.\n"
-                    "If you want to contribute it, feel free to"
-                    " send a pull request to: https://github.com/tldr-pages/tldr"
-                ).format(cmd=command))
-            else:
-                output(results[0][0], display_option_length, plain=options.markdown)
+            eprint(f"Warning: '{requested}' is not a supported TLDR_PLATFORM environment value."
+                   "\nFalling back to auto-detection.")
+    platforms = get_platform_list(platform, all_platforms)
 
-                if results[0][1] not in (get_platform(), "common") and not options.platform:
-                    warning_suffix = (
-                        f": showing page from platform '{results[0][1]}', "
-                        f"because '{command}' does not exist in '{get_platform()}' and 'common'."
-                    )
-                    if options.markdown:
-                        print(f"warning{warning_suffix}")
-                    else:
-                        print(f"{colored('warning', 'yellow')}{warning_suffix}")
+    if options.list:
+        local = [source for source in sources if isinstance(source, Path)] or get_local_sources()
+        print('\n'.join(get_commands(local, platforms[:2], languages)))
+        return 0
 
-                if results[1:]:
-                    platforms_str = [result[1] for result in results[1:]]
-                    are_multiple_platforms = len(platforms_str) > 1
-                    if are_multiple_platforms:
-                        print(
-                            f"Found {len(platforms_str)} pages with the same name"
-                            f" under the platforms: {', '.join(platforms_str)}."
-                        )
-                    else:
-                        print(
-                            f"Found 1 page with the same name"
-                            f" under the platform: {platforms_str[0]}."
-                        )
-        except URLError as e:
-            sys.exit("Error fetching from tldr: {}".format(e))
+    if options.search:
+        local = [source for source in sources if isinstance(source, Path)] or get_local_sources()
+        commands = get_commands(local, platforms, languages)
+        if not commands:
+            eprint("Update cache, no commands to check from.")
+            return 1
+        matches = [command for command in commands if options.search.lower() in command.lower()]
+        if not matches:
+            eprint("No commands matched your search term.")
+            return 1
+        print('\n'.join(matches))
+        return 0
+
+    command = '-'.join(options.command).lower()
+    try:
+        result = find_page(command, sources, platforms, languages)
+    except URLError as error:
+        local = get_local_sources()
+        if options.source or not local:
+            eprint(f"Error fetching from tldr: {error}")
+            return 1
+        eprint(f"Warning: Error fetching from tldr ({error}), using the cache instead.")
+        sources = local
+        result = find_page(command, sources, platforms, languages)
+
+    if result is None:
+        if options.language:
+            eprint(f"`{command}` documentation is not available in language `{options.language}`.")
+        else:
+            eprint(f"`{command}` documentation is not available.")
+        eprint(f"You can request it here: {ISSUE_URL.format(quote(command))}")
+        return 1
+
+    page, found_on = result
+    sys.stdout.write(page if options.markdown else render_page(page, option_style, color))
+
+    if found_on not in (platform, 'common'):
+        eprint(f"Warning: showing page from platform '{found_on}', "
+               f"because '{command}' does not exist in '{platform}' and 'common'.")
+    # Probing every platform is free on disk but costs a request each over the network.
+    if all(isinstance(source, Path) for source in sources):
+        others = [other for other in platforms
+                  if other != found_on and find_page(command, sources, [other], languages)]
+        if others:
+            eprint(f"Also available on: {', '.join(others)}.")
+    return 0
 
 
 def cli() -> None:
+    if sys.platform == "win32":
+        import colorama
+        colorama.just_fix_windows_console()
+    for stream in (sys.stdout, sys.stderr):
+        # Pages are UTF-8; don't crash on consoles or pipes that can't show a character.
+        if hasattr(stream, 'reconfigure'):
+            stream.reconfigure(errors='replace')
     try:
-        main()
+        sys.exit(main())
     except KeyboardInterrupt:
-        print("\nExited on keyboard interrupt.")
+        eprint("\nExited on keyboard interrupt.")
+        sys.exit(130)
 
 
 if __name__ == "__main__":
