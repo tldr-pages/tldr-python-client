@@ -7,6 +7,6 @@ Welcome to tldr's documentation!
 ================================
 
 .. argparse::
-   :module: tldr.cli
-   :func: build_parser
+   :filename: ../tldr.py
+   :func: create_parser
    :prog: tldr

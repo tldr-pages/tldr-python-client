@@ -1,9 +1,8 @@
-"""Compare the new renderer with the legacy `tldr.py` on every page of a checkout.
+"""Compare `tldr.render_page` with the legacy `tldr.py` on every page of a checkout.
 
 Colors are stripped, so only the visible text is compared. Differences are
 expected where the legacy client has bugs; review them, don't blindly "fix".
 
-    pip install termcolor shtab
     python tools/compare_with_legacy.py path/to/legacy/tldr.py path/to/tldr [short|long|both]
 """
 
@@ -16,7 +15,7 @@ import sys
 from contextlib import redirect_stdout
 from pathlib import Path
 
-from tldr.render import PLAIN, render_page
+import tldr
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
@@ -46,7 +45,7 @@ def main() -> int:
     for page in pages:
         markdown = page.read_bytes()
         old = legacy_render(legacy, markdown, style)
-        new = render_page(markdown.decode("utf-8"), style, PLAIN)
+        new = tldr.render_page(markdown.decode("utf-8"), style)
         if old != new:
             differing += 1
             print(f"== {page.relative_to(repo)}")
