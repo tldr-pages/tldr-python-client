@@ -48,6 +48,23 @@ sudo dnf install tldr
 sudo snap install tldr
 ```
 
+## Development
+
+Python 3.10 or later is required. After cloning your fork, create a virtual environment and install the project with its development dependencies:
+
+```console
+cd tldr-python-client
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[cli]"
+```
+
+Run the test suite before submitting changes:
+
+```console
+pytest -q
+```
+
 ## Usage
 
 ```bash
