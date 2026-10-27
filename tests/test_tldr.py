@@ -1,7 +1,11 @@
+from importlib.metadata import version
 import io
+import os
 from pathlib import Path
 
 import pytest
+import re
+import subprocess
 import sys
 import tldr
 import types
@@ -29,6 +33,35 @@ def test_whole_page(page_name, monkeypatch):
 
             correct_output = f_rendered.read()
             assert tldr_output == correct_output
+
+
+@pytest.mark.parametrize("page_name", page_names)
+@pytest.mark.parametrize("force_color", [True, False])
+def test_whole_page_piped(page_name, force_color):
+    termcolor_version = tuple(int(x) for x in version("termcolor").split(".")[:2])
+    if not force_color and termcolor_version < (2, 1):
+        pytest.skip("termcolor < 2.1 does not disable colors when not on a tty")
+    # Run in a subprocess so that stdout is a real pipe instead of a terminal
+    env = {key: value for key, value in os.environ.items()
+           if key not in ("FORCE_COLOR", "NO_COLOR", "ANSI_COLORS_DISABLED")}
+    if force_color:
+        env["FORCE_COLOR"] = "1"
+    # Text printed before the page (e.g. a warning) must stay in front of it
+    code = (
+        "import tldr\n"
+        "print('before')\n"
+        f"with open('tests/data/{page_name}.md', 'rb') as f_original:\n"
+        "    tldr.output(f_original, 'both')\n"
+    )
+    result = subprocess.run([sys.executable, "-c", code], env=env,
+                            stdout=subprocess.PIPE, check=True)
+
+    with open(f"tests/data/{page_name}_rendered", "rb") as f_rendered:
+        correct_output = f_rendered.read()
+    if not force_color:
+        # Without colors, no styling at all should be left
+        correct_output = re.sub(rb"\x1b\[[0-9;]*m", b"", correct_output)
+    assert result.stdout == b"before\n" + correct_output
 
 
 @pytest.mark.parametrize("page_name", page_names)
