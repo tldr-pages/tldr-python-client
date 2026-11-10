@@ -765,11 +765,12 @@ def main() -> None:
     elif options.render:
         for command in options.command:
             file_path = Path(command)
-            if file_path.exists():
-                with file_path.open(encoding='utf-8') as open_file:
-                    output(open_file.read().encode('utf-8').splitlines(),
-                           display_option_length,
-                           plain=options.markdown)
+            if not file_path.is_file():
+                sys.exit(f"No such file: {command}")
+            with file_path.open(encoding='utf-8') as open_file:
+                output(open_file.read().encode('utf-8').splitlines(),
+                       display_option_length,
+                       plain=options.markdown)
     elif options.search:
         search_term = options.search.lower()
         commands = get_commands(options.platform, options.language)
