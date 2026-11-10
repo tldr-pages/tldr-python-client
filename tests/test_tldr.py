@@ -49,6 +49,21 @@ def test_markdown_mode(page_name):
         assert tldr_output == d_original + b"\n"
 
 
+def test_render_missing_file_fails(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with mock.patch("sys.argv", ["tldr", "--render", "does-not-exist.md"]):
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            tldr.main()
+        assert pytest_wrapped_e.type == SystemExit
+        assert pytest_wrapped_e.value.code != 0
+        assert "does-not-exist.md" in str(pytest_wrapped_e.value)
+
+
+def test_render_existing_file_succeeds(capsys):
+    with mock.patch("sys.argv", ["tldr", "--render", "tests/data/gem.md"]):
+        assert tldr.main() is None
+
+
 def test_error_message():
     with mock.patch("sys.argv", ["tldr", "73eb6f19cd6f"]):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
