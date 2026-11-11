@@ -705,7 +705,9 @@ def create_parser() -> ArgumentParser:
           compgen -W "$("{py}" -m tldr --list)" -- "$1"
         }}'''.format(py=sys.executable),
         'zsh': r'''shtab_tldr_cmd_list(){{
-          _describe 'command' "($("{py}" -m tldr --list))"
+          local -a _cmds
+          _cmds=("${{(@f)$("{py}" -m tldr --list)}}")
+          _describe 'command' _cmds
         }}'''.format(py=sys.executable)
     })
 
