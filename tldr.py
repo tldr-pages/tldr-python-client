@@ -21,6 +21,13 @@ import shutil
 __version__ = "3.4.4"
 __client_specification__ = "2.3"
 
+VERBOSE = int(os.environ.get('TLDR_VERBOSE', '0')) > 0
+
+
+def debug(message: str) -> None:
+    if VERBOSE:
+        print(f"[tldr-debug] {message}", file=sys.stderr)
+
 REQUEST_HEADERS = {'User-Agent': 'tldr-python-client'}
 PAGES_SOURCE_LOCATION = os.environ.get(
     'TLDR_PAGES_SOURCE_LOCATION',
@@ -173,18 +180,41 @@ def get_page_for_platform(
     only_use_cache: bool = False,
     system_cache: bool = False
 ) -> str:
+    debug(
+        f"Trying command='{command}' platform='{platform}' language='{language}' "
+        f"only_use_cache={only_use_cache} system_cache={system_cache}"
+    )
+
     data_downloaded = False
+
     if USE_CACHE and system_cache and get_cache_file_path(command, platform, language, system_cache).is_file():
+        debug(
+            f"Loading page from system cache: "
+            f"{get_cache_file_path(command, platform, language, system_cache)}"
+        )
         data = load_page_from_cache(command, platform, language, system_cache)
+
     elif USE_CACHE and have_recent_cache(command, platform, language):
+        debug(
+            f"Loading page from cache: "
+            f"{get_cache_file_path(command, platform, language)}"
+        )
         data = load_page_from_cache(command, platform, language)
+
     elif only_use_cache:
+        debug(
+            f"Cache not found for command='{command}' "
+            f"platform='{platform}' language='{language}' system_cache={system_cache}"
+        )
         raise CacheNotExist("Cache for {} in {} not Found".format(
             command,
             platform,
         ))
+
     else:
         page_url = get_page_url(command, platform, remote, language)
+        debug(f"Fetching page from URL: {page_url}")
+
         try:
             data = urlopen(
                 Request(page_url, headers=REQUEST_HEADERS),
@@ -192,16 +222,34 @@ def get_page_for_platform(
                 context=URLOPEN_CONTEXT
             ).read()
             data_downloaded = True
-        except Exception:
+
+        except Exception as err:
+            debug(f"Fetch failed for {page_url}: {type(err).__name__}: {err}")
+
             if not USE_CACHE:
                 raise
-            data = load_page_from_cache(command, platform, language)
-            if data is None:
-                raise
-    if data_downloaded and USE_CACHE:
-        store_page_to_cache(data, command, platform, language)
-    return data.splitlines()
 
+            debug(
+                f"Falling back to cache: "
+                f"{get_cache_file_path(command, platform, language)}"
+            )
+            data = load_page_from_cache(command, platform, language)
+
+            if data is None:
+                debug(
+                    f"Fallback cache not found for command='{command}' "
+                    f"platform='{platform}' language='{language}'"
+                )
+                raise
+
+    if data_downloaded and USE_CACHE:
+        debug(
+            f"Storing downloaded page to cache: "
+            f"{get_cache_file_path(command, platform, language)}"
+        )
+        store_page_to_cache(data, command, platform, language)
+
+    return data.splitlines()
 
 def update_page_for_platform(
     command: str,
@@ -273,6 +321,9 @@ def get_page_for_every_platform(
             platforms = platforms + ['common']
     if languages is None:
         languages = get_language_list()
+
+    debug(f"Searching command='{command}' platforms={platforms} languages={languages}")
+
     # only use cache
     if USE_CACHE:
         result = list()
@@ -588,7 +639,11 @@ def update_cache(language: Optional[List[str]] = None) -> None:
                 "Updated cache for language "
                 f"{language}: {cached} entries"
             )
-        except Exception:
+        except Exception as err:
+            debug(
+                f"Failed to update cache for language '{language}' "
+                f"from {cache_location}: {type(err).__name__}: {err}"
+            )
             print(
                 "Error: Unable to update cache for language "
                 f"{language} from {cache_location}"
@@ -625,6 +680,13 @@ def create_parser() -> ArgumentParser:
             __version__,
             __client_specification__
         )
+    )
+    
+    parser.add_argument(
+        '--verbose', '--debug',
+        default=False,
+        action='store_true',
+        help='Show detailed troubleshooting output on stderr'
     )
 
     parser.add_argument("--search",
@@ -716,6 +778,17 @@ def main() -> None:
     parser = create_parser()
 
     options = parser.parse_args()
+
+    global VERBOSE
+    VERBOSE = options.verbose or VERBOSE
+
+    if VERBOSE:
+        debug("Verbose output enabled")
+        debug(f"cache_enabled={USE_CACHE}, network_enabled={USE_NETWORK}, max_cache_age={MAX_CACHE_AGE}")
+        debug(f"cache_dir={get_cache_dir()}")
+        debug(f"source={options.source}")
+        debug(f"platform_option={options.platform}")
+        debug(f"language_option={options.language}")
 
     if sys.platform == "win32":
         import colorama

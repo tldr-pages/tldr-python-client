@@ -68,6 +68,7 @@ options:
   -p PLATFORM, --platform PLATFORM
                         Override the operating system [android, freebsd, linux, netbsd, openbsd, osx, sunos, windows, common]
   -l, --list            List all available commands for operating system
+  --verbose, --debug    Show detailed troubleshooting output on stderr
   -s SOURCE, --source SOURCE
                         Override the default page source
   -c, --color           Override color stripping
@@ -99,6 +100,13 @@ export TLDR_DOWNLOAD_CACHE_LOCATION="https://github.com/tldr-pages/tldr/releases
 export TLDR_OPTIONS=short
 export TLDR_PLATFORM=linux
 ```
+
+### Troubleshooting
+
+Use `--verbose` or `--debug` to print detailed troubleshooting information to stderr. This can help diagnose cache, source, platform, language, and network fetch issues.
+
+```bash
+tldr --verbose tar
 
 ### Platform
 
