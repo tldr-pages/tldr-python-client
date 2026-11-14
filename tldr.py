@@ -209,7 +209,7 @@ def update_page_for_platform(
     remote: str,
     language: str
 ) -> None:
-    page_url = get_page_url(command , platform, remote, language)
+    page_url = get_page_url(command, platform, remote, language)
     data = urlopen(
         Request(page_url, headers=REQUEST_HEADERS),
         context=URLOPEN_CONTEXT

@@ -172,6 +172,7 @@ def test_get_commands(monkeypatch, tmp_path):
 
     assert "lspci" in result
 
+
 def test_update_page_for_platform_uses_correct_url(monkeypatch):
     requested_urls = []
 
@@ -200,4 +201,3 @@ def test_update_page_for_platform_uses_correct_url(monkeypatch):
     assert requested_urls == [
         "https://example.com/pages/linux/git.md"
     ]
-#basically applied mocking here with this update, it was simple
