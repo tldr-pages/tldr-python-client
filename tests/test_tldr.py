@@ -171,3 +171,33 @@ def test_get_commands(monkeypatch, tmp_path):
     result = tldr.get_commands(platforms=["linux"], language=["zh_CN"])
 
     assert "lspci" in result
+
+
+def test_update_page_for_platform_uses_correct_url(monkeypatch):
+    requested_urls = []
+
+    class FakeResponse:
+        def read(self):
+            return b"# git\n"
+
+    def fake_urlopen(request, context=None):
+        requested_urls.append(request.full_url)
+        return FakeResponse()
+
+    monkeypatch.setattr(tldr, "urlopen", fake_urlopen)
+    monkeypatch.setattr(
+        tldr,
+        "store_page_to_cache",
+        lambda *args: None
+    )
+
+    tldr.update_page_for_platform(
+        command="git",
+        platform="linux",
+        remote="https://example.com/pages",
+        language="en"
+    )
+
+    assert requested_urls == [
+        "https://example.com/pages/linux/git.md"
+    ]
