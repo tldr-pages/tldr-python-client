@@ -49,6 +49,35 @@ def test_markdown_mode(page_name):
         assert tldr_output == d_original + b"\n"
 
 
+@pytest.mark.parametrize("display_option_length, expected", [
+    ("short", "pw-loopback -m '[FL FR]' -i 'media.class=Audio/Sink'"),
+    ("long", "pw-loopback --channel-map '[FL FR]' --capture-props 'media.class=Audio/Sink'"),
+    ("both", "pw-loopback [-m|--channel-map] '[FL FR]' [-i|--capture-props] 'media.class=Audio/Sink'"),
+])
+def test_output_options_with_bracketed_parameter(display_option_length, expected, capsys, monkeypatch):
+    # Regression for #345: option matching must not consume another placeholder.
+    monkeypatch.setattr(tldr, "colored", lambda text, *args: text)
+    command = "pw-loopback {{[-m|--channel-map]}} '{{[FL FR]}}' {{[-i|--capture-props]}} '{{media.class=Audio/Sink}}'"
+
+    tldr.output([f"`{command}`".encode("utf-8")], display_option_length)
+
+    assert capsys.readouterr().out == f"\n    {expected}\n\n"
+
+
+@pytest.mark.parametrize("display_option_length, expected", [
+    ("short", "example {{[-f|--flag]}} -i path/to/file"),
+    ("long", "example {{[-f|--flag]}} --input path/to/file"),
+    ("both", "example {{[-f|--flag]}} [-i|--input] path/to/file"),
+])
+def test_output_options_with_escaped_placeholder(display_option_length, expected, capsys, monkeypatch):
+    monkeypatch.setattr(tldr, "colored", lambda text, *args: text)
+    command = r"example \{\{[-f|--flag]\}\} {{[-i|--input]}} {{path/to/file}}"
+
+    tldr.output([f"`{command}`".encode("utf-8")], display_option_length)
+
+    assert capsys.readouterr().out == f"\n    {expected}\n\n"
+
+
 def test_render_missing_file_fails(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     with mock.patch("sys.argv", ["tldr", "--render", "does-not-exist.md"]):
