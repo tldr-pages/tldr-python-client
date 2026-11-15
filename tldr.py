@@ -536,9 +536,9 @@ def output(page: str, display_option_length: str, plain: bool = False) -> None:
 
             # Extract long or short options from placeholders
             if display_option_length == "short":
-                line = re.sub(r'{{\[([^|]+)\|[^|]+?\]}}', r'\1', line)
+                line = re.sub(r'{{\[([^|{}]+)\|[^|{}]+?\]}}', r'\1', line)
             elif display_option_length == "long":
-                line = re.sub(r'{{\[[^|]+\|([^|]+?)\]}}', r'\1', line)
+                line = re.sub(r'{{\[[^|{}]+\|([^|{}]+?)\]}}', r'\1', line)
 
             elements = [' ' * 2 * LEADING_SPACES_NUM]
             for item in COMMAND_SPLIT_REGEX.split(line):
