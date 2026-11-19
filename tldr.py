@@ -473,17 +473,25 @@ def colors_of(key: str) -> Tuple[str, str, List[str]]:
 
 def output(page: str, display_option_length: str, plain: bool = False) -> None:
     def emphasise_example(x: str) -> str:
+        example = colored(x.group('example'), 'yellow')
+        # termcolor leaves the text unchanged when colors are disabled (e.g. when
+        # stdout is not a terminal), so skip the italics as well
+        if example == x.group('example'):
+            return example
         # Use ANSI escapes to enable italics at the start and disable at the end
         # Also use the color yellow to differentiate from the default green
-        return "\x1B[3m" + colored(x.group('example'), 'yellow') + "\x1B[23m"
+        return "\x1B[3m" + example + "\x1B[23m"
 
+    # Write everything as bytes: print() goes through the text layer, which has
+    # its own buffer, so mixing the two reorders the output when stdout is a pipe
+    sys.stdout.flush()
     if not plain:
-        print()
+        sys.stdout.buffer.write(b'\n')
     for line in page:
         line = line.rstrip().decode('utf-8')
 
         if plain:
-            print(line)
+            sys.stdout.buffer.write(line.encode('utf-8') + b'\n')
             continue
 
         elif len(line) == 0:
@@ -556,8 +564,8 @@ def output(page: str, display_option_length: str, plain: bool = False) -> None:
             line = line.replace('__ESCAPED_CLOSE__', '}}')
 
             sys.stdout.buffer.write(line.encode('utf-8'))
-        print()
-    print()
+        sys.stdout.buffer.write(b'\n')
+    sys.stdout.buffer.write(b'\n')
 
 
 def update_cache(language: Optional[List[str]] = None) -> None:
